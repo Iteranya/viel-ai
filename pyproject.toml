@@ -1,0 +1,21 @@
+[project]
+name = "viel-ai"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiohttp>=3.11.18",
+    "asyncio>=3.4.3",
+    "discord>=2.3.2",
+    "discord-py>=2.5.2",
+    "duckduckgo-search==7.1.0",
+    "fastapi>=0.115.12",
+    "google-generativeai>=0.8.5",
+    "pandas==2.2.3",
+    "pillow==11.0.0",
+    "protobuf==5.29.1",
+    "pypdf2==3.0.1",
+    "python-dotenv==1.0.1",
+    "youtube-transcript-api>=1.0.3",
+]
