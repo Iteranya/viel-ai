@@ -13,6 +13,10 @@ from src.docreader import DocReader
 from src import youtube
 import traceback
 inline_comprehension = True
+
+# GOD Refactoring this gonna be a bitch and a half...
+
+
 async def think() -> None:
 
     while True:

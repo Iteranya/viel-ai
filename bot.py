@@ -1,24 +1,16 @@
 import asyncio
-import os
 import discord
 from discord import app_commands
-from discord import Intents
-from discord import Client
 import logging
-import argparse
-import config
-
-import util
+import src.controller.config as config
 
 from discord import app_commands
-from dotenv import load_dotenv
-import src.observer as observer
-
-import main
-import src.controller as controller
-import src.function as fun
+import src.controller.observer as observer
+import src.controller.pipeline as pipeline
+import src.controller.filemanager as filemanager
 
 client = config.client
+discord_token = config.discord_token
 
 class EditMessageModal(discord.ui.Modal, title='Edit Message'):
     def __init__(self, original_message):
@@ -118,6 +110,9 @@ async def delete(message:discord.Message,interaction:discord.Interaction):
 
 @tree.command(name="register_channel", description="Register a channel into the bot")
 async def register_channel(interaction: discord.Interaction):
+    # Something Something Register Channel
+    # I think I'll use the filemanager thingy
+    filemanager.init_channel(interaction.guild.name,interaction.channel.name)
     await interaction.response.send_message("Channel registered!", ephemeral=True)
 
 @client.event
@@ -129,7 +124,7 @@ async def on_ready():
     logging.basicConfig(level=logging.DEBUG)
 
     # Setup the Connection with API
-    asyncio.create_task(controller.think())
+    asyncio.create_task(pipeline.think())
 
     # Command to Edit Message (You Right Click On It)
     edit_message = discord.app_commands.ContextMenu(
@@ -144,19 +139,9 @@ async def on_ready():
         callback=delete_message_context,
         type=discord.AppCommandType.message
     )
-
-        # Command to Delete Message (You Right Click On It)
-    register_channel = discord.app_commands.Command(
-        name="Register Channel",
-        description="Register a channel into the bot"
-        callback=delete_message_context,
-        type=discord.AppCommandType.message
-    )
-    
     # Initialize the Commands
     tree.add_command(edit_message)
     tree.add_command(delete_message)
-    tree.add_command(register_channel)
 
     await tree.sync(guild=None)  
     print(f'Discord Bot is up and running.')
