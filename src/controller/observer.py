@@ -1,6 +1,6 @@
 import re
 import discord
-from src.controller.config import queue_to_process_everything, default_character, blacklist_mode
+from src.controller.config import queue_to_process_everything, default_character
 from src.controller.discordo import get_context
 from src.models.aicharacter import AICharacter
 from src.models.dimension import Dimension

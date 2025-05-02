@@ -30,6 +30,9 @@ class ConfigManager:
             raise ValueError(f"Invalid JSON in configuration file: {filepath}")
 # Right, this one... 
 # I'll deal with this one soon enough
+# Claude my beloved, how the duck did you do this???
+
+
 class LlmApi:
     def __init__(self, queue: "QueueItem", prompt_engineer: "PromptEngineer", 
                  config_path: str = "configurations/llm_config.json", inline=True):

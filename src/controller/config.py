@@ -19,21 +19,8 @@ global gemini_token
 
 queue_to_process_everything = asyncio.Queue()
 
-florence = None
-florence_processor = None
-use_florence = True
-bot_display_name = "Aktiva-AI"
-bot_default_avatar = "https://i.imgur.com/cWExeMh.jpeg"
 default_character = "Vida-chan"
 bot_user = None
-text_api: dict = {}
-image_api: dict = {}
-immersive_mode = True
-blacklist_mode = True
-openrouter_token =""
-gemini_token=""
-safesearch=None
-text_evaluator_model = "deepseek-ai/DeepSeek-V3-0324"
 
 llm_type = "remote"
 
