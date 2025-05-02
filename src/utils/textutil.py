@@ -1,5 +1,16 @@
 import re
 
+def clean_user_message(user_input: str) -> str:
+    # Remove the bot's tag from the input since it's not needed.
+    user_input = user_input.replace("@Kobold", "")
+
+    user_input = user_input.replace("<|endoftext|>", "")
+
+    # Remove any spaces before and after the text.
+    user_input = user_input.strip()
+
+    return user_input
+
 def clean_text(text:str):
     """
     Remove emojis, trailing whitespace, line breaks, and bracket-like characters from a given string.

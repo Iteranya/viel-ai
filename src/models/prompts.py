@@ -1,20 +1,19 @@
-from src.aicharacter import AICharacter
-from src.discordo import Discordo
+from src.models.aicharacter import AICharacter
+from src.models.dimension import Dimension
+from src.controller.discordo import get_history
+from src.controller.filemanager import get_json_file
 import discord
 import json
-from src.dimension import Dimension
-import util
-import config
+import os
 import re
 
 
 class PromptEngineer:
-    def __init__(self, bot:AICharacter, discordo:Discordo, dimension:Dimension, llm_setting = "text-default.json"):
+    def __init__(self, bot:AICharacter, message: discord.Message, dimension:Dimension, llm_setting = "text-default.json"):
         self.bot = bot
-        self.discordo = discordo
+        self.message = message
         self.dimension = dimension
         self.api:dict = self.set_api(llm_setting)
-        self.type = config.llm_type
         self.stopping_string = []
 
     async def create_text_prompt(self) -> str:
@@ -24,15 +23,11 @@ class PromptEngineer:
         globalvar = self.dimension.getDict().get("global", "")
         locationvar = self.dimension.getDict().get("location", "")
         instructionvar = self.dimension.getDict().get("instruction", "")
-        history = self.discordo.history
-        content = re.sub(r'<@!?[0-9]+>', '', self.discordo.get_user_message_content().strip())
-        if content.startswith("^"):
-            content = content.replace("^","")
+        history = await get_history(self.message)
+        # content = re.sub(r'<@!?[0-9]+>', '', self.message.content.strip())
         user = re.sub(r'[^\w]', '', self.discordo.get_user_message_author_name().strip())
-        last_message = f"[Reply]{user}: {content}[End]"
-        # history = history.replace(last_message,"")
-        if self.discordo.video_caption!=None:
-            history = history+self.discordo.video_caption
+        # last_message = f"[Reply]{user}: {content}[End]"
+        # # history = history.replace(last_message,"")
         prompt = character+globalvar +history +locationvar +instructionvar + jb+f"\n[Replying to {user}] " + self.bot.name + ":"
 
         stopping_strings = ["[System", "(System", user + ":",  "[Reply", "(Reply", "System Note", "[End","[/"] 
@@ -44,9 +39,6 @@ class PromptEngineer:
         
         data.update({"prompt": prompt})
         data.update({"stop_sequence": stopping_strings})
-        # image_data = await self.discordo.process_attachment()
-        # if image_data!=None:
-        #     data.update({"images":[image_data]})
         data.update({"grammar": ""})
         data.update({"grammar_string": ""})
         data.update({"grammars": ""})
@@ -57,8 +49,8 @@ class PromptEngineer:
     
     def set_api(self,config_file: str) -> dict:
         # Go grab the configuration file for me
-        file = util.get_file_name("configurations", config_file)
-        contents = util.get_json_file(file)
+        file = os.path.join("configurations", config_file)
+        contents = get_json_file(file)
         # If contents aren't none, clear the API and shove new data in
         api = {}
 
