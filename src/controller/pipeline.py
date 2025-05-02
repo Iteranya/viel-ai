@@ -5,7 +5,7 @@ from src.models.aicharacter import AICharacter
 from src.models.dimension import Dimension
 from src.models.prompts import PromptEngineer
 from src.models.queue import QueueItem
-from src.utils.llm import LlmApi
+from src.utils.llm_new import generate_response
 from src.controller.discordo import send
 
 # GOD Refactoring this gonna be a bitch and a half...
@@ -34,9 +34,14 @@ async def think() -> None:
 
 async def send_llm_message(bot: AICharacter,message:discord.Message,dimension:Dimension):
     prompter = PromptEngineer(bot,message,dimension)
-    queueItem = QueueItem(prompt=await prompter.create_text_prompt())
-    llmapi = LlmApi(queueItem,prompter)
+    queueItem = QueueItem(
+        prompt=await prompter.create_text_prompt(),
+        bot = bot.name,
+        user = message.author.display_name,
+        stop=prompter.stopping_string,
+        prefill=prompter.prefill
+        )
     print("Chat Completion Processing...")
-    queueItem = await llmapi.send_to_model_queue()
+    queueItem = await generate_response(queueItem)
     await send(bot,queueItem)
     return

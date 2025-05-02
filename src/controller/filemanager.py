@@ -4,10 +4,21 @@ import discord
 import os
 import re
 import aiohttp
+from dataclasses import dataclass,asdict
+
+CONFIG_PATH = "configurations/bot_config.json"
+
+@dataclass
+class Config:
+    system_note: str = "ONLY USE HTML, CSS AND JAVASCRIPT. If you want to use ICON make sure to import the library first. Try to create the best UI possible by using only HTML, CSS and JAVASCRIPT. Also, try to ellaborate as much as you can, to create something unique. ALWAYS GIVE THE RESPONSE INTO A SINGLE HTML FILE"
+    ai_endpoint: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
+    base_llm:str= "gemini-2.5-pro-exp-03-25"
+    temperature:float = 0.5
+    ai_key:str = ""
 
 async def get_bot_list() -> list[str]:
     names = []
-    folder_path = "./characters"
+    folder_path = "res/characters"
     # Iterate over each file in the directory
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
@@ -76,10 +87,14 @@ def init_channel(server,channel):
     createOrFetchChannelConfig(server,channel)
     return
 
-def createOrFetchChannelConfig(server,channel):
+def createOrFetchChannelConfig(server, channel):
     # File name with .json extension
-    file_name = f"channels/{server}/{channel}.json"
-
+    directory = f"res/servers/{server}"
+    file_name = f"{directory}/{channel}.json"
+    
+    # Create directories if they don't exist
+    os.makedirs(directory, exist_ok=True)
+    
     # Check if the file already exists
     if os.path.exists(file_name):
         # Open and fetch the content
@@ -87,14 +102,15 @@ def createOrFetchChannelConfig(server,channel):
             data = json.load(json_file)
         print(f"File '{file_name}' already exists. Fetched content: {data}")
         return data
-    
+   
     # If it doesn't exist, create the data and save it
     data = {
         "name": channel,
         "description":"[System Note: Takes place in a discord text channel]",
         "global":"[System Note: Takes place in a discord server]",
-        "instruction":"[System Note: Takes place in a discord text channel]"
-        }
+        "instruction":"[System Note: Takes place in a discord text channel]",
+        "whitelist": ["Vida-chan"]
+    }
     with open(file_name, "w") as json_file:
         json.dump(data, json_file, indent=4)
     print(f"File '{file_name}' created with content: {data}")
@@ -127,7 +143,6 @@ def sanitize_string(input_string):
     # Remove unwanted symbols (keeping letters, numbers, spaces, and basic punctuation)
     sanitized_string = re.sub(r'[^a-zA-Z0-9\s.,!?\'\"-]', '', sanitized_string)
     return sanitized_string.strip()
-
 
 def edit_instruction(interaction: discord.Interaction, message: str):
     channel = interaction.channel
@@ -312,3 +327,31 @@ async def get_pygmalion_json(uuid:str):
     except Exception as e:
         print(f"Unexpected error in LLM evaluation: {e}")
     return None
+
+
+def load_or_create_config(path: str = CONFIG_PATH) -> Config:
+    if os.path.exists(path):
+        with open(path, 'r') as f:
+            data = json.load(f)
+            current_config = Config(**data)
+            current_config.ai_key = "" # Duct Tape Security... Fix In Production (Or Not, Maybe This Is Actually Secure Enough :v)
+        return current_config
+    else:
+        default_config = Config()
+        save_config(default_config, path)
+        print(f"No config found. Created default at {path}.")
+        default_config.ai_key = ""
+        return default_config
+    
+def save_config(config: Config, path: str = CONFIG_PATH) -> None:
+    with open(path, 'w') as f:
+        json.dump(asdict(config), f, indent=2)
+
+def get_key(path:str = CONFIG_PATH) -> str:
+    if os.path.exists(path):
+        with open(path, 'r') as f:
+            data = json.load(f)
+            current_config = Config(**data)
+            return current_config.ai_key 
+    else:
+        return ""

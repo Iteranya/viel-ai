@@ -1,6 +1,3 @@
-import discord
-import config
-import src.textutil as textutil
 import os
 import json
 
@@ -40,7 +37,7 @@ class AICharacter:
             print(f"I/O error occurred while writing to {json_path}: {e}")
 
     def get_card(self,bot_name: str)->dict:
-        directory = "./characters"
+        directory = "res/characters"
         for filename in os.listdir(directory):
             if filename.endswith(".json"):
                 filepath = os.path.join(directory, filename)

@@ -8,14 +8,15 @@ from discord import app_commands
 import src.controller.observer as observer
 import src.controller.pipeline as pipeline
 import src.controller.filemanager as filemanager
-
-client = config.client
-discord_token = config.discord_token
+config = config.load_or_create_config()
+discord_token = config.discord_key
 
 if discord_token is None:
     raise RuntimeError("$DISCORD_TOKEN env variable is not set!")
 
-client = config.client
+intents: discord.Intents = discord.Intents.all()
+intents.message_content = True
+client: discord.Client = discord.Client(command_prefix='/', intents=intents)
 
 tree = app_commands.CommandTree(client)
 
