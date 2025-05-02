@@ -9,14 +9,10 @@ from aiohttp import ClientTimeout
 from aiohttp import TCPConnector
 import random
 from typing import Any, Dict
-import util
-import src.textutil as textutil
+import src.utils.textutil as textutil
 from src.models import QueueItem
-from src.discordo import Discordo
-from src.aicharacter import AICharacter
-from src.dimension import Dimension
-from src.prompts import PromptEngineer
-import config
+from src.models.prompts import PromptEngineer
+from src.controller import config
 import aiohttp
 
 class ConfigManager:
@@ -32,10 +28,11 @@ class ConfigManager:
             raise FileNotFoundError(f"Configuration file not found: {filepath}")
         except json.JSONDecodeError:
             raise ValueError(f"Invalid JSON in configuration file: {filepath}")
-
+# Right, this one... 
+# I'll deal with this one soon enough
 class LlmApi:
     def __init__(self, queue: "QueueItem", prompt_engineer: "PromptEngineer", 
-                 config_path: str = "config/llm_config.json", inline=True):
+                 config_path: str = "configurations/llm_config.json", inline=True):
         self.queue = queue
         self.prompt_engineer = prompt_engineer
         self.inline_comprehension = inline
