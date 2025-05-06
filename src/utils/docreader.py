@@ -1,5 +1,4 @@
 import PyPDF2
-import config
 import aiohttp
 import google.generativeai as genai
 

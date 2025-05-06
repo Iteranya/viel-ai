@@ -4,19 +4,25 @@ from src.controller.config import queue_to_process_everything, default_character
 from src.controller.discordo import get_context
 from src.models.aicharacter import AICharacter
 from src.models.dimension import Dimension
-from src.controller.filemanager import get_bot_list, get_channel_whitelist
+
+from src.data.dimension_data import get_channel_whitelist
 
 # This is the main code that deals with determining what type of request is being given.
 ## Also the gateway to LAM
 
 async def bot_behavior(message: discord.Message, client: discord.Client) -> bool:
+    if message.author.display_name == client.user.display_name:
+        return
     if isinstance(message.channel,discord.DMChannel): # Check if DM or Nah
         char = default_character
         if message.author.display_name.lower() != char.lower():
             await bot_think(message,char)
         return 
 
-    whitelist = await get_channel_whitelist(message.channel.name)
+    whitelist = await get_channel_whitelist(message.channel.guild.name,message.channel.name)
+    print("Author: "+str(message.author.display_name))
+    print("User: "+str(client.user.display_name))
+    
 
     #The Fuzzy Logic Part~
     if message.webhook_id is None: # Check if it's a bot message
@@ -34,17 +40,18 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
     return False
 
 
-async def bot_think(message: discord.Message, bot: str) -> None:
+async def bot_think(message: discord.message.Message, bot: str) -> None:
     channel = get_context(message)
+    print(type(channel))
     aicharacter = AICharacter(bot)
     if isinstance(channel,discord.channel.DMChannel) == False: 
-        dimension = Dimension(server=str(message.guild.id), channel = str(channel.id))
+        dimension = Dimension(server_name=str(message.guild.id), channel_name = str(channel.id))
     else: 
-        dimension = Dimension(server = "dm", channel = str(message.author.id))
+        dimension = Dimension(server_name = "dm", channel_name = str(message.author.id))
 
     queue_item = {
         "bot" : aicharacter,
-        "message":discord.Message, # Yes, the actual message object 
+        "message":message, # Yes, the actual message object 
         "dimension":dimension
     }
     queue_to_process_everything.put_nowait(queue_item)

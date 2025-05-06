@@ -2,15 +2,17 @@ import asyncio
 import discord
 from discord import app_commands
 import logging
-import src.controller.config as config
 
 from discord import app_commands
 import src.controller.observer as observer
 import src.controller.pipeline as pipeline
-import src.controller.filemanager as filemanager
+import src.data.dimension_data as dim
+import src.data.card_data as card
+import src.data.config_data as config
+
+from src.controller import config as conf
 config = config.load_or_create_config()
 discord_token = config.discord_key
-
 if discord_token is None:
     raise RuntimeError("$DISCORD_TOKEN env variable is not set!")
 
@@ -128,7 +130,7 @@ class CoreCommands(app_commands.Group):
 
     @app_commands.command(name="register_channel", description="Register a channel into the bot")
     async def register_channel(self,interaction: discord.Interaction):
-        filemanager.init_channel(interaction.guild.name,interaction.channel.name)
+        dim.init_channel(interaction.guild.name,interaction.channel.name)
         await interaction.response.send_message("Channel registered!", ephemeral=True)
 
 # Configuration commands subgroup
@@ -138,22 +140,22 @@ class ConfigCommands(app_commands.Group):
 
     @app_commands.command(name="set_instruction", description="Edit Instruction Data")
     async def set_instruction(self, interaction: discord.Interaction, instruction_desc: str):
-        response = filemanager.edit_instruction(interaction, instruction_desc)
+        response = dim.edit_instruction(interaction, instruction_desc)
         await interaction.response.send_message(response, ephemeral=True)
 
     @app_commands.command(name="get_instruction", description="View Current Instruction Data")
     async def get_instruction(self, interaction: discord.Interaction):
-        response = filemanager.get_instruction(interaction)
+        response = dim.get_instruction(interaction)
         await interaction.response.send_message(response, ephemeral=True)
         
     @app_commands.command(name="set_global", description="Edit Global Data")
     async def set_global(self, interaction: discord.Interaction, global_var: str):
-        response = filemanager.edit_global(interaction, global_var)
+        response = dim.edit_global(interaction, global_var)
         await interaction.response.send_message(response, ephemeral=True)
         
     @app_commands.command(name="get_global", description="View Current Global Data")
     async def get_global(self, interaction: discord.Interaction):
-        response = filemanager.get_global(interaction)
+        response = dim.get_global(interaction)
         await interaction.response.send_message(response, ephemeral=True)
 
 # Character management subgroup
@@ -165,7 +167,7 @@ class CharacterCommands(app_commands.Group):
     async def import_character(self, interaction: discord.Interaction, character_json: discord.Attachment):
         try:
             # Attempt to process the attachment
-            result = await filemanager.save_character_json(character_json)
+            result = await card.save_character_json(character_json)
             await interaction.response.send_message(f"Result: {result}", ephemeral=True)
         except ValueError as e:
             # Handle invalid file type errors
@@ -174,18 +176,18 @@ class CharacterCommands(app_commands.Group):
             # Catch all other exceptions to avoid crashing
             await interaction.response.send_message(f"An unexpected error occurred: {e}", ephemeral=True)
             
-    @app_commands.command(name="import_pygmalion", description="Import Pygmalion Character")
-    async def import_pygmalion(self, interaction: discord.Interaction, character_uuid: str):
-        try:
-            # Attempt to process the attachment
-            filepath = await filemanager.get_pygmalion_json(character_uuid)
-            await interaction.response.send_message(f"{filepath}", ephemeral=True)
-        except ValueError as e:
-            # Handle invalid file type errors
-            await interaction.response.send_message(f"Error: {e}", ephemeral=True)
-        except Exception as e:
-            # Catch all other exceptions to avoid crashing
-            await interaction.response.send_message(f"An unexpected error occurred: {e}", ephemeral=True)
+    # @app_commands.command(name="import_pygmalion", description="Import Pygmalion Character")
+    # async def import_pygmalion(self, interaction: discord.Interaction, character_uuid: str):
+    #     try:
+    #         # Attempt to process the attachment
+    #         filepath = await card.get_pygmalion_json(character_uuid)
+    #         await interaction.response.send_message(f"{filepath}", ephemeral=True)
+    #     except ValueError as e:
+    #         # Handle invalid file type errors
+    #         await interaction.response.send_message(f"Error: {e}", ephemeral=True)
+    #     except Exception as e:
+    #         # Catch all other exceptions to avoid crashing
+    #         await interaction.response.send_message(f"An unexpected error occurred: {e}", ephemeral=True)
 
 # Whitelist management subgroup
 class WhitelistCommands(app_commands.Group):
@@ -194,22 +196,22 @@ class WhitelistCommands(app_commands.Group):
         
     @app_commands.command(name="set", description="Add Characters, Comma Separated")
     async def set(self, interaction: discord.Interaction, character_name: str):
-        response = filemanager.set_whitelist(interaction, character_name)
+        response = dim.set_whitelist(interaction, character_name)
         await interaction.response.send_message(response, ephemeral=True)
         
     @app_commands.command(name="get", description="Show Available Characters")
     async def get(self, interaction: discord.Interaction):
-        response = filemanager.get_whitelist(interaction)
+        response = dim.get_whitelist(interaction)
         await interaction.response.send_message(response, ephemeral=True)
         
     @app_commands.command(name="clear", description="Clear Whitelist")
     async def clear(self, interaction: discord.Interaction):
-        response = filemanager.clear_whitelist(interaction)
+        response = dim.clear_whitelist(interaction)
         await interaction.response.send_message(response, ephemeral=True)
         
     @app_commands.command(name="remove", description="Remove a Character")
     async def remove(self, interaction: discord.Interaction, character_name: str):
-        response = filemanager.delete_whitelist(interaction, character_name)
+        response = dim.delete_whitelist(interaction, character_name)
         await interaction.response.send_message(response, ephemeral=True)
 
 def setup_commands():
@@ -230,7 +232,7 @@ def setup_commands():
 async def on_ready():
     # Let owner known in the console that the bot is now running!
     print(f'Discord Bot is Loading...')
-    config.bot_user = client.user
+    conf.bot_user = client.user
     # Oh right, I have logging...
     logging.basicConfig(level=logging.DEBUG)
 
