@@ -91,9 +91,6 @@ class AICharacter:
 
         return character_prompt
 
-
-
-
     def get_name(self) -> str:
         """Getter for character name."""
         name = self.char_dict.get("name","")

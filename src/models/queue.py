@@ -13,4 +13,5 @@ class QueueItem:
     dm:bool = False
     stop:list = None
     prefill:str = None
+    message:discord.Message = None
     

@@ -1,7 +1,7 @@
 from openai import OpenAI
-from src.controller.filemanager import load_or_create_config,Config,get_key
 from src.models.queue import QueueItem
 from src.models.prompts import PromptEngineer
+from src.data.config_data import load_or_create_config,Config,get_key
 
 async def generate_response(task:QueueItem):
 

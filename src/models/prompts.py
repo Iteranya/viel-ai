@@ -1,7 +1,6 @@
 from src.models.aicharacter import AICharacter
 from src.models.dimension import Dimension
 from src.controller.discordo import get_history
-from src.controller.filemanager import get_json_file
 import discord
 import json
 import os
@@ -11,11 +10,12 @@ import re
 class PromptEngineer:
     def __init__(self, bot:AICharacter, message: discord.Message, dimension:Dimension):
         self.bot = bot
-        self.user = message.author.name
+        self.user = str(message.author)
         self.message = message
         self.dimension = dimension
         self.stopping_string = None
         self.prefill = None
+        print(self.user)
 
     async def create_text_prompt(self) -> str:
         jb = self.bot.instructions

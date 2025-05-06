@@ -61,22 +61,22 @@ async def send(bot, message: discord.Message, queue_item:QueueItem):
         print("Hi!")
     
     if queue_item.error:
-        await send_as_system(queue_item)
+        await send_as_system(queue_item,message)
     elif queue_item.dm == True:
-        await send_as_dm(queue_item,bot)
+        await send_as_dm(queue_item,bot,message)
     else:
-        await send_as_bot(queue_item,bot)
+        await send_as_bot(queue_item,bot,message)
 
-async def send_as_dm(queue_item:QueueItem,bot: AICharacter):
+async def send_as_dm(queue_item:QueueItem,bot: AICharacter,message: discord.Message):
     response = queue_item.result
     response.replace(bot.name+":","")
     response_chunks = [response[i:i+1500] for i in range(0, len(response), 1500)]
     
     for chunk in response_chunks:
-        await send_regular_message(chunk)
+        await send_regular_message(chunk,message)
 
     
-async def send_as_bot(queue_item:QueueItem,bot: AICharacter):
+async def send_as_bot(queue_item:QueueItem,bot: AICharacter,message: discord.Message):
     response = queue_item.result
     response.replace(bot.name+":","")
     response_chunks = [response[i:i+1500] for i in range(0, len(response), 1500)]
@@ -85,15 +85,16 @@ async def send_as_bot(queue_item:QueueItem,bot: AICharacter):
     character_avatar_url = bot.avatar  # Placeholder for character avatar URL
     
     for chunk in response_chunks:
-        await send_webhook_message(chunk, character_avatar_url, character_name)
+        await send_webhook_message(chunk, character_avatar_url, character_name,message=message)
     if queue_item.images!=None:
-        await send_webhook_message("[System Note: Attachment]",character_avatar_url, character_name,queue_item.images)
+        await send_webhook_message("[System Note: Attachment]",character_avatar_url, character_name,queue_item.images,message=message)
 
-async def send_as_system(queue_item:QueueItem):
-    await send_regular_message(queue_item.error)
+async def send_as_system(queue_item:QueueItem,message: discord.Message):
+    await send_regular_message(queue_item.error,message)
     
-async def send_webhook_message(content: str, avatar_url: str=None, username: str=None,images=None) -> None:
-    context = get_context()
+async def send_webhook_message(content: str, avatar_url: str=None, username: str=None,images=None,message: discord.Message = None) -> None:
+    context = message.channel
+    print("Context is: "+str(message.channel))
     if isinstance(context,discord.TextChannel):
         thread = None
         channel = context
@@ -133,58 +134,58 @@ async def send_webhook_message(content: str, avatar_url: str=None, username: str
             await webhook.send(content, username=username, avatar_url=avatar_url)
     return
 
-async def send_regular_message(content: str) -> None:
-    channel = get_context()
+async def send_regular_message(content: str,message: discord.Message) -> None:
+    channel = message.channel
     await channel.send(content)
     return
 
-async def get_reply(message: discord.Message, client: discord.Client):
-    reply = ""
+# async def get_reply(message: discord.Message, client: discord.Client):
+#     reply = ""
 
-    # If the message reference is not none, meaning someone is replying to a message
-    if message.reference is not None:
-        # Grab the message that's being replied to
-        referenced_message = message.reference.cached_message
-        if referenced_message is None:
-            if message.reference.message_id is None:
-                print("Message ID is null")
-                return reply
-            referenced_message = await message.channel.fetch_message(message.reference.message_id)
+#     # If the message reference is not none, meaning someone is replying to a message
+#     if message.reference is not None:
+#         # Grab the message that's being replied to
+#         referenced_message = message.reference.cached_message
+#         if referenced_message is None:
+#             if message.reference.message_id is None:
+#                 print("Message ID is null")
+#                 return reply
+#             referenced_message = await message.channel.fetch_message(message.reference.message_id)
 
-        # Verify that the author of the message is bot and that it has a reply
-        if referenced_message.reference is not None and referenced_message.author == client.user:
-            # Grab that other reply as well
-            referenced_user_message = referenced_message.reference.cached_message
-            if referenced_user_message is None:
-                if referenced_message.reference.message_id is None:
-                    print("Message ID is null")
-                    return reply
-                try:
-                    referenced_user_message = await message.channel.fetch_message(referenced_message.reference.message_id)
-                    # Process the fetched message as needed
-                except discord.NotFound:
-                    # Handle the case where the message cannot be found
-                    print("Message not found or access denied.")
-                    return reply
+#         # Verify that the author of the message is bot and that it has a reply
+#         if referenced_message.reference is not None and referenced_message.author == client.user:
+#             # Grab that other reply as well
+#             referenced_user_message = referenced_message.reference.cached_message
+#             if referenced_user_message is None:
+#                 if referenced_message.reference.message_id is None:
+#                     print("Message ID is null")
+#                     return reply
+#                 try:
+#                     referenced_user_message = await message.channel.fetch_message(referenced_message.reference.message_id)
+#                     # Process the fetched message as needed
+#                 except discord.NotFound:
+#                     # Handle the case where the message cannot be found
+#                     print("Message not found or access denied.")
+#                     return reply
 
-            # If the author of the reply is not the same person as the initial user, we need this data
-            if referenced_user_message.author != message.author:
-                reply = referenced_user_message.author.display_name + \
-                    ": " + referenced_user_message.clean_content + "\n"
-                reply = reply + referenced_message.author.display_name + \
-                    ": " + referenced_message.clean_content + "\n"
-                reply = textutil.clean_user_message(reply)
+#             # If the author of the reply is not the same person as the initial user, we need this data
+#             if referenced_user_message.author != message.author:
+#                 reply = referenced_user_message.author.display_name + \
+#                     ": " + referenced_user_message.clean_content + "\n"
+#                 reply = reply + referenced_message.author.display_name + \
+#                     ": " + referenced_message.clean_content + "\n"
+#                 reply = textutil.clean_user_message(reply)
 
-                return reply
+#                 return reply
 
-        # If the referenced message isn't from the bot, use it in the reply
-        if referenced_message.author != client.user:
-            reply = referenced_message.author.display_name + \
-                ": " + referenced_message.clean_content + "\n"
+#         # If the referenced message isn't from the bot, use it in the reply
+#         if referenced_message.author != client.user:
+#             reply = referenced_message.author.display_name + \
+#                 ": " + referenced_message.clean_content + "\n"
 
-            return reply
+#             return reply
 
-    return reply
+#     return reply
 
 # class Discordo:
 #     def __init__(self, message:discord.Message):
