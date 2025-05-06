@@ -18,7 +18,7 @@ def generate_image(prompt, resolution="1024x1024", guidance_scale=5, num_inferen
         str: Path to the saved image
     """
     # API configuration
-    api_token = "cpk_3db75cb438b64aba8a66c5a7fd0e9231.ade0cdfb680857e4bc8f192cf8869f43.S6uLGf71yyndFEMp9h2si3gE24HIDeA6"  # Replace with your actual API token
+    api_token = "HUNYAAAA~"  # Replace with your actual API token
     headers = {
         "Authorization": "Bearer " + api_token,
         "Content-Type": "application/json"
