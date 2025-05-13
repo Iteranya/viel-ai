@@ -190,7 +190,7 @@ def createOrFetchChannelConfig(server, channel):
         "description":"[System Note: Takes place in a discord text channel]",
         "global":"[System Note: Takes place in a discord server]",
         "instruction":"[System Note: Takes place in a discord text channel]",
-        "whitelist": ["Vida-chan"]
+        "whitelist": ["Viel"]
     }
     with open(file_name, "w") as json_file:
         json.dump(data, json_file, indent=4)
