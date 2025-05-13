@@ -27,9 +27,13 @@ async def activate_bot():
 async def deactivate_bot():
     if not client.is_ready():
         raise HTTPException(status_code=400, detail="Bot is not running")
-    # Schedule client close
-    asyncio.get_event_loop().create_task(client.close())
-    return {"success": True}
+    
+    try:
+        # Close the client in the same event loop it was created in
+        await client.close()
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/discord/status")
 async def check_bot_status():

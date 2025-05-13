@@ -9,8 +9,8 @@ def load_or_create_config(path: str = CONFIG_PATH) -> Config:
         with open(path, 'r') as f:
             data = json.load(f)
             current_config = Config(**data)
-            current_config.ai_key = "" # Duct Tape Security... Fix In Production (Or Not, Maybe This Is Actually Secure Enough :v)
-        return current_config
+            current_config.ai_key = "" 
+            return current_config
     else:
         default_config = Config()
         save_config(default_config, path)

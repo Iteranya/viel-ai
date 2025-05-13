@@ -45,7 +45,7 @@ async def bot_think(message: discord.message.Message, bot: str) -> None:
     print(type(channel))
     aicharacter = AICharacter(bot)
     if isinstance(channel,discord.channel.DMChannel) == False: 
-        dimension = Dimension(server_name=str(message.guild.id), channel_name = str(channel.id))
+        dimension = Dimension(server_name=str(message.guild.name), channel_name = str(channel.name))
     else: 
         dimension = Dimension(server_name = "dm", channel_name = str(message.author.id))
 

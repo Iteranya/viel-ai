@@ -12,11 +12,12 @@ queue_to_process_everything = asyncio.Queue()
 default_character = "Viel"
 bot_user = None
 
+
 @dataclass
 class Config:
-    default_character = "Viel"
+    default_character: str = "Viel"
     ai_endpoint: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
-    base_llm:str= "gemini-2.5-pro-exp-03-25"
-    temperature:float = 0.5
-    ai_key:str = ""
-    discord_key:str = ""
+    base_llm: str = "gemini-2.5-pro-exp-03-25"
+    temperature: float = 0.5
+    ai_key: str = ""
+    discord_key: str = ""

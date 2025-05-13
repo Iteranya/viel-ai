@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import characters, servers, config,discord
+from api.routers import characters, servers, config, discord
 
 # Create the FastAPI app
 app = FastAPI(
