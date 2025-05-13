@@ -30,3 +30,13 @@ async def deactivate_bot():
     # Schedule client close
     asyncio.get_event_loop().create_task(client.close())
     return {"success": True}
+
+@router.get("/discord/status")
+async def check_bot_status():
+    try:
+        if client.is_ready():
+            return {"status": "active"}
+        else:
+            return {"status": "inactive"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
