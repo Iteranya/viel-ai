@@ -15,6 +15,7 @@ async def generate_response(task:QueueItem):
     completion = client.chat.completions.create(
     model=ai_config.base_llm,
     stop=task.stop,
+    temperature=ai_config.temperature, # I forgor :3
     messages=[
         {
         "role": "user",
