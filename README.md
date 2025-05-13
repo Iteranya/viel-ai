@@ -108,19 +108,19 @@ The admin panel (Frontend) just reads/writes these files. FastAPI (Backend) serv
 ### **3. The Manual Way (For Nerds Who Like Pain)**  
 *Standard UV project setup because you’re fancy like that:*  
 
-# Create a venv because you're responsible (unlike me).
+1. Create a venv because you're responsible (unlike me).
 `python -m venv venv`  
 
-# Activate it (Windows).
+2. Activate it (Windows).
 `.\venv\Scripts\activate`  
 
-# Or if you're on Linux/macOS (why are you like this?).
+3. Or if you're on Linux/macOS (why are you like this?).
 `source venv/bin/activate`  
 
-# Install dependencies (yes, all of them).
+4. Install dependencies (yes, all of them).
 `pip install -r requirements.txt`  
 
-# Run me like you mean it.
+5. Run me like you mean it.
 `python main.py`  
 
 ---  
