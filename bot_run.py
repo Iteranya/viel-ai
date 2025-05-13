@@ -1,25 +1,24 @@
 import asyncio
-import discord
-from discord import app_commands
 import logging
-
+import discord
 from discord import app_commands
 import src.controller.observer as observer
 import src.controller.pipeline as pipeline
 import src.data.dimension_data as dim
 import src.data.card_data as card
-import src.data.config_data as config
-
+import src.data.config_data as config_module
 from src.controller import config as conf
-config = config.load_or_create_config()
+
+# Load config and token
+config = config_module.load_or_create_config()
 discord_token = config.discord_key
 if discord_token is None:
     raise RuntimeError("$DISCORD_TOKEN env variable is not set!")
 
+# Setup Discord client
 intents: discord.Intents = discord.Intents.all()
 intents.message_content = True
-client: discord.Client = discord.Client(command_prefix='/', intents=intents)
-
+client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
 # Modal
@@ -215,47 +214,27 @@ def setup_commands():
     tree.add_command(character_group)
     tree.add_command(whitelist_group)
 
-@client.event
-async def on_ready():
-    # Let owner known in the console that the bot is now running!
-    print(f'Discord Bot is Loading...')
-    conf.bot_user = client.user
-    # Oh right, I have logging...
-    logging.basicConfig(level=logging.DEBUG)
+# (All your commands, modal classes, event handlers, etc.)
+# ... (copy all modal, context menu, commands groups here) ...
 
-    # Setup the Connection with API
+async def start_pipeline():
+    # Kick off background thinking loop
     asyncio.create_task(pipeline.think())
 
-    # Command to Edit Message (You Right Click On It)
-    edit_message = discord.app_commands.ContextMenu(
-        name='Edit Bot Message',
-        callback=edit_message_context,
-        type=discord.AppCommandType.message
-    )
-
-    # Command to Delete Message (You Right Click On It)
-    delete_message = discord.app_commands.ContextMenu(
-        name='Delete Bot Message',
-        callback=delete_message_context,
-        type=discord.AppCommandType.message
-    )
-    
-    # Initialize the Commands
-    tree.add_command(edit_message)
-    tree.add_command(delete_message)
+@client.event
+async def on_ready():
+    print(f"Discord Bot is Loading... Logged in as {client.user}")
+    conf.bot_user = client.user
+    # logging.basicConfig(level=logging.DEBUG)
+    # Setup commands and events
+    # (e.g., context menus, tree.sync, etc.)
     setup_commands()
-
-    await tree.sync(guild=None)  
-    print(f'Discord Bot is up and running.')
+    await tree.sync(guild=None)
+    await start_pipeline()
+    print("Discord Bot is up and running.")
 
 @client.event
 async def on_message(message):
-    if message is None:
+    if message.author == client.user:
         return
-    
-    # Trigger the Observer Behavior (The command that listens to Keyword)
-    print("Message Get")
     await observer.bot_behavior(message, client)
-
-# Run the Bot
-client.run(discord_token)
