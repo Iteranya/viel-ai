@@ -47,7 +47,7 @@ class ChannelModel(BaseModel):
         }
 
 class BotConfigModel(BaseModel):
-    default_character: str = Field("Vida-chan", description="Default character name")
+    default_character: str = Field("Viel", description="Default character name")
     ai_endpoint: str = Field("https://generativelanguage.googleapis.com/v1beta/openai/", 
                            description="AI API endpoint")
     base_llm: str = Field("gemini-2.5-pro-exp-03-25", description="Base LLM model name")
@@ -58,7 +58,7 @@ class BotConfigModel(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "default_character": "Vida-chan",
+                "default_character": "Viel",
                 "ai_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai/",
                 "base_llm": "gemini-2.5-pro-exp-03-25",
                 "temperature": 0.7,

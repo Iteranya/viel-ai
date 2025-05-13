@@ -9,12 +9,12 @@ from src.data.const import CONFIG_PATH
 load_dotenv()
 queue_to_process_everything = asyncio.Queue()
 
-default_character = "Vida-chan"
+default_character = "Viel"
 bot_user = None
 
 @dataclass
 class Config:
-    default_character = "Vida-chan"
+    default_character = "Viel"
     ai_endpoint: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
     base_llm:str= "gemini-2.5-pro-exp-03-25"
     temperature:float = 0.5
