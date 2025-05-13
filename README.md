@@ -92,7 +92,7 @@ The admin panel (Frontend) just reads/writes these files. FastAPI (Backend) serv
 ### **1. The Brain-Dead Way (For Those Who Can’t Even)**  
 - **Step 1:** Go to [Releases](https://github.com/Iteranya/viel-ai/releases).  
 - **Step 2:** Download `installer.bat`.  
-- **Step 3:** Dump it in an empty folder (like your life choices).  
+- **Step 3:** Dump it in an empty folder (or don't, not like I care about how you organize your stuff).  
 - **Step 4:** Double-click it. A fancy shortcut will magically appear on your desktop.  
 - **Step 5:** Double-click *that* to start me up.  
 
