@@ -77,9 +77,9 @@ Viel is stupidly simple under the hood. All data is stored in three JSON files:
 ```
 
 The admin panel (Frontend) just reads/writes these files. FastAPI (Backend) serves the routes, and Discord.py handles the bot logic.
-For Those Who Hate GUIs
 
-You can:
+### For Those Who Hate GUIs
+**You can:**
 - Edit the JSON files manually (live dangerously).
 - Run bot.py directly (bypassing the admin panel entirely).
 
