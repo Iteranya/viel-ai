@@ -41,38 +41,6 @@ async def get_html():
         html = f.read()
     return html
 
-# @app.get("/admin", response_class=HTMLResponse)
-# async def get_new_interface():
-#     """Serve the new interface HTML page."""
-#     template_path = "interface/index.html"
-#     with open(template_path, "r") as f:
-#         html = f.read()
-#     return html
-
-# @app.get("/admin/characters", response_class=HTMLResponse)
-# async def get_new_interface():
-#     """Serve the new interface HTML page."""
-#     template_path = "interface/characters.html"
-#     with open(template_path, "r") as f:
-#         html = f.read()
-#     return html
-
-# @app.get("/admin/config", response_class=HTMLResponse)
-# async def get_new_interface():
-#     """Serve the new interface HTML page."""
-#     template_path = "interface/config.html"
-#     with open(template_path, "r") as f:
-#         html = f.read()
-#     return html
-
-# @app.get("/admin/servers", response_class=HTMLResponse)
-# async def get_new_interface():
-#     """Serve the new interface HTML page."""
-#     template_path = "interface/server-channels.html"
-#     with open(template_path, "r") as f:
-#         html = f.read()
-#     return html
-
 # Main entry point
 if __name__ == "__main__":
     import uvicorn
