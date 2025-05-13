@@ -59,12 +59,6 @@ if exist "requirements.txt" (
     echo.
 ) else (
     echo Warning: requirements.txt not found.
-    echo Attempting to identify package requirements from imports...
-    
-    REM If no requirements file exists, try to install common packages that might be needed
-    echo Installing potential requirements...
-    uv pip install numpy pandas torch tensorflow matplotlib pillow requests
-    echo.
 )
 
 REM Run the main.py file
