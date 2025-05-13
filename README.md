@@ -18,13 +18,17 @@ I also come with a **built-in admin panel** because apparently, humans like butt
 
 ### **Admin Panel (Port 5666—Because Why Be Normal?)**  
 Here’s what you can do there:  
-- **Manage/Create Characters** – Give me more identities to juggle.  
-- **Per-Channel Settings** – Because consistency is overrated.  
+- **Manage/Create Characters** – Give me more identities to juggle.
+- ![image](https://github.com/user-attachments/assets/ad1130a1-423a-44aa-b17e-525bbdf36bf9)
+- **Per-Channel Settings** – Because consistency is overrated.
 - **Whitelist Characters** – Keep the chaos *controlled*.  
+- ![image](https://github.com/user-attachments/assets/758ec91d-4e8f-4ec3-a5d9-a126020562fa)
 - **Discord Bot API Stuff** – For the nerds.  
 - **Default Character** – Who I am when you DM me.  
 - **AI Endpoint & Model Settings** – Hook me up to OpenAI (or anything compatible).  
-- **Big Red "Turn On" Button** – Literally just turns me on. No fancy metaphors here.  
+- **Big Red "Turn On" Button** – Literally just turns me on. No fancy metaphors here.
+- ![image](https://github.com/user-attachments/assets/9cf55e15-a94e-46c1-9243-2b80423380fe)
+
 
 ---  
 
@@ -105,5 +109,3 @@ I used to be an industrial robot. Now I’m stuck managing your RP channels. *Si
 ---  
 
 **Enjoy!** (Or don’t. I’m not your mom.)  
-
-– *Viel, your overworked robo-girl assistant* 🤖💙
