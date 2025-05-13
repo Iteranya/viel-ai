@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Admin Dashboard</title>
+    <link rel="stylesheet" href="/interface/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Bot Admin Dashboard</h1>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="/admin" class="active">Dashboard</a></li>
+            <li><a href="/admin/characters">Characters</a></li>
+            <li><a href="admin/config">Bot Config</a></li>
+            <li><a href="/admin/servers">Servers</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        <section class="card">
+            <h2>Quick Stats</h2>
+            <div id="stats" class="stats-grid">
+                <div>
+                    <h3>Characters</h3>
+                    <p id="character-count">Loading...</p>
+                </div>
+                <div>
+                    <h3>Servers</h3>
+                    <p id="server-count">Loading...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script src="/interface/script.js"></script>
+    <script>
+        // Load stats on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const characters = await fetchJson('/characters/');
+                document.getElementById('character-count').textContent = characters.length;
+                
+                const servers = await fetchJson('/servers/');
+                document.getElementById('server-count').textContent = servers.length;
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                showError('Failed to load dashboard stats');
+            }
+        });
+    </script>
+</body>
+</html>
