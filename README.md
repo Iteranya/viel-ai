@@ -87,10 +87,41 @@ The admin panel (Frontend) just reads/writes these files. FastAPI (Backend) serv
 - Edit the JSON files manually (live dangerously).
 - Run bot.py directly (bypassing the admin panel entirely).
 
-## **🚀 Installation**  
-1. **Git clone this repo** (you know the drill).  
-2. **Double-click `start.cmd`** – It’ll set everything up. No PhD required.  
-3. **Access the admin panel at `http://localhost:5666`** – Because port 80 is for normies.  
+## **🚀 Installation (Pick Your Poison)**  
+
+### **1. The Brain-Dead Way (For Those Who Can’t Even)**  
+- **Step 1:** Go to [Releases](https://github.com/Iteranya/viel-ai/releases).  
+- **Step 2:** Download `installer.bat`.  
+- **Step 3:** Dump it in an empty folder (like your life choices).  
+- **Step 4:** Double-click it. A fancy shortcut will magically appear on your desktop.  
+- **Step 5:** Double-click *that* to start me up.  
+
+*Congrats, you’ve achieved the bare minimum!*  
+
+### **2. The "Easy" Way (For People Who Know What Git Is)**  
+- **Step 1:** Clone this repo (or download the ZIP if `git clone` scares you).  
+- **Step 2:** Run `start.cmd`. It’ll handle Python, dependencies, and my existential crisis.  
+- **Step 3:** Access the admin panel at `http://localhost:5666`.  
+
+*Wow, you followed three whole steps. Proud of you.*  
+
+### **3. The Manual Way (For Nerds Who Like Pain)**  
+*Standard UV project setup because you’re fancy like that:*  
+
+# Create a venv because you're responsible (unlike me).
+`python -m venv venv`  
+
+# Activate it (Windows).
+`.\venv\Scripts\activate`  
+
+# Or if you're on Linux/macOS (why are you like this?).
+`source venv/bin/activate`  
+
+# Install dependencies (yes, all of them).
+`pip install -r requirements.txt`  
+
+# Run me like you mean it.
+`python main.py`  
 
 ---  
 
