@@ -1,99 +1,97 @@
 @echo off
+setlocal enabledelayedexpansion
 echo Starting Viel-AI setup and launch...
 echo.
 
-REM Go to the project folder
+REM Set project directory
 set "PROJECT_DIR=%USERPROFILE%\Documents\viel-ai"
-cd /d "%PROJECT_DIR%"
-
-REM Check for main.py
-if not exist "main.py" (
-    echo Error: main.py not found in %PROJECT_DIR%.
-    echo Please run the viel_installer.bat script first.
+cd /d "%PROJECT_DIR%" || (
+    echo Failed to change directory to %PROJECT_DIR%.
     pause
     exit /b 1
 )
 
-REM Find python 3.10 explicitly (if multiple versions are installed)
+REM Check for main.py
+if not exist "main.py" (
+    echo Error: main.py not found in %PROJECT_DIR%.
+    echo Please run the setup_viel_ai.bat script first.
+    pause
+    exit /b 1
+)
+
+REM Look for Python 3.10 explicitly
+set "PYTHON_EXE="
 for /f "delims=" %%p in ('where python') do (
-    call :check_version "%%p"
-    if %found310%==1 (
-        set "PYTHON_EXE=%%p"
-        goto :venv_setup
+    for /f "tokens=2" %%v in ('"%%p --version 2>&1"') do (
+        echo Checking Python version: %%v
+        echo %%v | findstr "3.10" >nul
+        if !errorlevel! == 0 (
+            set "PYTHON_EXE=%%p"
+            goto found_python
+        )
     )
 )
 
 echo Error: Python 3.10 not found.
-echo Please ensure Python 3.10 is installed correctly.
 pause
 exit /b 1
 
-:check_version
-set "found310=0"
-for /f "tokens=2 delims== " %%v in ('%~1 --version 2^>nul') do (
-    echo %%v | findstr "3.10" >nul && set found310=1
-)
-exit /b
+:found_python
+echo Found Python 3.10 at: %PYTHON_EXE%
+echo.
 
-:venv_setup
 REM Set up virtual environment
-echo Setting up Python 3.10 virtual environment...
 if not exist "venv" (
-    echo Creating new virtual environment using: %PYTHON_EXE%
-    "%PYTHON_EXE%" -m venv venv
+    echo Creating virtual environment...
+    "%PYTHON_EXE%" -m venv venv || (
+        echo Failed to create virtual environment.
+        pause
+        exit /b 1
+    )
     echo Virtual environment created.
 ) else (
     echo Virtual environment already exists.
 )
 
-REM Activate the virtual environment
-echo Activating virtual environment...
-call venv\Scripts\activate.bat
+REM Activate venv
+call venv\Scripts\activate.bat || (
+    echo Failed to activate virtual environment.
+    pause
+    exit /b 1
+)
 echo Virtual environment activated.
-echo.
 
-REM Check if uv is installed in the virtual environment
+REM Install uv if not present
 pip show uv >nul 2>&1
-if %errorlevel% neq 0 (
-    echo UV package installer not found. Installing UV...
-    pip install uv
-    echo UV installed successfully.
-    echo.
-) else (
-    echo UV is already installed.
-    echo.
+if errorlevel 1 (
+    echo Installing UV...
+    pip install uv || (
+        echo UV installation failed.
+        pause
+        exit /b 1
+    )
 )
 
-REM Check for requirements
+REM Install requirements
 if exist "requirements.txt" (
-    echo Installing project requirements using UV...
-    uv pip install -r requirements.txt
-    echo Requirements installed successfully.
-    echo.
+    echo Installing dependencies from requirements.txt...
+    uv pip install -r requirements.txt || (
+        echo Failed to install dependencies.
+        pause
+        exit /b 1
+    )
 ) else (
     echo Warning: requirements.txt not found.
 )
 
-REM Run the main.py file
-echo Starting Viel-AI application...
-echo.
-echo ---------------------------------------------
-echo Running main.py
-echo ---------------------------------------------
-echo.
-
+REM Run application
+echo Starting Viel-AI...
 python main.py
-set "ERRORLEVEL=%ERRORLEVEL%"
 
 echo.
-echo main.py exited with code: %ERRORLEVEL%
-echo Press any key to continue...
-pause >nul
-
-REM Deactivate venv after done
+echo ---------------------------------------------
+echo Viel-AI has exited. Deactivating venv.
+echo ---------------------------------------------
 call venv\Scripts\deactivate.bat
-echo Virtual environment deactivated.
-
-echo.
-echo Application execution completed.
+echo Done.
 pause
