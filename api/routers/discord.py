@@ -1,17 +1,24 @@
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter,  HTTPException
 import threading
 import asyncio
 from bot_run import client, discord_token
 
 router = APIRouter()
 _bot_thread = None
+_bot_loop = None
 
 # Function to run the Discord client
 def _run_bot():
+    global _bot_loop
     # Using a new event loop in this thread
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(client.start(discord_token))
+    _bot_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(_bot_loop)
+    try:
+        _bot_loop.run_until_complete(client.start(discord_token))
+    except Exception as e:
+        print(f'Bot crashed: {e}')
+    finally:
+        _bot_loop.close()
 
 @router.post("/discord/activate")
 async def activate_bot():
@@ -30,8 +37,11 @@ async def deactivate_bot():
     
     try:
         # Close the client in the same event loop it was created in
-        await client.close()
-        return {"success": True}
+        if _bot_loop and _bot_loop.is_running():
+            asyncio.run_coroutine_threadsafe(client.close(), _bot_loop)
+            return {"success": True}
+        else:
+            raise HTTPException(status_code=500, detail='Bot is not running')
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -40,6 +50,8 @@ async def check_bot_status():
     try:
         if client.is_ready():
             return {"status": "active"}
+        elif _bot_thread and _bot_thread.is_alive():
+            return {"status": "starting"}
         else:
             return {"status": "inactive"}
     except Exception as e:
