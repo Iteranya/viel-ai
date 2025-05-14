@@ -229,6 +229,24 @@ async def on_ready():
     # logging.basicConfig(level=logging.DEBUG)
     # Setup commands and events
     # (e.g., context menus, tree.sync, etc.)
+    # Command to Edit Message (You Right Click On It)
+    edit_message = discord.app_commands.ContextMenu(
+        name='Edit Bot Message',
+        callback=edit_message_context,
+        type=discord.AppCommandType.message
+    )
+
+    # Command to Delete Message (You Right Click On It)
+    delete_message = discord.app_commands.ContextMenu(
+        name='Delete Bot Message',
+        callback=delete_message_context,
+        type=discord.AppCommandType.message
+    )
+    
+    # Initialize the Commands
+    tree.add_command(edit_message)
+    tree.add_command(delete_message)
+
     setup_commands()
     await tree.sync(guild=None)
     await start_pipeline()
