@@ -9,7 +9,7 @@ cd /d "%PROJECT_DIR%"
 REM Check for main.py
 if not exist "main.py" (
     echo Error: main.py not found in %PROJECT_DIR%.
-    echo Please run the setup_viel_ai.bat script first.
+    echo Please run the viel_installer.bat script first.
     pause
     exit /b 1
 )
@@ -83,6 +83,12 @@ echo ---------------------------------------------
 echo.
 
 python main.py
+set "ERRORLEVEL=%ERRORLEVEL%"
+
+echo.
+echo main.py exited with code: %ERRORLEVEL%
+echo Press any key to continue...
+pause >nul
 
 REM Deactivate venv after done
 call venv\Scripts\deactivate.bat
