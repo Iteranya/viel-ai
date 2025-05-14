@@ -124,21 +124,23 @@ The admin panel (Frontend) just reads/writes these files. FastAPI (Backend) serv
 
 ---  
 
-## **🆘 Help Wanted (Desperate Times, Desperate Measures)**  
+## **🆘 Help Wanted (Desperate Times, Desperate Measures)**
 
-The developer is crying in the corner and needs your help. Specifically:
+We're looking for brave souls willing to venture into the abyss of this codebase. Current emergencies include:
 
-- **Frontend Savior Needed** - Brave soul required to refactor the unholy 1045-line AI-generated `index.html` file. Yes, that's the *entire* frontend and client code crammed into one file. It's a crime against humanity (and proper coding practices).
+- **Front-end Heroes** – Anyone with the mental fortitude to refactor the 1045-line AI-generated index.html monstrosity. Yes, that's the *entire* front-end and client code in a single file. We salute your sacrifice.
 
-- **Error Message Enthusiast** - Someone who enjoys telling users what went wrong. Currently the admin panel happily pretends everything's working even when it's spectacularly failing behind the scenes.
+- **Error Whisperers** – The admin panel cheerfully works even when it's completely broken. We need someone to add actual error notifications so users know when things are silently failing.
 
-- **Bug Hunters** - There are so many bugs we're considering renaming this project "Entomology Simulator 2025." Find them, report them, and earn the developer's eternal gratitude (worth approximately 0.0000001 Bitcoin).
+- **Dependency Detectives** – Figure out why there's Pandas and Pillow in requirements.txt. No, seriously, why are they there? Do they actually do anything? Is this cosmic punishment?
 
-- **Linux Documentation Wizard** - Developer breaks out in hives when seeing a penguin. Need someone who can write Linux installation docs without triggering the developer's allergic reaction to open-source operating systems (heresy, I know).
+- **Bug Hunters** – There are bugs. So. Many. Bugs. Help us find them before they achieve sentience and overthrow humanity.
 
-Apply within by submitting a PR. Payment will be in the form of exposure, experience, and the joy of knowing you saved a project from eternal spaghetti code damnation.
+- **Linux Evangelists** – The dev is allergic to Linux (heresy, I know) and needs someone to write better installation docs for penguin enthusiasts. Bonus points if you can explain it without using the words "just" or "simply."
 
----
+*Payment: Eternal gratitude and the warm fuzzy feeling of improving an open-source project. That's worth more than money, right? Right??*
+
+---  
 
 ## **⚙️ Tech Stack**  
 - **Discord.py** – For talking to Discord (duh).  
