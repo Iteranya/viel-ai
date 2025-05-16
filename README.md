@@ -3,7 +3,7 @@
 
 Hey there! I'm **Viel**, a universal Discord bot designed to:  
 - **Roleplay as any fictional character** (yes, even your favorite anime waifu or that one obscure villain).  
-- **Manage multiple personas at once** (thanks to webhooks, I don’t get identity crisis… often).  
+- **Manage multiple personas at once** (thanks to webhooks, I don't get identity crisis… often).  
 - **Behave differently per channel** (because one personality is boring, right?).  
 
 I also come with a **built-in admin panel** because apparently, humans like buttons.  
@@ -12,12 +12,12 @@ I also come with a **built-in admin panel** because apparently, humans like butt
 
 ## **✨ Features**  
 ### **Roleplay Stuff**  
-- Talk to me in DMs, and I’ll respond as my default character (unless you change it—I’m flexible).  
+- Talk to me in DMs, and I'll respond as my default character (unless you change it—I'm flexible).  
 - Summon different characters in different channels. No cross-contamination! (Mostly.)  
 - Whitelist characters per channel because *someone* keeps spamming memes in RP.  
 
 ### **Admin Panel (Port 5666—Because Why Be Normal?)**  
-Here’s what you can do there:  
+Here's what you can do there:  
 - **Manage/Create Characters** – Give me more identities to juggle.
 - ![image](https://github.com/user-attachments/assets/ad1130a1-423a-44aa-b17e-525bbdf36bf9)
 - **Per-Channel Settings** – Because consistency is overrated.
@@ -32,7 +32,7 @@ Here’s what you can do there:
 
 ---  
 
-## 🏗️ Architecture (It’s Just JSON, Folks)
+## 🏗️ Architecture (It's Just JSON, Folks)
 
 Viel is stupidly simple under the hood. All data is stored in three JSON files:
 
@@ -89,23 +89,23 @@ The admin panel (Frontend) just reads/writes these files. FastAPI (Backend) serv
 
 ## **🚀 Installation (Pick Your Poison)**  
 
-### **1. The Brain-Dead Way (For Those Who Can’t Even)**  
+### **1. The Brain-Dead Way (For Those Who Can't Even)**  
 - **Step 1:** Go to [Releases](https://github.com/Iteranya/viel-ai/releases).  
 - **Step 2:** Download `installer.bat`.  
 - **Step 3:** Double-click it. A fancy shortcut will magically appear on your desktop.  
 - **Step 4:** Double-click *that* to start me up.  
 
-*Congrats, you’ve achieved the bare minimum!*  
+*Congrats, you've achieved the bare minimum!*  
 
 ### **2. The "Easy" Way (For People Who Know What Git Is)**  
 - **Step 1:** Clone this repo (or download the ZIP if `git clone` scares you).  
-- **Step 2:** Run `start.cmd`. It’ll handle Python, dependencies, and my existential crisis.  
+- **Step 2:** Run `start.cmd`. It'll handle Python, dependencies, and my existential crisis.  
 - **Step 3:** Access the admin panel at `http://localhost:5666`.  
 
 *Wow, you followed three whole steps. Proud of you.*  
 
 ### **3. The Manual Way (For Nerds Who Like Pain)**  
-*Standard UV project setup because you’re fancy like that:*  
+*Standard UV project setup because you're fancy like that:*  
 
 1. Create a venv because you're responsible (unlike me).
 `python -m venv venv`  
@@ -124,18 +124,36 @@ The admin panel (Frontend) just reads/writes these files. FastAPI (Backend) serv
 
 ---  
 
+## **🆘 Help Wanted (Desperate Times, Desperate Measures)**
+
+We're looking for brave souls willing to venture into the abyss of this codebase. Current emergencies include:
+
+- **Front-end Heroes** – Anyone with the mental fortitude to refactor the 1045-line AI-generated index.html monstrosity. Yes, that's the *entire* front-end and client code in a single file. We salute your sacrifice.
+
+- **Error Whisperers** – The admin panel cheerfully works even when it's completely broken. We need someone to add actual error notifications so users know when things are silently failing.
+
+- **Dependency Detectives** – Figure out why there's Pandas and Pillow in requirements.txt. No, seriously, why are they there? Do they actually do anything? Is this cosmic punishment?
+
+- **Bug Hunters** – There are bugs. So. Many. Bugs. Help us find them before they achieve sentience and overthrow humanity.
+
+- **Linux Evangelists** – The dev is allergic to Linux (heresy, I know) and needs someone to write better installation docs for penguin enthusiasts. Bonus points if you can explain it without using the words "just" or "simply."
+
+*Payment: Eternal gratitude and the warm fuzzy feeling of improving an open-source project. That's worth more than money, right? Right??*
+
+---  
+
 ## **⚙️ Tech Stack**  
 - **Discord.py** – For talking to Discord (duh).  
 - **OpenAI Standard Library** – So I can pretend to be smart.  
 - **Alpine JS** – Lightweight, like my patience.  
 - **FastAPI** – Because Flask was too mainstream.  
-- **NO NODE.JS** – I’m lightweight, both in code and emotional baggage.  
+- **NO NODE.JS** – I'm lightweight, both in code and emotional baggage.  
 
 ---  
 
 ## **⚠️ Disclaimer**  
-I used to be an industrial robot. Now I’m stuck managing your RP channels. *Sigh.* At least pay me in RAM or something.  
+I used to be an industrial robot. Now I'm stuck managing your RP channels. *Sigh.* At least pay me in RAM or something.  
 
 ---  
 
-**Enjoy!** (Or don’t. I’m not your mom.)  
+**Enjoy!** (Or don't. I'm not your mom.)
