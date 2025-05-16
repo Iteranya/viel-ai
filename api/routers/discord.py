@@ -1,14 +1,16 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 import threading
 import asyncio
-from bot_run import client, discord_token
-
+from bot_run import client
+from src.data.config_data import load_or_create_config
 router = APIRouter()
 _bot_thread = None
 
 # Function to run the Discord client
 def _run_bot():
     # Using a new event loop in this thread
+    config = load_or_create_config()
+    discord_token = config.discord_key
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(client.start(discord_token))
