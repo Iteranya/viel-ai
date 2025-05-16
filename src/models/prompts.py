@@ -27,5 +27,5 @@ class PromptEngineer:
         history = await get_history(self.message)
         prompt = character+globalvar +history +locationvar +instructionvar + jb
         self.prefill = f"\n[Replying to {self.user}] " + self.bot.name + ":"
-        self.stopping_string = ["[System", "(System", self.user + ":", "System Note", "[End","[/"] 
+        self.stopping_string = ["[System", "(System", self.user + ":", "System Note", "[End","[/", "[Reply"] 
         return prompt
