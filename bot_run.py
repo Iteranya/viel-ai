@@ -257,3 +257,9 @@ async def on_message(message):
     if message.author == client.user:
         return
     await observer.bot_behavior(message, client)
+
+if __name__ == "__main__":
+    try:
+        client.run(discord_token)
+    except Exception as e:
+        print(f"Failed to run the bot: {e}")
