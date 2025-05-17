@@ -1,3 +1,4 @@
+import asyncio
 from src.controller.config import queue_to_process_everything
 import discord
 from src.models.aicharacter import AICharacter
@@ -32,8 +33,10 @@ async def think() -> None:
         queue_to_process_everything.task_done()
 
 async def send_llm_message(bot: AICharacter,message:discord.message.Message,dimension:Dimension, plugin):
-    print("The following is the content of message: \n\n" +str(message.author.display_name))
+    # print("The following is the content of message: \n\n" +str(message.author.display_name))
     dm=False
+    # Can we add a 1 second delay here?
+    await asyncio.sleep(1)
     prompter = PromptEngineer(bot,message,dimension)
     if isinstance(message.channel,discord.channel.DMChannel):
         dm = True
@@ -43,7 +46,8 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
         user = message.author.display_name,
         stop=prompter.stopping_string,
         prefill=prompter.prefill,
-        dm=dm
+        dm=dm,
+        message=prompter.message
         )
     print("Chat Completion Processing...")
     queueItem = await generate_response(queueItem)
