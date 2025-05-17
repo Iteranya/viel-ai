@@ -10,6 +10,8 @@ _bot_loop = None
 # Function to run the Discord client
 def _run_bot():
     global _bot_loop
+    config = load_or_create_config()
+    discord_token = config.discord_key
     # Using a new event loop in this thread
     _bot_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(_bot_loop)
