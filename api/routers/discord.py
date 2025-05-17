@@ -1,8 +1,8 @@
 from fastapi import APIRouter,  HTTPException
 import threading
 import asyncio
-from bot_run import client, discord_token
-
+from bot_run import client
+from src.data.config_data import load_or_create_config
 router = APIRouter()
 _bot_thread = None
 _bot_loop = None
