@@ -29,7 +29,7 @@ class PromptEngineer:
         # JUST USE AN F STRING YOU GODDAMN NEANDERTHAL!!!!!
         # SHUT THE FUCK UP I'M PROTOTYPING!!!
         self.prefill = f"\n[Reply] " + self.bot.name + ":"
-        self.stopping_string = ["[System", "(System", self.user + ":", "System Note", "[End","[/", "[Reply"] 
+        self.stopping_string = ["[System", "(System", self.user + ":", "[End","[/"] 
         #print(prompt)
         return prompt
 
