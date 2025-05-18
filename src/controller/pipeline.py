@@ -51,5 +51,7 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
         )
     print("Chat Completion Processing...")
     queueItem = await generate_response(queueItem)
+    if not queueItem.result:
+        queueItem.result = "//Something Went Wrong, AI Failed to Generate"
     await send(bot,message,queueItem)
     return

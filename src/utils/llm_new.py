@@ -35,7 +35,7 @@ async def generate_response(task: QueueItem):
             ]
         )
 
-        result = completion.choices[0].message.content if completion.choices else f"[OOC: Sorry, the AI broke on my end, can you check the log? Thanks]"
+        result = completion.choices[0].message.content if completion.choices else f"//[OOC: Sorry, the AI broke on my end, can you check the log? Thanks]"
         # print(result)
         task.result = result
 
