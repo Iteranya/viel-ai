@@ -88,6 +88,10 @@ def convert_to_character_model(raw_data: dict) -> CharacterModel:
                     status_code=400,
                     detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet): {str(e)}"
                 )
+            description = description.replace("{{user}}","User")
+            description = description.replace("{{char}}",name)
+            examples = examples.replace("{{user}}","User")
+            examples = examples.replace("{{char}}",name)           
             character = CharacterModel(
                 name= name,
                 persona=f"<description>{description}</description>\n<examples>{examples}</examples>\n<personality>{personality}</personality>\n",
