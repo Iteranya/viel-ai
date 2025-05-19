@@ -54,6 +54,8 @@ async def importo_character(request: Request):
         print("About to convert data to CharacterModel")
         character = convert_to_character_model(character_data)
         print("Conversion successful:", character)
+        if not character:
+            raise HTTPException(status_code=500, detail=f"Import failed, Incompatible Card Format")
         
         # Use the existing create endpoint logic
         file_path = f"{CHARACTERS_DIR}/{character.name}.json"
@@ -70,9 +72,10 @@ async def importo_character(request: Request):
 
 def convert_to_character_model(raw_data: dict) -> CharacterModel:
     print("Try Converting...")
-    raw_data = raw_data.get("data",None)
-    if raw_data:
+    
+    if raw_data.get("data",None) != None:
         try:
+            print("Pygmalion Type Card")
             name= raw_data.get("name")
             description = raw_data.get("description","")
             examples = raw_data.get("mes_example","")
@@ -99,19 +102,24 @@ def convert_to_character_model(raw_data: dict) -> CharacterModel:
                 detail=f"Failed to convert data to CharacterModel: {str(e)}"
             )
     else:
-        type = raw_data.get("type","")
-        if type == "viel-card":
-            return CharacterModel(
-                name = raw_data("name"),
-                persona = raw_data("persona",""),
-                examples=raw_data("examples",[]),
-                instructions= raw_data("instructions",""),
-                avatar=raw_data.get("avatar","")
-            )
-        raise HTTPException(
-                status_code=400,
-                detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet)"
-            )
+        try:
+            print("Viel Type Card")
+            type = raw_data.get("type","")
+            if type == "viel-card":
+                print("Is Valid Viel Card")
+                return CharacterModel(
+                    name = raw_data.get("name"),
+                    persona = raw_data.get("persona",""),
+                    examples=raw_data.get("examples",[]),
+                    instructions= raw_data.get("instructions",""),
+                    avatar=raw_data.get("avatar","")
+                )
+        except Exception as e:
+            print(e)
+            raise HTTPException(
+                    status_code=400,
+                    detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet)"
+                )
 
 @router.get("/{character_name}", response_model=CharacterModel)
 async def get_character(character_name: str = Path(..., description="Name of the character")):
