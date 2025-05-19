@@ -980,7 +980,7 @@
                                 // If parsing the error response as JSON fails, stick to statusText
                                 console.error("Could not parse error response as JSON:", e);
                             }
-                            this.globalError = `Failed to import character: Server error (${response.status}): ${errorDetailString}`;
+                            this.globalError = `Failed to import character: Server error (${response.status}): ${errorDetailString.detail}`;
                             console.error('Import error:', this.globalError); // Log the constructed error message
                             return; // Stop further execution in this function
                         }

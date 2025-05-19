@@ -99,9 +99,18 @@ def convert_to_character_model(raw_data: dict) -> CharacterModel:
                 detail=f"Failed to convert data to CharacterModel: {str(e)}"
             )
     else:
+        type = raw_data.get("type","")
+        if type == "viel-card":
+            return CharacterModel(
+                name = raw_data("name"),
+                persona = raw_data("persona",""),
+                examples=raw_data("examples",[]),
+                instructions= raw_data("instructions",""),
+                avatar=raw_data.get("avatar","")
+            )
         raise HTTPException(
                 status_code=400,
-                detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet): {str(e)}"
+                detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet)"
             )
 
 @router.get("/{character_name}", response_model=CharacterModel)
