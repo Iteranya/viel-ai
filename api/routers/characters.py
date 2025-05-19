@@ -1,11 +1,12 @@
 # routers/characters.py
 """Character-related API endpoints."""
 
+import json
 import os
-from fastapi import APIRouter, Body, Path, HTTPException
+from fastapi import APIRouter, Body, Path, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pathlib import Path as FilePath
-from typing import List
+from typing import Any, List
 
 from api.models.schemas import CharacterModel, PatchOperation
 from api.constants import CHARACTERS_DIR
@@ -25,6 +26,83 @@ async def list_characters():
         return [f.stem for f in FilePath(CHARACTERS_DIR).glob("*.json")]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@router.post("/import_character")
+async def importo_character(request: Request):
+    """Import a character from raw JSON data."""
+    try:
+        body_bytes = await request.body()
+        print("Raw request body (bytes):", body_bytes[:200]) # Print first 200 bytes
+
+        try:
+            # Explicitly decode from UTF-8 (most common for web)
+            body_str = body_bytes.decode('utf-8')
+            print("Decoded request body (string):", body_str[:200] + "...")
+        except UnicodeDecodeError as ude:
+            print(f"UnicodeDecodeError: {str(ude)}")
+            raise HTTPException(status_code=400, detail=f"Invalid character encoding. Expected UTF-8. Error: {str(ude)}")
+
+        try:
+            character_data = json.loads(body_str)
+            print("Parsed JSON data:", character_data)
+        except json.JSONDecodeError as jde:
+            print(f"JSON decode error: {str(jde)}")
+            # You can include more context from jde if needed, e.g., jde.lineno, jde.colno
+            raise HTTPException(status_code=400, detail=f"Invalid JSON: {str(jde)}")
+
+        print("About to convert data to CharacterModel")
+        character = convert_to_character_model(character_data)
+        print("Conversion successful:", character)
+        
+        # Use the existing create endpoint logic
+        file_path = f"{CHARACTERS_DIR}/{character.name}.json"
+        if os.path.exists(file_path):
+            raise HTTPException(status_code=409, detail=f"Character '{character.name}' already exists")
+        
+        character_dict = character.dict()
+        write_json_file(file_path, character_dict)
+        return character_dict
+    except Exception as e:
+        print("Exception occurred:", str(e), type(e))
+        # Return a 500 error with the exception details for debugging
+        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
+
+def convert_to_character_model(raw_data: dict) -> CharacterModel:
+    print("Try Converting...")
+    raw_data = raw_data.get("data",None)
+    if raw_data:
+        try:
+            name= raw_data.get("name")
+            description = raw_data.get("description","")
+            examples = raw_data.get("mes_example","")
+            personality = raw_data.get("personality","")
+            system_prompt = raw_data.get("system_prompt","")
+            post_history = raw_data.get("post_history_instructions","")
+            avatar = raw_data.get("avatar","")
+            if not name:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet): {str(e)}"
+                )
+            character = CharacterModel(
+                name= name,
+                persona=f"<description>{description}</description>\n<examples>{examples}</examples>\n<personality>{personality}</personality>\n",
+                examples=[],
+                instructions=f"[System Note: {system_prompt}]\n[System Note: {post_history}]",
+                avatar=avatar
+            )
+            return character
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Failed to convert data to CharacterModel: {str(e)}"
+            )
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet): {str(e)}"
+            )
 
 @router.get("/{character_name}", response_model=CharacterModel)
 async def get_character(character_name: str = Path(..., description="Name of the character")):
@@ -101,3 +179,5 @@ async def delete_character(character_name: str = Path(..., description="Name of 
         return JSONResponse(content={"message": f"Character '{character_name}' deleted successfully"})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete character: {str(e)}")
+    
+# Add this to your existing routers/characters.py file

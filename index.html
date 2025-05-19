@@ -149,6 +149,12 @@
                             </svg>
                             Create New Character
                         </button>
+                        <button @click="importCharacter()" class="mt-4 w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            Import Character
+                        </button>
                     </div>
                     
                     <!-- Character Form -->
@@ -924,6 +930,75 @@
                         this.resetCharacterForm();
                     }
                 } catch (e) { /* error handled by fetchAPI */ }
+            },
+            async importCharacter() {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.json,application/json';
+                
+                fileInput.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    try {
+                        // Read the file contents as text
+                        const fileText = await file.text();
+                        console.log("File content read as text:", fileText.substring(0, 100) + "..."); // Log first 100 chars
+                        
+                        try {
+                            // Try parsing to validate it's JSON, but we'll send as text
+                            JSON.parse(fileText);
+                            console.log("Successfully validated as JSON");
+                        } catch (parseError) {
+                            console.error("File is not valid JSON:", parseError);
+                            this.globalError = "Selected file is not valid JSON";
+                            return;
+                        }
+                        
+                        // Send as raw text with Content-Type: text/plain to avoid frontend processing
+                        console.log("Sending to API...");
+                        const response = await fetch('/characters/import_character', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain' },
+                            body: fileText  // Send the raw text content
+                        });
+                        
+                        if (!response.ok) {
+                            let errorDetailString = response.statusText; // Default
+                            try {
+                                const errorResponse = await response.json();
+                                console.error("Full server 422 error object:", errorResponse); // Log the whole object
+                                if (errorResponse.detail) {
+                                    if (typeof errorResponse.detail === 'string') {
+                                        errorDetailString = errorResponse.detail;
+                                    } else {
+                                        // If detail is an object or array, stringify it for display
+                                        errorDetailString = JSON.stringify(errorResponse.detail, null, 2);
+                                    }
+                                }
+                            } catch (e) {
+                                // If parsing the error response as JSON fails, stick to statusText
+                                console.error("Could not parse error response as JSON:", e);
+                            }
+                            this.globalError = `Failed to import character: Server error (${response.status}): ${errorDetailString}`;
+                            console.error('Import error:', this.globalError); // Log the constructed error message
+                            return; // Stop further execution in this function
+                        }
+                        const importedCharacter = await response.json();
+                        
+                        this.globalSuccess = `Character '${importedCharacter.name}' imported successfully!`;
+                        this.loadCharacters();
+                        
+                        if (this.showCharacterEditor) {
+                            this.getCharacter(importedCharacter.name);
+                        }
+                    } catch (error) {
+                        this.globalError = `Failed to import character: ${error.message}`;
+                        console.error('Import error:', error);
+                    }
+                };
+                
+                fileInput.click();
             },
             resetCharacterForm() {
                 this.characterForm = JSON.parse(JSON.stringify(this.defaultCharacterForm));
