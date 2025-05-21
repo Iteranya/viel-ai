@@ -76,6 +76,7 @@ def convert_to_character_model(raw_data: dict) -> CharacterModel:
     if raw_data.get("data",None) != None:
         try:
             print("Pygmalion Type Card")
+            raw_data = raw_data.get("data",None)
             name= raw_data.get("name")
             description = raw_data.get("description","")
             examples = raw_data.get("mes_example","")
@@ -85,8 +86,8 @@ def convert_to_character_model(raw_data: dict) -> CharacterModel:
             avatar = raw_data.get("avatar","")
             if not name:
                 raise HTTPException(
-                    status_code=400,
-                    detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet): {str(e)}"
+                    status_code=500,
+                    detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet)"
                 )
             description = description.replace("{{user}}","User")
             description = description.replace("{{char}}",name)
