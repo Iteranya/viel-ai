@@ -4,7 +4,7 @@ from src.controller.config import queue_to_process_everything
 from src.controller.discordo import get_context
 from src.models.aicharacter import AICharacter
 from src.models.dimension import Dimension
-from data.config_data import load_or_create_config
+from src.data.config_data import load_or_create_config
 from src.data.dimension_data import get_channel_whitelist
 
 # This is the main code that deals with determining what type of request is being given.
