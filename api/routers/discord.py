@@ -4,12 +4,12 @@ import asyncio
 from bot_run import client
 from src.data.config_data import load_or_create_config
 router = APIRouter()
+
 bot_loop = None
 bot_thread = None
 client = None  # Your Discord client instance
 
 def run_bot():
-    global bot_loop, client
     config = load_or_create_config()
     discord_token = config.discord_key
     
@@ -29,8 +29,6 @@ def run_bot():
 
 @router.post("/discord/activate")
 async def activate_bot():
-    global bot_thread, client
-    
     # Check if bot is already running
     if client and not client.is_closed:
         raise HTTPException(status_code=400, detail="Bot is already active")
@@ -53,7 +51,6 @@ async def activate_bot():
 
 @router.post("/discord/deactivate")
 async def deactivate_bot():
-    global bot_loop, bot_thread, client
     
     if not client or client.is_closed:
         raise HTTPException(status_code=400, detail="Bot is not running")
