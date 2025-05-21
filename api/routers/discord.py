@@ -4,8 +4,9 @@ import asyncio
 from bot_run import client
 from src.data.config_data import load_or_create_config
 router = APIRouter()
-_bot_thread = None
-_bot_loop = None
+bot_loop = None
+bot_thread = None
+client = None  # Your Discord client instance
 
 def run_bot():
     global bot_loop, client
@@ -82,7 +83,7 @@ async def check_bot_status():
     try:
         if client.is_ready():
             return {"status": "active"}
-        elif _bot_thread and _bot_thread.is_alive():
+        elif bot_thread and bot_thread.is_alive():
             return {"status": "starting"}
         else:
             return {"status": "inactive"}
