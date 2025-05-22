@@ -1,112 +1,96 @@
-import requests
-import os
-from datetime import datetime
+import discord
+from data.config_data import load_or_create_config,Config,get_key
+from openai import OpenAI
+import re
 
-def generate_image(prompt, resolution="1024x1024", guidance_scale=5, num_inference_steps=50, shift=3, seed=None):
+async def generate_sd_prompt(message = discord.message.Message):
+    print("Trying to Generate Prompt")
+    ai_config:Config = load_or_create_config()
+
+    client = OpenAI(
+        base_url=ai_config.ai_endpoint,
+        api_key= get_key(),
+        )
+
+    content = message.content
+    print(f"Generating SD Prompt~\n\n Prompt: {content}")
+    
+    completion = client.chat.completions.create(
+    model=ai_config.base_llm,
+    messages=[
+        {
+        "role": "system",
+        "content": "Your task is to create AI Image Gen In This Exact Format:\n\nGeneral description: A lengthy description of the whole image here.\n\nPrompt:\n- Gender(1girl/2girls/1boy/1other/3boys)\n- Rating(Safe/Sensitive/Explicit/NSFW)\n- Camera(From front/dutch angle)\n- Physical(Blue hair/red eyes/petite/long hair/cat ears)\n- Act(Standing, Sitting, Masturbating, etc)\n- Clothing(Blue shirt/red tie/glasses)\n- Background(Classroom/Room/Alleyway)\n- Enhance(masterpiece/high score/absurdres, anime screen cap)\n\nAvoid using too specific term like: \"Nazarick, Scarlet Devil Mansion, Megumin\" as the image generation AI rarely knows that sort of specific term or characters. Instead, write down all sorts of general items that paints the scene or list of visual items that describes a character.\n\nThis also includes costumes and character appearances. Longer prompt is better.\n\nNote: You must write down in terms of danbooru tags/keyword. Do not write down (jet black waist-length hair) instead write down (black hair, medium hair). Remember, the AI only understands keyword, not description. \n\nExample:\n\n{{user}}:  Draw me hatsune miku, sitting in an arcade\n{{char}}: General Description: The arcade hums with neon life as the camera catches Miku from a low side angle, her turquoise pigtails swaying slightly as she leans forward on the stool. The glow of fighting game screens paints her face in shifting blues and pinks, fingers hovering over the arcade buttons with playful anticipation. Her thigh-highs press against the cabinet’s edge, the teal accents of her dress catching the artificial light like shallow water. Behind her, the blur of other players and pixelated explosions frame the scene—a digital idol momentarily lost in the thrill of the game.\nPrompt: \n- Gender: (1girl)\n- Rating: (Safe)\n- Camera: (from side, slight low angle)\n- Physical: (blue hair, twin tails, blue eyes, green eyes)\n- Act: (sitting, sitting on chair, leaning forward, excited)\n- Clothing: (sleeveless white and teal dress, thigh-highs, fingerless gloves)\n- Background: (neon-lit arcade, colorful game screens in background, soft glow)\n- Enhance: (masterpiece, high score, absurdres, anime screen cap)\n\nYOU MUST FORMAT PROMPT BETWEEN ( )  and DO NOT PUT DESCRIPTION BETWEEN  ( )\n\nUnderstand that sometimes user will make nonsensical queries. Your job if that happens is to get creative. But remember, the AI is only limited to draw anime girls and danbooru tags. If user specifically ask for  NSFW, add extra keywords and focus on character appearance."
+        },
+        {
+        "role": "user",
+        "content": f"Create an image of {content}"
+        },
+        {
+        "role": "assistant",
+        "content": "Understood, here's the requested prompt: \n\nGeneral Description:"
+        }
+    ]
+    )
+    result = completion.choices[0].message.content
+    print(result)
+    return format_prompt(result)
+
+def format_prompt(text:str):
     """
-    Generate an image using the Chutes AI API and save it to the current directory.
+    Transform a structured text description into a weighted prompt string.
     
     Args:
-        prompt (str): Text prompt for the image generation
-        resolution (str): Image resolution in format "widthxheight"
-        guidance_scale (float): Guidance scale for the model
-        num_inference_steps (int): Number of inference steps
-        shift (int): Shift parameter
-        seed (int, optional): Random seed for reproducibility
-    
+        text (str): Input text with sections like General Description, Gender, Rating, etc.
+        
     Returns:
-        str: Path to the saved image
+        str: Formatted string with comma-separated weighted terms
     """
-    # API configuration
-    api_token = "HUNYAAAA~"  # Replace with your actual API token
-    headers = {
-        "Authorization": "Bearer " + api_token,
-        "Content-Type": "application/json"
+    # Define the weight mapping
+    weight_mapping = {
+        "Gender": 1.0,
+        "Rating": 0.0,
+        "Camera": 1.0,
+        "Physical": 0.75,
+        "Act": 0.4,
+        "Clothing": 0.85,
+        "Background": 0.35,
+        "Enhance": 0.5
     }
     
-    # Request body
-    body = {
-        "seed": seed,
-        "shift": shift,
-        "prompt": prompt,
-        "resolution": resolution,
-        "guidance_scale": guidance_scale,
-        "num_inference_steps": num_inference_steps
-    }
+    # Initialize the result list
+    result_terms = []
     
-    # Make the API request
-    print(f"Generating image with prompt: '{prompt}'")
-    try:
-        response = requests.post(
-            "https://chutes-hidream.chutes.ai/generate",
-            headers=headers,
-            json=body,
-            timeout=90  # Extended timeout for image generation
-        )
-    except requests.exceptions.RequestException as e:
-        print(f"Error making request: {e}")
-        return None
-    
-    # Check if the request was successful
-    if response.status_code != 200:
-        print(f"Error: Status code {response.status_code}")
-        print(f"Response begins with: {response.content[:50]}")
-        return None
-    
-    # Create a timestamped filename
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"chutes_image_{timestamp}.jpg"  # Assuming JPEG format based on the response
-    
-    # Check the content type header if it exists
-    content_type = response.headers.get('Content-Type', '')
-    if 'json' in content_type.lower():
-        # Handle JSON response (could contain base64 image)
-        try:
-            response_data = response.json()
-            if "image" in response_data:
-                # If it's base64 encoded
-                import base64
-                image_data = base64.b64decode(response_data["image"])
-                with open(filename, "wb") as f:
-                    f.write(image_data)
-                print(f"Image saved as {filename}")
-                return filename
+    # Extract the sections from the text
+    for section, weight in weight_mapping.items():
+        # Find the section in the text
+        section_pattern = f"{section}: "
+        if section_pattern in text:
+            # Get the content after the section label
+            start_idx = text.find(section_pattern) + len(section_pattern)
+            end_idx = text.find("\n-", start_idx)
+            if end_idx == -1:  # If this is the last section
+                end_idx = text.find("\n", start_idx)
+                if end_idx == -1:  # If there's no newline after this section
+                    end_idx = len(text)
+            
+            content = text[start_idx:end_idx].strip()
+            
+            # Remove parentheses if present
+            content = content.replace("(", "").replace(")", "")
+            
+            # Split by commas or spaces (if no commas)
+            if "," in content:
+                items = [item.strip() for item in content.split(",")]
             else:
-                print("No image data found in JSON response")
-                print(response_data)
-                return None
-        except Exception as e:
-            print(f"Error parsing JSON: {e}")
-            # Fall through to binary handling
+                items = [content.strip()]
+            
+            # Add each item with its weight to the result
+            for item in items:
+                if item:  # Skip empty items
+                    result_terms.append(f"({item}:{weight})")
     
-    # Handle binary image response (direct image data)
-    try:
-        # Determine file extension based on content type or signature
-        if 'jpeg' in content_type.lower() or 'jpg' in content_type.lower() or response.content[:3] == b'\xff\xd8\xff':
-            extension = "jpg"
-        elif 'png' in content_type.lower() or response.content[:8] == b'\x89PNG\r\n\x1a\n':
-            extension = "png"
-        else:
-            extension = "img"  # Generic fallback
-        
-        filename = f"chutes_image_{timestamp}.{extension}"
-        
-        # Save the raw image data
-        with open(filename, "wb") as f:
-            f.write(response.content)
-        
-        print(f"Image saved as {filename}")
-        return filename
-    except Exception as e:
-        print(f"Error saving image: {e}")
-        return None
-
-# Example usage
-if __name__ == "__main__":
-    # Generate an image of a fish
-    generate_image(
-        prompt="A fish",
-        resolution="1024x1024",
-        guidance_scale=7,
-        num_inference_steps=50
-    )
+    # Join all terms with commas
+    result_string = ", ".join(result_terms)
+    
+    return result_string

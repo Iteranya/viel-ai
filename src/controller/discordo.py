@@ -82,8 +82,10 @@ async def send_as_dm(queue_item:QueueItem,bot: AICharacter,message: discord.Mess
     
     for chunk in response_chunks:
         await send_regular_message(chunk,message)
-
-    
+    if queue_item.images:
+        for image in queue_item.images:
+            await send_attachment(image_link=image,message=message)
+            
 async def send_as_bot(queue_item:QueueItem,bot: AICharacter,message: discord.Message):
     response = queue_item.result
     response.replace(bot.name+":","")
@@ -94,8 +96,10 @@ async def send_as_bot(queue_item:QueueItem,bot: AICharacter,message: discord.Mes
     
     for chunk in response_chunks:
         await send_webhook_message(chunk, character_avatar_url, character_name,message=message)
-    if queue_item.images!=None:
-        await send_webhook_message("[System Note: Attachment]",character_avatar_url, character_name,queue_item.images,message=message)
+    
+    if queue_item.images:
+        for image in queue_item.images:
+            await send_attachment(image_link=image,message=message)
 
 async def send_as_system(queue_item:QueueItem,message: discord.Message):
     await send_regular_message(queue_item.error,message)
@@ -146,3 +150,8 @@ async def send_regular_message(content: str,message: discord.Message) -> None:
     channel = message.channel
     await channel.send(content)
     return
+
+async def send_attachment(image_link: str, message: discord.Message) -> None:
+    channel = message.channel
+    file = discord.File(image_link)
+    await channel.send(file=file)

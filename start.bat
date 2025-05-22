@@ -24,7 +24,7 @@ set "PYTHON_EXE="
 for /f "delims=" %%p in ('where python') do (
     for /f "tokens=2" %%v in ('"%%p --version 2>&1"') do (
         echo Checking Python version: %%v
-        echo %%v | findstr "3.10" >nul
+        echo %%v | findstr "3.11" >nul
         if !errorlevel! == 0 (
             set "PYTHON_EXE=%%p"
             goto found_python
@@ -32,12 +32,12 @@ for /f "delims=" %%p in ('where python') do (
     )
 )
 
-echo Error: Python 3.10 not found.
+echo Error: Python 3.11 not found.
 pause
 exit /b 1
 
 :found_python
-echo Found Python 3.10 at: %PYTHON_EXE%
+echo Found Python 3.11 at: %PYTHON_EXE%
 echo.
 
 REM Set up virtual environment
