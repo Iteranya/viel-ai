@@ -31,7 +31,7 @@ async def think() -> None:
         if message_content.startswith("//"):
             pass
         elif message_content.startswith("pic>"):
-            image_prompt = await generate_sd_prompt(bot,message)
+            image_prompt = await generate_sd_prompt(message)
             await fetch_image(image_prompt)
             await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
         else:
