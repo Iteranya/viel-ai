@@ -43,10 +43,10 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
     dm=False
     # Can we add a 1 second delay here?
     await asyncio.sleep(1)
-    queueItem = QueueItem()
     prompter = PromptEngineer(bot,message,dimension)
     if isinstance(message.channel,discord.channel.DMChannel):
         dm = True
+    queueItem = None
     if plugin == "temp.jpg":
         queueItem = QueueItem(
             prompt=await prompter.create_text_prompt(),
