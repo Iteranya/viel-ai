@@ -1,5 +1,5 @@
 import discord
-from data.config_data import load_or_create_config,Config,get_key
+from src.data.config_data import load_or_create_config,Config,get_key
 from openai import OpenAI
 import re
 
