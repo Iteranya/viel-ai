@@ -13,7 +13,7 @@ from src.utils.pollination import fetch_image
 # GOD Refactoring this gonna be a bitch and a half...
 
 params = {
-    "model": "flux",
+    "model": "turbo",
     "seed": 123,
     "width": 720,
     "height": 1280,
