@@ -12,7 +12,17 @@ from src.utils.pollination import fetch_image
 
 # GOD Refactoring this gonna be a bitch and a half...
 
-
+params = {
+    "model": "flux",
+    "seed": 123,
+    "width": 720,
+    "height": 1280,
+    "nologo": "true",
+    "private": "true",
+    "enhance": "false",
+    "safe": "false",
+    "referrer": "ImageGenTest"
+}
 async def think() -> None:
 
     while True:
@@ -32,12 +42,12 @@ async def think() -> None:
             pass
         elif message_content.startswith("enpic>"):
             image_prompt = await generate_sd_prompt(message)
-            await fetch_image(image_prompt)
+            await fetch_image(image_prompt,params=params)
             await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
         elif message_content.startswith("pic>"):
             image_prompt = message.content.replace("pic>","")
             image_prompt = image_prompt.replace(bot.bot_name,"")
-            await fetch_image(image_prompt)
+            await fetch_image(image_prompt,params=params)
             await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
         else:
             await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
