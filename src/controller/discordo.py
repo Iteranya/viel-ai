@@ -132,7 +132,7 @@ async def send_webhook_message(content: str, avatar_url: str=None, username: str
                 else:
                     if images:
                         file = discord.File(images)
-                        await webhook.send(content, username=username, avatar_url=avatar_url, thread=thread,file=file)
+                        await webhook.send(content, username=username, avatar_url=avatar_url,file=file)
                     else:
                         await webhook.send(content, username=username, avatar_url=avatar_url)
                 return
