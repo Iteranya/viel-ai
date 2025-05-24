@@ -10,6 +10,7 @@ from src.utils.llm_new import generate_response
 from src.controller.discordo import send
 from src.utils.image_gen import generate_sd_prompt
 from src.utils.pollination import fetch_image
+from src.utils.hidream import invoke_chute
 
 # GOD Refactoring this gonna be a bitch and a half...
 
@@ -47,7 +48,7 @@ async def think() -> None:
             pass
         elif message_content.startswith("enpic>"):
             image_prompt = await generate_sd_prompt(message)
-            await fetch_image(image_prompt,"temp.jpg",**params)
+            await invoke_chute(image_prompt)
             await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
         elif message_content.startswith("pic>"):
             image_prompt = message.content.replace("pic>","")
