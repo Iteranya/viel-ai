@@ -16,7 +16,7 @@ def get_context(message: discord.Message): # Get the channel, regardless of the 
     channel = message.channel
     return channel
 
-async def get_history(message: discord.Message, limit:int = 50):
+async def get_history(message: discord.Message, limit:int = 100):
     history = []
     context = get_context(message=message)
     async for message in context.history(limit=limit):
