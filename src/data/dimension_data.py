@@ -188,7 +188,7 @@ def createOrFetchChannelConfig(server, channel):
     data = {
         "name": channel,
         "description":"[System Note: Takes place in a discord text channel]",
-        "global":"[System Note: Takes place in a discord server]",
+        "globalvar":"[System Note: Takes place in a discord server]",
         "instruction":"[System Note: Takes place in a discord text channel]",
         "whitelist": ["Viel"]
     }

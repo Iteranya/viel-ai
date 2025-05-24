@@ -21,7 +21,7 @@ class PromptEngineer:
         jb = self.bot.instructions
         character = await self.bot.get_character_prompt()
         #jb = "" # Toggle this to disable JB
-        globalvar = self.dimension.getDict().get("global", "")
+        globalvar = self.dimension.getDict().get("globalvar", "")
         locationvar = self.dimension.getDict().get("location", "")
         instructionvar = self.dimension.getDict().get("instruction", "")
         history = await get_history(self.message)
