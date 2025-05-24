@@ -18,12 +18,15 @@ async def invoke_chute(prompt):
         "shift": 3,
         "prompt": prompt,
         "resolution": "1024x1024",
-        "guidance_scale": 5,
+        "negative_prompt": "blur, distortion, low quality",
+        "guidance_scale": 7.5,
+        "width": 1024,
+        "height": 1024,
         "num_inference_steps": 50
     }
 
     response = requests.post(
-        "https://chutes-hidream.chutes.ai/generate",
+        "https://chutes-animepasteldream.chutes.ai/generate",
         headers=headers,
         json=body
     )
