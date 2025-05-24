@@ -48,5 +48,3 @@ async def invoke_chute(prompt):
     else:
         print("Unknown response content type:", content_type)
         print("Raw response text:\n", response.text)
-
-invoke_chute("1girl, hatsune miku")
