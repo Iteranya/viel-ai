@@ -80,11 +80,12 @@ async def send_as_dm(queue_item:QueueItem,bot: AICharacter,message: discord.Mess
     response.replace(bot.name+":","")
     response_chunks = [response[i:i+1500] for i in range(0, len(response), 1500)]
     
-    for chunk in response_chunks:
-        await send_regular_message(chunk,message)
-    if queue_item.images:
-        for image in queue_item.images:
-            await send_attachment(image_link=image,message=message)
+    # for chunk in response_chunks:
+    #     await send_regular_message(chunk,message)
+    # if queue_item.images:
+    #     for image in queue_item.images:
+    #         await send_attachment(image_link=image,message=message)
+    #         await send_webhook_attachment(image_link=image)
             
 async def send_as_bot(queue_item:QueueItem,bot: AICharacter,message: discord.Message):
     response = queue_item.result
@@ -99,7 +100,7 @@ async def send_as_bot(queue_item:QueueItem,bot: AICharacter,message: discord.Mes
     
     if queue_item.images:
         for image in queue_item.images:
-            await send_attachment(image_link=image,message=message)
+            await send_webhook_message(chunk, character_avatar_url, character_name, images = image,message=message)
 
 async def send_as_system(queue_item:QueueItem,message: discord.Message):
     await send_regular_message(queue_item.error,message)
@@ -122,14 +123,16 @@ async def send_webhook_message(content: str, avatar_url: str=None, username: str
     for webhook in webhook_list:
         if webhook.name == config.bot_user.display_name:
                 if thread != None:
-                    if images!=None:
-                        await webhook.send(content, username=username, avatar_url=avatar_url, thread=thread,embeds=images)
+                    if images:
+                        file = discord.File(images)
+                        await webhook.send(content, username=username, avatar_url=avatar_url, thread=thread,file=file)
                     else:
                         await webhook.send(content, username=username, avatar_url=avatar_url, thread=thread)
                     return
                 else:
-                    if images!=None:
-                        await webhook.send(content, username=username, avatar_url=avatar_url,embeds=images)
+                    if images:
+                        file = discord.File(images)
+                        await webhook.send(content, username=username, avatar_url=avatar_url, thread=thread,file=file)
                     else:
                         await webhook.send(content, username=username, avatar_url=avatar_url)
                 return
@@ -155,3 +158,6 @@ async def send_attachment(image_link: str, message: discord.Message) -> None:
     channel = message.channel
     file = discord.File(image_link)
     await channel.send(file=file)
+
+async def send_webhook_attachment(image_link: str, message: discord.Message) -> None:
+    await send_webhook_message(content="[System Note: Image Attachment]",)
