@@ -27,9 +27,9 @@ def edit_global(interaction: discord.Interaction, message: str):
         data = createOrFetchChannelConfig("dm",interaction.user.name)
     else:    
         data = createOrFetchChannelConfig(channel.guild.name,channel.name)
-    data["global"] =  message
+    data["globalvar"] =  message
     replaceJsonContent(interaction.channel.guild.name,interaction.channel.name,data)
-    return data["global"]
+    return data["globalvar"]
 
 def get_global(interaction: discord.Interaction):
     channel = interaction.channel
@@ -37,7 +37,7 @@ def get_global(interaction: discord.Interaction):
         data = createOrFetchChannelConfig("dm",interaction.user.name)
     else:    
         data = createOrFetchChannelConfig(channel.guild.name,channel.name)
-    return data["global"]
+    return data["globalvar"]
 
 def add_whitelist(interaction: discord.Interaction, character_name: str):
     # Fetch or create the JSON data
