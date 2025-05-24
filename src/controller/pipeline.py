@@ -1,6 +1,7 @@
 import asyncio
 from src.controller.config import queue_to_process_everything
 import discord
+import os
 from src.models.aicharacter import AICharacter
 from src.models.dimension import Dimension
 from src.models.prompts import PromptEngineer
@@ -91,4 +92,16 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
     if not queueItem.result:
         queueItem.result = "//Something Went Wrong, AI Failed to Generate"
     await send(bot,message,queueItem)
+    delete_file(queueItem.images[0]) # Hacky Solution, I know
     return
+
+def delete_file(file_path):
+    try:
+        os.remove(file_path)
+        print(f"File {file_path} deleted successfully")
+    except FileNotFoundError:
+        print(f"File {file_path} not found")
+    except PermissionError:
+        print(f"Permission denied to delete {file_path}")
+    except Exception as e:
+        print(f"Error occurred while deleting file: {e}")

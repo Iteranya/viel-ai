@@ -97,9 +97,9 @@ async def send_as_bot(queue_item:QueueItem,bot: AICharacter,message: discord.Mes
     for chunk in response_chunks:
         await send_webhook_message(chunk, character_avatar_url, character_name,message=message)
     
-        if queue_item.images:
-            for image in queue_item.images:
-                await send_webhook_message(None, character_avatar_url, character_name, images = image,message=message)
+    if queue_item.images:
+        for image in queue_item.images:
+            await send_webhook_message(None, character_avatar_url, character_name, images = image,message=message)
     
 
 async def send_as_system(queue_item:QueueItem,message: discord.Message):
