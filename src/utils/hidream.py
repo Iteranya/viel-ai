@@ -3,7 +3,7 @@ import base64
 from src.data.config_data import get_key
 import requests
 
-def invoke_chute(prompt):
+async def invoke_chute(prompt):
     key = get_key()
     if not key.startswith("cpk_"):
         return
