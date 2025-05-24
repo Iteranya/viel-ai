@@ -28,6 +28,10 @@ async def think() -> None:
 
     while True:
         content = await queue_to_process_everything.get()
+        try:
+            delete_file("temp.jpg") # Hacky Solution, I know
+        except Exception as e:
+            print("All Clean, Moving on")
         message:discord.Message = content["message"]
         bot:AICharacter = content["bot"]
         dimension:Dimension = content["dimension"]
@@ -92,7 +96,10 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
     if not queueItem.result:
         queueItem.result = "//Something Went Wrong, AI Failed to Generate"
     await send(bot,message,queueItem)
-    delete_file(queueItem.images[0]) # Hacky Solution, I know
+    try:
+        delete_file(queueItem.images[0]) # Hacky Solution, I know
+    except Exception as e:
+        print("All Clean, Moving on")
     return
 
 def delete_file(file_path):
