@@ -88,7 +88,7 @@ def format_prompt(text:str):
             # Add each item with its weight to the result
             for item in items:
                 if item:  # Skip empty items
-                    result_terms.append(f"({item}:{weight})")
+                    result_terms.append(item)
     
     # Join all terms with commas
     result_string = ", ".join(result_terms)
