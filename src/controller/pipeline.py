@@ -84,7 +84,9 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
             message=prompter.message
             )
     print("Chat Completion Processing...")
-    queueItem = await generate_response(queueItem)
+    if not queueItem.images:
+        queueItem = await generate_response(queueItem)
+        queueItem.result = "[System Note: Attached is the generated image]"
     if not queueItem.result:
         queueItem.result = "//Something Went Wrong, AI Failed to Generate"
     await send(bot,message,queueItem)
