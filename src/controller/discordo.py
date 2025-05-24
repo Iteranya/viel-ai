@@ -80,12 +80,11 @@ async def send_as_dm(queue_item:QueueItem,bot: AICharacter,message: discord.Mess
     response.replace(bot.name+":","")
     response_chunks = [response[i:i+1500] for i in range(0, len(response), 1500)]
     
-    # for chunk in response_chunks:
-    #     await send_regular_message(chunk,message)
-    # if queue_item.images:
-    #     for image in queue_item.images:
-    #         await send_attachment(image_link=image,message=message)
-    #         await send_webhook_attachment(image_link=image)
+    for chunk in response_chunks:
+        await send_regular_message(chunk,message)
+    if queue_item.images:
+        for image in queue_item.images:
+            await send_attachment(image_link=image,message=message)
             
 async def send_as_bot(queue_item:QueueItem,bot: AICharacter,message: discord.Message):
     response = queue_item.result
