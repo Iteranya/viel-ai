@@ -68,7 +68,7 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
     if isinstance(message.channel,discord.channel.DMChannel):
         dm = True
     queueItem = None
-    if plugin == "temp.jpg":
+    if os.path.exists('temp.jpg'):
         queueItem = QueueItem(
             prompt=await prompter.create_text_prompt(),
             bot = bot.name,
