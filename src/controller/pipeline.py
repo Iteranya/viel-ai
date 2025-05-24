@@ -50,10 +50,15 @@ async def think() -> None:
             image_prompt = await generate_sd_prompt(message)
             await invoke_chute(image_prompt)
             await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
+        elif message_content.startswith("hipic>"):
+            image_prompt = message.content.replace("pic>","")
+            image_prompt = image_prompt.replace(bot.bot_name,"")
+            await invoke_chute(image_prompt)
+            await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
         elif message_content.startswith("pic>"):
             image_prompt = message.content.replace("pic>","")
             image_prompt = image_prompt.replace(bot.bot_name,"")
-            await fetch_image(image_prompt,"temp.jpg",**params)
+            await invoke_chute(image_prompt,"temp.jpg",**params)
             await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
         else:
             await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
