@@ -92,5 +92,5 @@ def format_prompt(text:str):
     
     # Join all terms with commas
     result_string = ", ".join(result_terms)
-    
+    print(result_string)
     return result_string
