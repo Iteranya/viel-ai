@@ -82,7 +82,7 @@ class EditMessageModal(discord.ui.Modal, title='Edit Message'):
                 print("Editing DM Message Because Webhook Not Found")
                 new_content = self.new_content .value
                 print(f"New Message Content: {new_content}")
-                self.original_message.edit(content = new_content)
+                await self.original_message.edit(content = new_content)
                 await interaction.response.send_message("Message edited successfully!", ephemeral=True)
 
         except discord.NotFound:
