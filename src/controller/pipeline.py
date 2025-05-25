@@ -43,25 +43,27 @@ async def think() -> None:
             print("Hi!")
 
         message_content = str(message.content)
-
-        if message_content.startswith("//"):
-            pass
-        elif message_content.startswith("enpic>"):
-            image_prompt = await generate_sd_prompt(message)
-            await invoke_chute(image_prompt)
-            await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
-        elif message_content.startswith("hipic>"):
-            image_prompt = message.content.replace("pic>","")
-            image_prompt = image_prompt.replace(bot.bot_name,"")
-            await invoke_chute(image_prompt)
-            await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
-        elif message_content.startswith("pic>"):
-            image_prompt = message.content.replace("pic>","")
-            image_prompt = image_prompt.replace(bot.bot_name,"")
-            await invoke_chute(image_prompt,"temp.jpg",**params)
-            await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
-        else:
-            await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
+        try:
+            if message_content.startswith("//"):
+                pass
+            elif message_content.startswith("enpic>"):
+                image_prompt = await generate_sd_prompt(message)
+                await invoke_chute(image_prompt)
+                await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
+            elif message_content.startswith("hipic>"):
+                image_prompt = message.content.replace("pic>","")
+                image_prompt = image_prompt.replace(bot.bot_name,"")
+                await invoke_chute(image_prompt)
+                await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
+            elif message_content.startswith("pic>"):
+                image_prompt = message.content.replace("pic>","")
+                image_prompt = image_prompt.replace(bot.bot_name,"")
+                await invoke_chute(image_prompt,"temp.jpg",**params)
+                await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
+            else:
+                await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
+        except Exception as e:
+            print(f"Something went wrong: {e}")
         queue_to_process_everything.task_done()
 
 async def send_llm_message(bot: AICharacter,message:discord.message.Message,dimension:Dimension, plugin):
