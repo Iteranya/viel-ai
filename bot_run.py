@@ -86,7 +86,7 @@ class EditMessageModal(discord.ui.Modal, title='Edit Message'):
             await interaction.response.send_message("The original message was not found.", ephemeral=True)
         except Exception as e:
 
-            await interaction.response.send_message("An error occurred while editing the message.", ephemeral=True)
+            await interaction.response.send_message(f"An error occurred while editing the message: {e}", ephemeral=True)
 
 async def delete_message_context(interaction: discord.Interaction, message: discord.Message):
     await delete(message,interaction)
