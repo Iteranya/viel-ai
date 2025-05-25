@@ -64,6 +64,10 @@ async def think() -> None:
                 await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
         except Exception as e:
             print(f"Something went wrong: {e}")
+            try:
+                await message.add_reaction('❌')
+            except Exception as e:
+                print("Hi!")
         queue_to_process_everything.task_done()
 
 async def send_llm_message(bot: AICharacter,message:discord.message.Message,dimension:Dimension, plugin):
