@@ -115,11 +115,12 @@ class EditMessageModal(discord.ui.Modal, title='Edit Message'):
         except Exception as e:
             print(f"Error editing message: {e}")
             await interaction.response.send_message("An error occurred while editing the message.", ephemeral=True)
+
 async def delete_message_context(interaction: discord.Interaction, message: discord.Message):
     await delete(message,interaction)
 
 async def edit_message_context(interaction: discord.Interaction, message: discord.Message):
-    if message.webhook_i:
+    if message.webhook_id:
         await client.fetch_webhook(message.webhook_id)
         await interaction.response.send_modal(EditMessageModal(message))
     else:
