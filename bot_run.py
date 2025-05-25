@@ -38,84 +38,86 @@ class EditMessageModal(discord.ui.Modal, title='Edit Message'):
         # Add the TextInput to the modal
         self.add_item(self.new_content)
 
-    async def on_submit(self, interaction: discord.Interaction):
-        thread = None
-        webhook = None
-        
+async def on_submit(self, interaction: discord.Interaction):
+    thread = None
+    webhook = None
+    
+    try:
+        # Fetch the original message to ensure it exists
         try:
-            # Fetch the original message to ensure it exists
-            try:
-                self.original_message = await self.original_message.channel.fetch_message(self.original_message.id)
-            except discord.NotFound:
-                print(f"Message ID {self.original_message.id} not found in channel {self.original_message.channel}.")
-                await interaction.response.send_message("The original message was not found.", ephemeral=True)
-                return
+            self.original_message = await self.original_message.channel.fetch_message(self.original_message.id)
+        except discord.NotFound:
+            print(f"Message ID {self.original_message.id} not found in channel {self.original_message.channel}.")
+            await interaction.response.send_message("The original message was not found.", ephemeral=True)
+            return
 
-            # Handle different channel types
-            if isinstance(self.original_message.channel, discord.DMChannel):
-                # DM channels don't support webhooks, use direct message editing
+        # Handle different channel types
+        # Check if it's a DM by checking the channel type or if it's a PartialMessageable without webhooks
+        if (isinstance(self.original_message.channel, discord.DMChannel) or 
+            (hasattr(self.original_message.channel, 'type') and self.original_message.channel.type == discord.ChannelType.private) or
+            not hasattr(self.original_message.channel, 'webhooks')):
+            # DM channels don't support webhooks, use direct message editing
+            if hasattr(self.original_message, 'edit'):
+                await self.original_message.edit(content=self.new_content.value)
+                await interaction.response.send_message("Message edited successfully!", ephemeral=True)
+            else:
+                await interaction.response.send_message("Cannot edit this message in DM.", ephemeral=True)
+                
+        elif isinstance(self.original_message.channel, discord.Thread):
+            # Thread - get webhooks from parent channel
+            thread = self.original_message.channel
+            webhooks = await thread.parent.webhooks()
+            webhook = next((hook for hook in webhooks if hook.id == self.original_message.webhook_id), None)
+            
+            if webhook:
+                print("ORIGINAL MESSAGE:")
+                print(self.original_message.id)
+                print(self.new_content.value)
+                
+                await webhook.edit_message(
+                    message_id=self.original_message.id,
+                    content=self.new_content.value,
+                    thread=thread
+                )
+                await interaction.response.send_message("Message edited successfully!", ephemeral=True)
+            else:
+                # Fallback to direct edit if webhook not found
                 if hasattr(self.original_message, 'edit'):
                     await self.original_message.edit(content=self.new_content.value)
                     await interaction.response.send_message("Message edited successfully!", ephemeral=True)
                 else:
-                    await interaction.response.send_message("Cannot edit this message in DM.", ephemeral=True)
+                    await interaction.response.send_message("Cannot edit this message.", ephemeral=True)
                     
-            elif isinstance(self.original_message.channel, discord.Thread):
-                # Thread - get webhooks from parent channel
-                thread = self.original_message.channel
-                webhooks = await thread.parent.webhooks()
-                webhook = next((hook for hook in webhooks if hook.id == self.original_message.webhook_id), None)
+        else:
+            # Regular text channel
+            webhooks = await self.original_message.channel.webhooks()
+            webhook = next((hook for hook in webhooks if hook.id == self.original_message.webhook_id), None)
+            
+            if webhook:
+                print("ORIGINAL MESSAGE:")
+                print(self.original_message.id)
+                print(self.new_content.value)
                 
-                if webhook:
-                    print("ORIGINAL MESSAGE:")
-                    print(self.original_message.id)
-                    print(self.new_content.value)
-                    
-                    await webhook.edit_message(
-                        message_id=self.original_message.id,
-                        content=self.new_content.value,
-                        thread=thread
-                    )
-                    await interaction.response.send_message("Message edited successfully!", ephemeral=True)
-                else:
-                    # Fallback to direct edit if webhook not found
-                    if hasattr(self.original_message, 'edit'):
-                        await self.original_message.edit(content=self.new_content.value)
-                        await interaction.response.send_message("Message edited successfully!", ephemeral=True)
-                    else:
-                        await interaction.response.send_message("Cannot edit this message.", ephemeral=True)
-                        
+                await webhook.edit_message(
+                    message_id=self.original_message.id,
+                    content=self.new_content.value
+                )
+                await interaction.response.send_message("Message edited successfully!", ephemeral=True)
             else:
-                # Regular text channel
-                webhooks = await self.original_message.channel.webhooks()
-                webhook = next((hook for hook in webhooks if hook.id == self.original_message.webhook_id), None)
-                
-                if webhook:
-                    print("ORIGINAL MESSAGE:")
-                    print(self.original_message.id)
-                    print(self.new_content.value)
-                    
-                    await webhook.edit_message(
-                        message_id=self.original_message.id,
-                        content=self.new_content.value
-                    )
+                # Fallback to direct edit if webhook not found
+                if hasattr(self.original_message, 'edit'):
+                    await self.original_message.edit(content=self.new_content.value)
                     await interaction.response.send_message("Message edited successfully!", ephemeral=True)
                 else:
-                    # Fallback to direct edit if webhook not found
-                    if hasattr(self.original_message, 'edit'):
-                        await self.original_message.edit(content=self.new_content.value)
-                        await interaction.response.send_message("Message edited successfully!", ephemeral=True)
-                    else:
-                        await interaction.response.send_message("Cannot edit this message.", ephemeral=True)
+                    await interaction.response.send_message("Cannot edit this message.", ephemeral=True)
 
-        except discord.NotFound:
-            await interaction.response.send_message("The original message was not found.", ephemeral=True)
-        except discord.Forbidden:
-            await interaction.response.send_message("No permission to edit this message.", ephemeral=True)
-        except Exception as e:
-            print(f"Error editing message: {e}")
-            await interaction.response.send_message("An error occurred while editing the message.", ephemeral=True)
-
+    except discord.NotFound:
+        await interaction.response.send_message("The original message was not found.", ephemeral=True)
+    except discord.Forbidden:
+        await interaction.response.send_message("No permission to edit this message.", ephemeral=True)
+    except Exception as e:
+        print(f"Error editing message: {e}")
+        await interaction.response.send_message("An error occurred while editing the message.", ephemeral=True)
 async def delete_message_context(interaction: discord.Interaction, message: discord.Message):
     await delete(message,interaction)
 
