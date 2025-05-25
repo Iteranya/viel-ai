@@ -41,6 +41,7 @@ class EditMessageModal(discord.ui.Modal, title='Edit Message'):
     async def on_submit(self, interaction: discord.Interaction):
         thread = None
         dm = None
+        webhook = None
         try:
             try:
                 self.original_message = await self.original_message.channel.fetch_message(self.original_message.id)
