@@ -128,7 +128,7 @@ async def research(search):
             print(f"Searching for: '{query}'...")  # Optional: show progress
             
             # Get search results for each query
-            results = await bebek.get_top_search_result(max_results=3)
+            results = await bebek.get_top_search_result(max_results=5)
             if results:
                 all_results.extend(results)
                 
