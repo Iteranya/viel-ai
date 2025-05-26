@@ -5,7 +5,7 @@ from typing import *
 import asyncio
 import discord
 from functools import partial
-from utils.llm_new import generate_blank
+from src.utils.llm_new import generate_blank
 
 class Bebek:
     def __init__(self, query: str, inline=True):
