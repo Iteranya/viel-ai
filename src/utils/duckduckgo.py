@@ -107,28 +107,40 @@ async def research(search):
         user=f"The query is {search}, based on this query, write down 5 sentence/search term to look up. Use the given example as format.",
         assistant=f"Understood, here are the search query."
     )
-    
+   
     # Extract search terms using regex
     pattern = r'\((.*?)\)'
     queries = re.findall(pattern, search_queries)
-    
+   
     # If no parentheses found, fallback to the original search
     if not queries:
         queries = [search]
-    
-    # Perform searches using Bebek class
+   
+    # Perform searches using Bebek class with polite delays
     all_results = []
-    for query in queries:
+    for i, query in enumerate(queries):
+        # Add delay between searches (except for the first one)
+        if i > 0:
+            await asyncio.sleep(1.5)  # Wait 1.5 seconds between searches
+            
         bebek = Bebek(query)
         try:
+            print(f"Searching for: '{query}'...")  # Optional: show progress
+            
             # Get search results for each query
             results = await bebek.get_top_search_result(max_results=3)
             if results:
                 all_results.extend(results)
+                
+            # Small delay after each successful search
+            await asyncio.sleep(0.5)
+            
         except Exception as e:
             print(f"Error searching for '{query}': {e}")
+            # Even on error, be polite and wait a bit before continuing
+            await asyncio.sleep(0.5)
             continue
-    
+   
     # Concatenate and format results
     formatted_results = []
     for result in all_results:
@@ -137,7 +149,7 @@ async def research(search):
             url = result.get('href', '#')
             body = result.get('body', '')[:200] + "..." if result.get('body') else ''
             formatted_results.append(f"**{title}**\n{body}\n[Read more]({url})\n")
-    
+   
     # Return concatenated results
     final = "\n".join(formatted_results) if formatted_results else "No results found."
     return f"Web Search Result:\n{final}"

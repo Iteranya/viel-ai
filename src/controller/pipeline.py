@@ -105,7 +105,6 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
             prefill=prompter.prefill,
             dm=dm,
             message=prompter.message,
-            images=["temp.jpg"],
             plugin=plugin
             )
     else:
