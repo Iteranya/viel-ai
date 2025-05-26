@@ -49,7 +49,8 @@ async def think() -> None:
                 pass
             elif message_content.startswith("search>"):
                 search_query = message.content.replace("search>","")
-                search_query = search_query.replace(bot.bot_name,"")
+                search_query = search_query.lower()
+                search_query = search_query.replace(bot.bot_name.lower(),"") # Wait, why is it not working???
                 search_result = await research(search_query)
                 await send_llm_message(bot,message,dimension,plugin = search_result)
             elif message_content.startswith("enpic>"):
