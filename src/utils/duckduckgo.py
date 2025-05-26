@@ -1,14 +1,11 @@
+import re
 import traceback
-import discord.types
-import discord.types.embed
 from duckduckgo_search import DDGS
-from io import BytesIO
-from aiohttp import ClientSession
 from typing import *
 import asyncio
 import discord
-import config
 from functools import partial
+from utils.llm_new import generate_blank
 
 class Bebek:
     def __init__(self, query: str, inline=True):
@@ -102,3 +99,45 @@ class Bebek:
         import re
         match = re.search(r"\((.*?)\)", input_string)
         return match.group(1) if match else input_string
+
+async def research(search):
+    # Generate search queries using LLM
+    search_queries = await generate_blank(
+        system=f"Your task is to generate a list of search terms for a given query. For example if the query is: \"Give me latest news on Ohio\" you will then write down in the following format: [(Latest news Ohio), (Events in Ohio), (Ohio News), (Ohio gossips), (Ohio current situation)]. Follow the format, you must put each of the search term between parenthesis.",
+        user=f"The query is {search}, based on this query, write down 5 sentence/search term to look up. Use the given example as format.",
+        assistant=f"Understood, here are the search query."
+    )
+    
+    # Extract search terms using regex
+    pattern = r'\((.*?)\)'
+    queries = re.findall(pattern, search_queries)
+    
+    # If no parentheses found, fallback to the original search
+    if not queries:
+        queries = [search]
+    
+    # Perform searches using Bebek class
+    all_results = []
+    for query in queries:
+        bebek = Bebek(query)
+        try:
+            # Get search results for each query
+            results = await bebek.get_top_search_result(max_results=3)
+            if results:
+                all_results.extend(results)
+        except Exception as e:
+            print(f"Error searching for '{query}': {e}")
+            continue
+    
+    # Concatenate and format results
+    formatted_results = []
+    for result in all_results:
+        if isinstance(result, dict) and 'title' in result and 'href' in result:
+            title = result.get('title', 'No title')
+            url = result.get('href', '#')
+            body = result.get('body', '')[:200] + "..." if result.get('body') else ''
+            formatted_results.append(f"**{title}**\n{body}\n[Read more]({url})\n")
+    
+    # Return concatenated results
+    final = "\n".join(formatted_results) if formatted_results else "No results found."
+    return f"Web Search Result:\n{final}"

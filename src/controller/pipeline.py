@@ -11,6 +11,7 @@ from src.controller.discordo import send
 from src.utils.image_gen import generate_sd_prompt
 from src.utils.pollination import fetch_image
 from src.utils.hidream import invoke_chute
+from src.utils.duckduckgo import research
 
 # GOD Refactoring this gonna be a bitch and a half...
 
@@ -46,20 +47,25 @@ async def think() -> None:
         try:
             if message_content.startswith("//"):
                 pass
+            elif message_content.startswith("search>"):
+                search_query = message.content.replace("search>","")
+                search_query = search_query.replace(bot.bot_name,"")
+                search_result = await research(search_query)
+                await send_llm_message(bot,message,dimension,plugin = search_result)
             elif message_content.startswith("enpic>"):
                 image_prompt = await generate_sd_prompt(message)
                 await invoke_chute(image_prompt)
-                await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
+                await send_llm_message(bot,message,dimension)
             elif message_content.startswith("hipic>"):
                 image_prompt = message.content.replace("pic>","")
                 image_prompt = image_prompt.replace(bot.bot_name,"")
                 await invoke_chute(image_prompt)
-                await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
+                await send_llm_message(bot,message,dimension)
             elif message_content.startswith("pic>"):
                 image_prompt = message.content.replace("pic>","")
                 image_prompt = image_prompt.replace(bot.bot_name,"")
                 await invoke_chute(image_prompt,"temp.jpg",**params)
-                await send_llm_message(bot,message,dimension,plugin = "temp.jpg")
+                await send_llm_message(bot,message,dimension)
             else:
                 await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
         except Exception as e:
@@ -70,7 +76,7 @@ async def think() -> None:
                 print("Hi!")
         queue_to_process_everything.task_done()
 
-async def send_llm_message(bot: AICharacter,message:discord.message.Message,dimension:Dimension, plugin):
+async def send_llm_message(bot: AICharacter,message:discord.message.Message,dimension:Dimension, plugin = None):
     # print("The following is the content of message: \n\n" +str(message.author.display_name))
     dm=False
     # Can we add a 1 second delay here?
@@ -90,6 +96,18 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
             message=prompter.message,
             images=["temp.jpg"]
             )
+    elif plugin:
+        queueItem = QueueItem(
+            prompt=await prompter.create_text_prompt(),
+            bot = bot.name,
+            user = message.author.display_name,
+            stop=prompter.stopping_string,
+            prefill=prompter.prefill,
+            dm=dm,
+            message=prompter.message,
+            images=["temp.jpg"],
+            plugin=plugin
+            )
     else:
         queueItem = QueueItem(
             prompt=await prompter.create_text_prompt(),
@@ -107,6 +125,7 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
         queueItem.result = f"[System Note: Attached is the generated image by {queueItem.bot}]"
     if not queueItem.result:
         queueItem.result = "//Something Went Wrong, AI Failed to Generate"
+    
     await send(bot,message,queueItem)
     try:
         delete_file(queueItem.images[0]) # Hacky Solution, I know

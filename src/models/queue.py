@@ -14,4 +14,4 @@ class QueueItem:
     stop:list = None
     prefill:str = None
     message:discord.Message = None
-    
+    plugin:str = None
