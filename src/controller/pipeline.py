@@ -56,17 +56,17 @@ async def think() -> None:
                 await send_llm_message(bot,message,dimension,plugin = search_result)
             elif message_content.startswith("enpic>"):
                 image_prompt = await generate_sd_prompt(message)
-                await invoke_chute(image_prompt)
+                await invoke_chute(image_prompt) # Use Chutes
                 await send_llm_message(bot,message,dimension)
             elif message_content.startswith("hipic>"):
                 image_prompt = message.content.replace("pic>","")
                 image_prompt = image_prompt.replace(bot.bot_name,"")
-                await invoke_chute(image_prompt)
+                await invoke_chute(image_prompt) # Use Chutes
                 await send_llm_message(bot,message,dimension)
             elif message_content.startswith("pic>"):
                 image_prompt = message.content.replace("pic>","")
                 image_prompt = image_prompt.replace(bot.bot_name,"")
-                await invoke_chute(image_prompt,"temp.jpg",**params)
+                await fetch_image(image_prompt,"temp.jpg",**params) # Use Pollination
                 await send_llm_message(bot,message,dimension)
             else:
                 await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe

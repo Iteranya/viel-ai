@@ -51,6 +51,14 @@ def clean_string(s):
     # Matches only if the string starts with a single word (no spaces), followed by ':'
     return re.sub(r'^[^\s:]+:\s*', '', s) if re.match(r'^[^\s:]+:\s*', s) else s
 
+def clean_thonk(s):
+    # Find </think> and remove everything before it (including </think>)
+    match = re.search(r'</think>', s)
+    if match:
+        return s[match.end():]
+    else:
+        return s
+
 async def generate_blank(system,user,assistant):
     try:
         ai_config: Config = load_or_create_config()
