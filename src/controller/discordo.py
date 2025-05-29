@@ -5,6 +5,7 @@ from src.models.queue import QueueItem
 from src.models.aicharacter import AICharacter
 import os
 from src.utils import textutil
+from src.utils.image_embed import ImageGalleryView
 
 
 # This is the class that lets you interact with Discord Itself 
@@ -82,9 +83,6 @@ async def send_as_dm(queue_item:QueueItem,bot: AICharacter,message: discord.Mess
     
     for chunk in response_chunks:
         await send_regular_message(chunk,message)
-    if queue_item.images:
-        for image in queue_item.images:
-            await send_attachment(image_link=image,message=message)
             
 async def send_as_bot(queue_item:QueueItem,bot: AICharacter,message: discord.Message):
     response = queue_item.result
@@ -124,15 +122,13 @@ async def send_webhook_message(content: str, avatar_url: str=None, username: str
         if webhook.name == config.bot_user.display_name:
                 if thread != None:
                     if images:
-                        file = discord.File(images)
-                        await webhook.send(content, username=username, avatar_url=avatar_url, thread=thread,file=file)
+                        await send_image_gallery_webhook(images,avatar_url,username)
                     else:
                         await webhook.send(content, username=username, avatar_url=avatar_url, thread=thread)
                     return
                 else:
                     if images:
-                        file = discord.File(images)
-                        await webhook.send(content, username=username, avatar_url=avatar_url,file=file)
+                        await send_image_gallery_webhook(images,avatar_url,username)
                     else:
                         await webhook.send(content, username=username, avatar_url=avatar_url)
                 return
@@ -154,10 +150,56 @@ async def send_regular_message(content: str,message: discord.Message) -> None:
     await channel.send(content)
     return
 
-async def send_attachment(image_link: str, message: discord.Message) -> None:
-    channel = message.channel
-    file = discord.File(image_link)
-    await channel.send(file=file)
+async def send_image_gallery(images, message: discord.Message, title="Image Gallery"):
+    """Send image gallery as regular message"""
+    if not images:
+        return
+    
+    view = ImageGalleryView(images, title)
+    embed = view.create_embed()
+    
+    await message.channel.send(embed=embed, view=view)
 
-async def send_webhook_attachment(image_link: str, message: discord.Message) -> None:
-    await send_webhook_message(content="[System Note: Image Attachment]",)
+async def send_image_gallery_webhook(images, avatar_url: str, username: str, message: discord.Message, title="Image Gallery"):
+    """Send image gallery through webhook"""
+    if not images:
+        return
+    
+    context = message.channel
+    if isinstance(context, discord.TextChannel):
+        thread = None
+        channel = context
+    elif isinstance(context, discord.Thread):
+        channel = context.parent
+        thread = context
+    else:
+        # Fallback for other channel types
+        await send_image_gallery(images, message, title)
+        return
+
+    if avatar_url is None or str(avatar_url) == "none":
+        avatar_url = config.get_default_avatar()
+    if username is None:
+        username = config.get_default_name()
+
+    # Get or create webhook
+    webhook_list = await channel.webhooks()
+    webhook = None
+    
+    for wh in webhook_list:
+        if wh.name == config.bot_user.display_name:
+            webhook = wh
+            break
+    
+    if webhook is None:
+        webhook = await channel.create_webhook(name=config.bot_user.display_name)
+    
+    # Create the gallery view and embed
+    view = ImageGalleryView(images, title)
+    embed = view.create_embed()
+    
+    # Send through webhook
+    if thread is not None:
+        await webhook.send(embed=embed, view=view, username=username, avatar_url=avatar_url, thread=thread)
+    else:
+        await webhook.send(embed=embed, view=view, username=username, avatar_url=avatar_url)

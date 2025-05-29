@@ -5,10 +5,7 @@ duckduckgo-search==7.1.0
 fastapi>=0.115.12
 google-generativeai>=0.8.5
 openai>=1.76.2
-pandas==2.2.3
-pillow==11.0.0
 protobuf==5.29.1
 pypdf2==3.0.1
 python-dotenv==1.0.1
 uvicorn>=0.34.2
-youtube-transcript-api>=1.0.3
