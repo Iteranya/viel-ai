@@ -1,7 +1,7 @@
 import discord
 
 class ImageGalleryView(discord.ui.View):
-    def __init__(self, images, title="Image Gallery", timeout=300):
+    def __init__(self, images, title="Image Gallery", timeout=900):
         super().__init__(timeout=timeout)
         self.images = images
         self.current_index = 0
