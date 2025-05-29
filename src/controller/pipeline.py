@@ -48,11 +48,18 @@ async def think() -> None:
             if message_content.startswith("//"):
                 pass
             elif message_content.startswith("img_search>"):
-                search_query = message.content.replace("search>","")
+                search_query = message.content.replace("img_search>","")
                 search_query = search_query.lower()
                 search_query = search_query.replace(bot.bot_name.lower(),"") # Wait, why is it not working???
                 print(search_query)
-                search_result = await image_research(search_query)
+                search_result = await image_research(search_query,50,'on')
+                await send_llm_message(bot,message,dimension,plugin = search_result)
+            elif message_content.startswith("nsfw_search>"):
+                search_query = message.content.replace("nsfw_search>","")
+                search_query = search_query.lower()
+                search_query = search_query.replace(bot.bot_name.lower(),"") # Wait, why is it not working???
+                print(search_query)
+                search_result = await image_research(search_query,50,'on')
                 await send_llm_message(bot,message,dimension,plugin = search_result)
             elif message_content.startswith("search>"):
                 search_query = message.content.replace("search>","")

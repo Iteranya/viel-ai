@@ -141,24 +141,13 @@ async def research(search):
     final = "\n".join(formatted_results) if formatted_results else "No results found."
     return f"Web Search Result:\n{final}"
 
-async def image_research(prompt: str, images_per_query: int = 3, safesearch: str = 'off') -> List[str]:
-    """
-    Generate image search queries from a prompt and return a list of image URLs
-    
-    Args:
-        prompt: The input prompt to generate image search queries from
-        images_per_query: Number of images to fetch per search query (default: 3)
-        safesearch: Safesearch setting ('on', 'moderate', 'off') (default: 'off')
-        
-    Returns:
-        List of image URL strings
-    """
+async def image_research(prompt: str, images_per_query: int = 50, safesearch: str = 'off') -> List[str]:
     try:
         # Generate image search queries using LLM
         image_queries = await generate_blank(
-            system=f"Your task is to generate a list of image search terms for a given prompt. Create specific, visual search queries that would find relevant images. For example if the prompt is: \"Show me beautiful landscapes\" you will write: [(Mountain landscapes), (Ocean scenery), (Forest views), (Desert photography), (Sunset landscapes)]. Follow the format, you must put each search term between parenthesis.",
-            user=f"The prompt is: {prompt}. Based on this prompt, write down 5 image search terms to look up. Use the given example as format.",
-            assistant=f"Understood, here are the image search queries."
+            system=f"Your task is to generate ONE search query from a specific prompt.  For example if the prompt is: \"Fetch me images of Kisaki from Blue Archive\" you will write: [(Kisaki blue archive)]. Follow the format, you must put the search term between parenthesis.",
+            user=f"The prompt is: {prompt}. Based on this prompt, write down ONE  image search terms to look up. Use the given example as format.",
+            assistant=f"Understood, here are the image search query."
         )
         
         # Extract search terms using regex
@@ -184,7 +173,7 @@ async def image_research(prompt: str, images_per_query: int = 3, safesearch: str
                 # Get image results for each query
                 image_results = await bebek.get_image_link(
                     safesearch=safesearch, 
-                    max_results=images_per_query
+                    max_results=images_per_query,
                 )
                 
                 if image_results:
