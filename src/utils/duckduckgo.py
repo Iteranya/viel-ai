@@ -57,7 +57,7 @@ class Bebek:
                 safesearch=safesearch,
                 max_results=max_results
             )
-            return self.create_embeds(list(results))
+            return list(results)
         except Exception as e:
             traceback.print_exc()
             print(f"An error occurred during search: {e}")
@@ -81,19 +81,6 @@ class Bebek:
     def extract_links(self, results):
         links = ["[.]("+result['content']+")" for result in results if 'content' in result]
         return " ".join(links)
-    
-    def create_embeds(self, results, media_type='image'):
-        embeds = []
-        for result in results:
-            if media_type == 'image':
-                embed = discord.Embed(description=result['title'], url=result['image'])
-                embed.set_image(url=result['image'])
-            elif media_type == 'video':
-                embed = discord.Embed(title=result['title'], description=result['content'], url=result['content'], type='video')
-            else:
-                raise ValueError("media_type must be 'image' or 'video'")
-            embeds.append(embed)
-        return embeds
 
     def extract_between_quotes(self, input_string):
         import re
@@ -153,3 +140,79 @@ async def research(search):
     # Return concatenated results
     final = "\n".join(formatted_results) if formatted_results else "No results found."
     return f"Web Search Result:\n{final}"
+
+async def image_research(prompt: str, images_per_query: int = 3, safesearch: str = 'off') -> List[str]:
+    """
+    Generate image search queries from a prompt and return a list of image URLs
+    
+    Args:
+        prompt: The input prompt to generate image search queries from
+        images_per_query: Number of images to fetch per search query (default: 3)
+        safesearch: Safesearch setting ('on', 'moderate', 'off') (default: 'off')
+        
+    Returns:
+        List of image URL strings
+    """
+    try:
+        # Generate image search queries using LLM
+        image_queries = await generate_blank(
+            system=f"Your task is to generate a list of image search terms for a given prompt. Create specific, visual search queries that would find relevant images. For example if the prompt is: \"Show me beautiful landscapes\" you will write: [(Mountain landscapes), (Ocean scenery), (Forest views), (Desert photography), (Sunset landscapes)]. Follow the format, you must put each search term between parenthesis.",
+            user=f"The prompt is: {prompt}. Based on this prompt, write down 5 image search terms to look up. Use the given example as format.",
+            assistant=f"Understood, here are the image search queries."
+        )
+        
+        # Extract search terms using regex
+        pattern = r'\((.*?)\)'
+        queries = re.findall(pattern, image_queries)
+        
+        # If no parentheses found, fallback to the original prompt
+        if not queries:
+            queries = [prompt]
+        
+        # Collect all image URLs
+        all_image_urls = []
+        
+        for i, query in enumerate(queries):
+            # Add delay between searches (except for the first one)
+            if i > 0:
+                await asyncio.sleep(1.5)  # Wait 1.5 seconds between searches
+                
+            bebek = Bebek(query)
+            try:
+                print(f"Searching images for: '{query}'...")  # Optional: show progress
+                
+                # Get image results for each query
+                image_results = await bebek.get_image_link(
+                    safesearch=safesearch, 
+                    max_results=images_per_query
+                )
+                
+                if image_results:
+                    # Extract image URLs from the result dictionaries
+                    for result in image_results:
+                        if isinstance(result, dict) and 'image' in result:
+                            all_image_urls.append(result['image'])
+                    
+                # Small delay after each successful search
+                await asyncio.sleep(0.5)
+                
+            except Exception as e:
+                print(f"Error searching images for '{query}': {e}")
+                # Even on error, be polite and wait a bit before continuing
+                await asyncio.sleep(0.5)
+                continue
+        
+        # Remove duplicates while preserving order (now working with strings)
+        unique_urls = []
+        seen = set()
+        for url in all_image_urls:
+            if url not in seen:
+                unique_urls.append(url)
+                seen.add(url)
+        
+        return unique_urls
+        
+    except Exception as e:
+        print(f"Error in image_research: {e}")
+        traceback.print_exc()
+        return []

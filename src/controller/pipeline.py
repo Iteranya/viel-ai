@@ -11,7 +11,7 @@ from src.controller.discordo import send
 from src.utils.image_gen import generate_sd_prompt
 from src.utils.pollination import fetch_image
 from src.utils.hidream import invoke_chute
-from src.utils.duckduckgo import research
+from src.utils.duckduckgo import research,image_research
 
 # GOD Refactoring this gonna be a bitch and a half...
 
@@ -47,6 +47,13 @@ async def think() -> None:
         try:
             if message_content.startswith("//"):
                 pass
+            elif message_content.startswith("img_search>"):
+                search_query = message.content.replace("search>","")
+                search_query = search_query.lower()
+                search_query = search_query.replace(bot.bot_name.lower(),"") # Wait, why is it not working???
+                print(search_query)
+                search_result = await image_research(search_query)
+                await send_llm_message(bot,message,dimension,plugin = search_result)
             elif message_content.startswith("search>"):
                 search_query = message.content.replace("search>","")
                 search_query = search_query.lower()
@@ -98,7 +105,7 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
             message=prompter.message,
             images=["temp.jpg"]
             )
-    elif plugin:
+    elif isinstance(plugin,str):
         queueItem = QueueItem(
             prompt=await prompter.create_text_prompt(),
             bot = bot.name,
@@ -108,6 +115,17 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
             dm=dm,
             message=prompter.message,
             plugin=plugin
+            )
+    elif isinstance(plugin,list):
+        queueItem = QueueItem(
+            prompt=await prompter.create_text_prompt(),
+            bot = bot.name,
+            user = message.author.display_name,
+            stop=prompter.stopping_string,
+            prefill=prompter.prefill,
+            dm=dm,
+            message=prompter.message,
+            images=plugin
             )
     else:
         queueItem = QueueItem(
