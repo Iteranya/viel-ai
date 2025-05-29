@@ -89,6 +89,7 @@ async def generate_blank(system,user,assistant):
         )
 
         result = completion.choices[0].message.content if completion.choices else f"//[Error]"
+        result = clean_thonk(result)
     except Exception as e:
         result = str(e)
     return result
