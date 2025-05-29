@@ -143,64 +143,38 @@ async def research(search):
 
 async def image_research(prompt: str, images_per_query: int = 50, safesearch: str = 'off') -> List[str]:
     try:
-        # Generate image search queries using LLM
-        image_queries = await generate_blank(
-            system=f"Your task is to generate ONE search query from a specific prompt.  For example if the prompt is: \"Fetch me images of fish\" you will write: (fish) and nothing els.  Follow the format, you must put the search term between parenthesis.",
-            user=f"The prompt is: {prompt}. Based on this prompt, write down ONE  image search terms to look up. Use the given example as format.",
-            assistant=f"Understood, here are the image search query for {prompt}."
+        # Generate a single image search query using LLM
+        image_query = await generate_blank(
+            system="Your task is to generate ONE search query from a specific prompt. For example, if the prompt is: \"Fetch me images of fish\" you will write: (fish) and nothing else. Use parentheses around the term.",
+            user=f"The prompt is: {prompt}. Based on this prompt, write down ONE image search term to look up. Follow the format.",
+            assistant=f"Understood, here is the image search query for {prompt}."
         )
-        
-        # Extract search terms using regex
-        pattern = r'\((.*?)\)'
-        queries = re.findall(pattern, image_queries)
-        
-        # If no parentheses found, fallback to the original prompt
-        if not queries:
-            queries = [prompt]
-        
-        # Collect all image URLs
-        all_image_urls = []
-        
-        for i, query in enumerate(queries):
-            # Add delay between searches (except for the first one)
-            if i > 0:
-                await asyncio.sleep(1.5)  # Wait 1.5 seconds between searches
-                
-            bebek = Bebek(query)
-            try:
-                print(f"Searching images for: '{query}'...")  # Optional: show progress
-                
-                # Get image results for each query
-                image_results = await bebek.get_image_link(
-                    safesearch=safesearch, 
-                    max_results=images_per_query,
-                )
-                
-                if image_results:
-                    # Extract image URLs from the result dictionaries
-                    for result in image_results:
-                        if isinstance(result, dict) and 'image' in result:
-                            all_image_urls.append(result['image'])
-                    
-                # Small delay after each successful search
-                await asyncio.sleep(0.5)
-                
-            except Exception as e:
-                print(f"Error searching images for '{query}': {e}")
-                # Even on error, be polite and wait a bit before continuing
-                await asyncio.sleep(0.5)
-                continue
-        
-        # Remove duplicates while preserving order (now working with strings)
+
+        # Extract the search term from parentheses
+        match = re.search(r'\((.*?)\)', image_query)
+        query = match.group(1) if match else prompt
+
+        print(f"Searching images for: '{query}'...")
+
+        bebek = Bebek(query)
+        image_results = await bebek.get_image_link(
+            safesearch=safesearch,
+            max_results=images_per_query,
+        )
+
+        # Extract image URLs from result dictionaries
+        image_urls = [res['image'] for res in image_results if isinstance(res, dict) and 'image' in res]
+
+        # Remove duplicates while preserving order
         unique_urls = []
         seen = set()
-        for url in all_image_urls:
+        for url in image_urls:
             if url not in seen:
                 unique_urls.append(url)
                 seen.add(url)
-        
+
         return unique_urls
-        
+
     except Exception as e:
         print(f"Error in image_research: {e}")
         traceback.print_exc()
