@@ -145,9 +145,9 @@ async def image_research(prompt: str, images_per_query: int = 50, safesearch: st
     try:
         # Generate image search queries using LLM
         image_queries = await generate_blank(
-            system=f"Your task is to generate ONE search query from a specific prompt.  For example if the prompt is: \"Fetch me images of Kisaki from Blue Archive\" you will write: [(Kisaki blue archive)]. Follow the format, you must put the search term between parenthesis.",
+            system=f"Your task is to generate ONE search query from a specific prompt.  For example if the prompt is: \"Fetch me images of Kisaki from Blue Archive\" you will write: (Kisaki blue archive). Follow the format, you must put the search term between parenthesis.",
             user=f"The prompt is: {prompt}. Based on this prompt, write down ONE  image search terms to look up. Use the given example as format.",
-            assistant=f"Understood, here are the image search query."
+            assistant=f"Understood, here are the image search query for {prompt}."
         )
         
         # Extract search terms using regex
