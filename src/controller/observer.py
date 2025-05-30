@@ -24,7 +24,16 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
     print("Author: "+str(message.author.display_name))
     print("User: "+str(client.user.display_name))
     
-
+    # Add another part here to check if any user with the whitelisted bot display name is being replied
+    if message.reference:
+        try:
+            replied_to = await message.channel.fetch_message(message.reference.message_id)
+            if replied_to and replied_to.author.display_name in whitelist:
+                await bot_think(message, replied_to.author.display_name.lower())
+                return True
+        except Exception as e:
+            print(f"Failed to fetch replied message: {e}")
+            
     #The Fuzzy Logic Part~
     if message.webhook_id is None: # Check if it's a bot message
         text = message.content
