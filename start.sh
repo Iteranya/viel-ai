@@ -25,11 +25,22 @@ if ! command -v python &> /dev/null; then
     exit 1
 fi
 
+# Check if uv is installed in the virtual environment, if not install it
+if ! command -v uv &> /dev/null; then
+    echo "UV package installer not found. Installing UV..."
+    pip install uv
+    echo "UV installed successfully."
+    echo ""
+else
+    echo "UV is already installed."
+    echo ""
+fi
+
 # Set up virtual environment
 echo "Setting up Python virtual environment..."
 if [ ! -d "venv" ]; then
     echo "Creating new virtual environment..."
-    python -m venv venv
+    uv venv venv
     echo "Virtual environment created."
 else
     echo "Virtual environment already exists."
@@ -40,17 +51,6 @@ echo "Activating virtual environment..."
 source venv/bin/activate
 echo "Virtual environment activated."
 echo ""
-
-# Check if uv is installed in the virtual environment, if not install it
-if ! pip show uv &> /dev/null; then
-    echo "UV package installer not found. Installing UV..."
-    pip install uv
-    echo "UV installed successfully."
-    echo ""
-else
-    echo "UV is already installed."
-    echo ""
-fi
 
 # Check if requirements.txt exists
 if [ -f "requirements.txt" ]; then
