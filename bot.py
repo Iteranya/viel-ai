@@ -215,10 +215,9 @@ def setup_commands():
     tree.add_command(character_group)
     tree.add_command(whitelist_group)
 
-@client.event
-async def on_ready():
+def setup_bot():
     # Let owner known in the console that the bot is now running!
-    print(f'Discord Bot is Loading...')
+    print('Discord Bot is Loading...')
     conf.bot_user = client.user
     # Oh right, I have logging...
     logging.basicConfig(level=logging.DEBUG)
@@ -245,7 +244,12 @@ async def on_ready():
     tree.add_command(delete_message)
     setup_commands()
 
-    await tree.sync(guild=None)  
+@client.event
+async def on_ready():
+    # NOTE: You're not supposed to sync tree on ready, you should be doing this on
+    # demand (Like using "/reload" command or something), but I'm not gonna
+    # deal with that
+    await tree.sync(guild=None)
     print(f'Discord Bot is up and running.')
 
 @client.event
@@ -258,4 +262,5 @@ async def on_message(message):
     await observer.bot_behavior(message, client)
 
 # Run the Bot
+setup_bot()
 client.run(discord_token)
