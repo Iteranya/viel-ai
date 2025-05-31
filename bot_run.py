@@ -229,11 +229,7 @@ async def start_pipeline():
 async def on_ready():
     print(f"Discord Bot is Loading... Logged in as {client.user}")
     conf.bot_user = client.user
-    # client.user.display_name = conf.default_character
-    # logging.basicConfig(level=logging.DEBUG)
-    # Setup commands and events
-    # (e.g., context menus, tree.sync, etc.)
-    # Command to Edit Message (You Right Click On It)
+
     edit_message = discord.app_commands.ContextMenu(
         name='Edit Bot Message',
         callback=edit_message_context,

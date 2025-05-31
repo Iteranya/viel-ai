@@ -3,8 +3,8 @@ setlocal enabledelayedexpansion
 echo Starting Viel-AI setup and launch...
 echo.
 
-REM Set project directory
-set "PROJECT_DIR=%USERPROFILE%\Documents\viel-ai"
+REM Use current directory as project directory
+set "PROJECT_DIR=%~dp0"
 cd /d "%PROJECT_DIR%" || (
     echo Failed to change directory to %PROJECT_DIR%.
     pause
@@ -14,36 +14,17 @@ cd /d "%PROJECT_DIR%" || (
 REM Check for main.py
 if not exist "main.py" (
     echo Error: main.py not found in %PROJECT_DIR%.
-    echo Please run the setup_viel_ai.bat script first.
+    echo Please ensure you're in the correct directory.
     pause
     exit /b 1
 )
 
-REM Look for Python 3.10 explicitly
-set "PYTHON_EXE="
-for /f "delims=" %%p in ('where python') do (
-    for /f "tokens=2" %%v in ('"%%p --version 2>&1"') do (
-        echo Checking Python version: %%v
-        echo %%v | findstr "3.11" >nul
-        if !errorlevel! == 0 (
-            set "PYTHON_EXE=%%p"
-            goto found_python
-        )
-    )
-)
-
-echo Error: Python 3.11 not found.
-pause
-exit /b 1
-
-:found_python
-echo Found Python 3.11 at: %PYTHON_EXE%
 echo.
 
 REM Set up virtual environment
 if not exist "venv" (
     echo Creating virtual environment...
-    "%PYTHON_EXE%" -m venv venv || (
+    python -m venv venv || (
         echo Failed to create virtual environment.
         pause
         exit /b 1
