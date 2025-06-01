@@ -9,12 +9,6 @@ import src.data.card_data as card
 import src.data.config_data as config_module
 from src.controller import config as conf
 
-# Load config and token
-config = config_module.load_or_create_config()
-discord_token = config.discord_key
-if discord_token is None:
-    raise RuntimeError("$DISCORD_TOKEN env variable is not set!")
-
 # Setup Discord client
 intents: discord.Intents = discord.Intents.all()
 intents.message_content = True
@@ -221,14 +215,8 @@ def setup_commands():
 # (All your commands, modal classes, event handlers, etc.)
 # ... (copy all modal, context menu, commands groups here) ...
 
-async def start_pipeline():
-    # Kick off background thinking loop
-    asyncio.create_task(pipeline.think())
-
-@client.event
-async def on_ready():
-    print(f"Discord Bot is Loading... Logged in as {client.user}")
-    conf.bot_user = client.user
+def setup_bot():
+    print("Setting up Discord Bot...")
 
     edit_message = discord.app_commands.ContextMenu(
         name='Edit Bot Message',
@@ -246,19 +234,40 @@ async def on_ready():
     # Initialize the Commands
     tree.add_command(edit_message)
     tree.add_command(delete_message)
-
     setup_commands()
+
+async def start_bot(config: conf.Config):
+    # Kick off background thinking loop
+    asyncio.create_task(pipeline.think())
+
+    await client.start(config.discord_key)
+
+@client.event
+async def on_ready():
+    print(f"Discord Bot is logged in as {client.user}")
+    conf.bot_user = client.user
+
+    # NOTE: You're not supposed to sync tree on ready, you should be doing this on
+    # demand (Like using "/reload" command or something), but I'm not gonna
+    # deal with that
     await tree.sync(guild=None)
-    await start_pipeline()
     print("Discord Bot is up and running.")
 
 @client.event
-async def on_message(message):
+async def on_message(message: discord.Message):
     if message.author == client.user:
         return
     await observer.bot_behavior(message, client)
 
+setup_bot()
+
 if __name__ == "__main__":
+    # Load config and token
+    config = config_module.load_or_create_config()
+    discord_token = config.discord_key
+    if not discord_token:
+        raise RuntimeError("$DISCORD_TOKEN env variable is not set!")
+
     try:
         client.run(discord_token)
     except Exception as e:

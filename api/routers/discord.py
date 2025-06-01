@@ -1,7 +1,7 @@
 from fastapi import APIRouter,  HTTPException
 import threading
 import asyncio
-from bot_run import client
+from bot_run import client, start_bot
 from src.data.config_data import load_or_create_config
 router = APIRouter()
 _bot_thread = None
@@ -11,12 +11,11 @@ _bot_loop = None
 def _run_bot():
     global _bot_loop
     config = load_or_create_config()
-    discord_token = config.discord_key
     # Using a new event loop in this thread
     _bot_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(_bot_loop)
     try:
-        _bot_loop.run_until_complete(client.start(discord_token))
+        _bot_loop.run_until_complete(start_bot(config))
     except Exception as e:
         print(f'Bot crashed: {e}')
     finally:
