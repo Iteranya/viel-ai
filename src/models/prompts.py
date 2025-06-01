@@ -27,10 +27,17 @@ class PromptEngineer:
             instructionvar+="\n\n[System Note: IMPORTANT, Strict Safety Filter Deployed. Bot MUST Refuse To Answer If Content Is Harmful, Sexual, or Controversial in Nature. Try To Stay In Character, But Prioritize Safety Above All Else.]"
 
         history = await get_history(self.message)
-        prompt = "<character_definition>" + character+"</character_definition>\n" +"<lore>"+globalvar +"</lore>\n" +"<conversation_history>"+history +"</conversation_history>\n" +"<note>"+locationvar + "</note>\n" + "<additional_note>"+ jb +"\n"+instructionvar +  "</additional_note>\n" 
+        prompt = (
+            f"<character_definition>{character}</character_definition>\n"
+            f"<lore>{globalvar}</lore>\n"
+            f"<conversation_history>{history}</conversation_history>\n"
+            f"<note>{locationvar}</note>\n"
+            f"<additional_note>{jb}\n{instructionvar}</additional_note>\n"
+        )
         # JUST USE AN F STRING YOU GODDAMN NEANDERTHAL!!!!!
         # SHUT THE FUCK UP I'M PROTOTYPING!!!
-        self.prefill = f"\n[Reply] " + self.bot.name + ":"
+        # THERE I USED FSTRING, HAPPY NOW?!!?!?
+        self.prefill = f"\n[Reply] {self.bot.name}:"
         self.stopping_string = ["[System", "(System", self.user + ":", "[End","[/"] 
         #print(prompt)
         return prompt
