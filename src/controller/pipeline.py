@@ -2,6 +2,8 @@ import asyncio
 from src.controller.config import queue_to_process_everything
 import discord
 import os
+import sys
+import traceback
 from src.models.aicharacter import AICharacter
 from src.models.dimension import Dimension
 from src.models.prompts import PromptEngineer
@@ -12,6 +14,15 @@ from src.utils.image_gen import generate_sd_prompt
 from src.utils.pollination import fetch_image
 from src.utils.hidream import invoke_chute
 from src.utils.duckduckgo import research,image_research
+
+def format_traceback(error: Exception, *, _print: bool = False) -> str:
+    # https://github.com/InterStella0/stella_bot/blob/896c94e847829575d4699c0dd9d9b925d01c4b44/utils/useful.py#L132~L140
+    if _print:
+        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+    etype = type(error)
+    trace = error.__traceback__
+    lines = traceback.format_exception(etype, error, trace)
+    return "".join(lines)
 
 # GOD Refactoring this gonna be a bitch and a half...
 
@@ -85,7 +96,7 @@ async def think() -> None:
             else:
                 await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
         except Exception as e:
-            print(f"Something went wrong: {e}")
+            print(f"Something went wrong: {format_traceback(e)}")
             try:
                 await message.add_reaction('❌')
             except Exception as e:
