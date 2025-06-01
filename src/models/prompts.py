@@ -2,9 +2,6 @@ from src.models.aicharacter import AICharacter
 from src.models.dimension import Dimension
 from src.controller.discordo import get_history
 import discord
-import json
-import os
-import re
 
 
 class PromptEngineer:
@@ -24,8 +21,13 @@ class PromptEngineer:
         globalvar = self.dimension.getDict().get("globalvar", "")
         locationvar = self.dimension.getDict().get("location", "")
         instructionvar = self.dimension.getDict().get("instruction", "")
+
+        # Safety Filter for Discord ToS Sake, please don't disable. Just use NSFW Channel like a normal person.
+        if not self.message.channel.is_nsfw():
+            instructionvar+="\n\n[System Note: IMPORTANT, Strict Safety Filter Deployed. Bot MUST Refuse To Answer If Content Is Harmful, Sexual, or Controversial in Nature. Try To Stay In Character, But Prioritize Safety Above All Else.]"
+
         history = await get_history(self.message)
-        prompt = "<character_definition>" + character+"</character_definition>\n" +"<lore>"+globalvar +"</lore>\n" +"<conversation_history>"+history +"</conversation_history>\n" +"<note>"+locationvar + "</note>\n" + "<additional_note>" +instructionvar + "\n"+ jb+ "</additional_note>\n" 
+        prompt = "<character_definition>" + character+"</character_definition>\n" +"<lore>"+globalvar +"</lore>\n" +"<conversation_history>"+history +"</conversation_history>\n" +"<note>"+locationvar + "</note>\n" + "<additional_note>"+ jb +"\n"+instructionvar +  "</additional_note>\n" 
         # JUST USE AN F STRING YOU GODDAMN NEANDERTHAL!!!!!
         # SHUT THE FUCK UP I'M PROTOTYPING!!!
         self.prefill = f"\n[Reply] " + self.bot.name + ":"
