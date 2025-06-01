@@ -237,10 +237,13 @@ def setup_bot():
     setup_commands()
 
 async def start_bot(config: conf.Config):
-    # Kick off background thinking loop
-    asyncio.create_task(pipeline.think())
+    if config.discord_key:
+        # Kick off background thinking loop
+        asyncio.create_task(pipeline.think())
 
-    await client.start(config.discord_key)
+        await client.start(config.discord_key)
+    else:
+        raise Exception("Discord Bot Key Empty")
 
 @client.event
 async def on_ready():
