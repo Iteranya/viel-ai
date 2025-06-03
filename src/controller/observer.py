@@ -51,7 +51,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
 
         return False
     else:
-        print("Auto Trigger")
+        print("Auto Triggering")
         if current >= auto_cap:
             print("Auto Trigger Cap Reached")
             return
