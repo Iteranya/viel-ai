@@ -10,9 +10,10 @@ from src.data.dimension_data import get_channel_whitelist
 # This is the main code that deals with determining what type of request is being given.
 ## Also the gateway to LAM
 
-auto_cap = 6 # How many times bot are allowed to auto-trigger, will prolly add this into config menu
-current = 0
+auto_cap:int = 6 # How many times bot are allowed to auto-trigger, will prolly add this into config menu
+current_num:int = 0
 async def bot_behavior(message: discord.Message, client: discord.Client) -> bool:
+    global current_num
     
     if isinstance(message.channel,discord.DMChannel): # Check if DM or Nah
         if message.author.display_name == client.user.display_name:
@@ -46,13 +47,13 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
             for bot in whitelist:
                 if bot in text:
                     await bot_think(message,bot.lower())
-                    current = 0
+                    current_num = 0
                     #return True
 
         return False
     else:
         print("Auto Triggering")
-        if current >= auto_cap:
+        if current_num >= auto_cap:
             print("Auto Trigger Cap Reached")
             return
         print("Auto Trigger2")
@@ -67,7 +68,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
                 print("Auto Trigger5")
                 if bot in text:
                     await bot_think(message, bot.lower())
-                    current += 1
+                    current_num += 1
 
             return False
     return False
