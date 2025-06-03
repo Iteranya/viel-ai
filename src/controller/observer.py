@@ -37,8 +37,10 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
         except Exception as e:
             print(f"Failed to fetch replied message: {e}")
     
-    if message.author == client.user: # Auto Trigger
+    if message.author.id == client.user.id: # Auto Trigger
+        print("Auto Trigger")
         if current >= auto_cap:
+            print("Auto Trigger Cap Reached")
             return
         text = message.content
         if whitelist!=None:
