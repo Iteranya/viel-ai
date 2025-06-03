@@ -10,6 +10,8 @@ from src.data.dimension_data import get_channel_whitelist
 # This is the main code that deals with determining what type of request is being given.
 ## Also the gateway to LAM
 
+auto_cap = 6 # How many times bot are allowed to auto-trigger, will prolly add this into config menu
+current = 0
 async def bot_behavior(message: discord.Message, client: discord.Client) -> bool:
     if message.author.display_name == client.user.display_name:
         return
@@ -33,6 +35,19 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
                 return True
         except Exception as e:
             print(f"Failed to fetch replied message: {e}")
+    
+    if message.webhook_id: # Auto Trigger
+        if current >= auto_cap:
+            return
+        text = message.content
+        if whitelist!=None:
+            for bot in whitelist:
+                if bot in text:
+                    await bot_think(message,bot.lower())
+                    current += 1
+                    #return True
+
+        return False
             
     #The Fuzzy Logic Part~
     if message.webhook_id is None: # Check if it's a bot message
@@ -43,6 +58,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
             for bot in whitelist:
                 if bot in text:
                     await bot_think(message,bot.lower())
+                    current = 0
                     #return True
 
         return False
