@@ -13,9 +13,10 @@ from src.data.dimension_data import get_channel_whitelist
 auto_cap = 6 # How many times bot are allowed to auto-trigger, will prolly add this into config menu
 current = 0
 async def bot_behavior(message: discord.Message, client: discord.Client) -> bool:
-    if message.author.display_name == client.user.display_name:
-        return
+    
     if isinstance(message.channel,discord.DMChannel): # Check if DM or Nah
+        if message.author.display_name == client.user.display_name:
+            return
         data = load_or_create_config()
         char = data.default_character
         if message.author.display_name.lower() != char.lower():
