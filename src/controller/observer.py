@@ -14,7 +14,7 @@ auto_cap:int = 6 # How many times bot are allowed to auto-trigger, will prolly a
 current_num:int = 0
 async def bot_behavior(message: discord.Message, client: discord.Client) -> bool:
     global current_num
-    
+
     if isinstance(message.channel,discord.DMChannel): # Check if DM or Nah
         if message.author.display_name == client.user.display_name:
             return
@@ -52,21 +52,17 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
 
         return False
     else:
-        print("Auto Triggering")
         if current_num >= auto_cap:
             print("Auto Trigger Cap Reached")
             return
-        print("Auto Trigger2")
         text = message.content
         if whitelist!=None:
-            print("Auto Trigger3")
             if message.author.display_name.lower() not in [bot.lower() for bot in whitelist]:
                 print("Not bot Webhook")
                 return
             # Check for bot mentions in text
             for bot in whitelist:
-                print("Auto Trigger5")
-                if bot in text:
+                if bot in text and bot.lower()!=message.author.display_name.lower():
                     await bot_think(message, bot.lower())
                     current_num += 1
 
