@@ -36,23 +36,6 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
                 return True
         except Exception as e:
             print(f"Failed to fetch replied message: {e}")
-    
-    if message.author.id == client.user.id: # Auto Trigger
-        print("Auto Trigger")
-        if current >= auto_cap:
-            print("Auto Trigger Cap Reached")
-            return
-        text = message.content
-        if whitelist!=None:
-            for bot in whitelist:
-                if bot.lower() == message.author.display_name.lower():
-                    return
-                if bot in text:
-                    await bot_think(message,bot.lower())
-                    current += 1
-                    #return True
-
-        return False
             
     #The Fuzzy Logic Part~
     if message.webhook_id is None: # Check if it's a bot message
@@ -82,7 +65,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
                 if bot in text:
                     await bot_think(message, bot.lower())
                     current += 1
-            
+
             return False
     return False
 
