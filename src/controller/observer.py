@@ -43,7 +43,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
             for bot in whitelist:
                 if bot in text:
                     await bot_think(message,bot.lower())
-                    return True
+                    #return True
 
         return False
 
