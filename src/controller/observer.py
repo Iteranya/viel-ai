@@ -36,7 +36,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
         except Exception as e:
             print(f"Failed to fetch replied message: {e}")
     
-    if message.webhook_id: # Auto Trigger
+    if message.author == client.user: # Auto Trigger
         if current >= auto_cap:
             return
         text = message.content
