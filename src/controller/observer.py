@@ -42,6 +42,8 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
         text = message.content
         if whitelist!=None:
             for bot in whitelist:
+                if bot.lower() == message.author.display_name.lower():
+                    return
                 if bot in text:
                     await bot_think(message,bot.lower())
                     current += 1
