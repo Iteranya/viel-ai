@@ -67,7 +67,22 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
                     #return True
 
         return False
+    else:
+        print("Auto Trigger")
+        if current >= auto_cap:
+            print("Auto Trigger Cap Reached")
+            return
+        text = message.content
+        if whitelist!=None:
+            if message.author.display_name.lower() not in [bot.lower() for bot in whitelist]:
+                return
+            # Check for bot mentions in text
+            for bot in whitelist:
+                if bot in text:
+                    await bot_think(message, bot.lower())
+                    current += 1
 
+            return False
     return False
 
 
