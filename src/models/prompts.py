@@ -70,6 +70,7 @@ def roll_d20():
         19: "You rolled a 19 — whatever you do next will probably work really well.",
         20: "You rolled a 20 — a critical success! Your next action is legendary.",
     }
+    print(outcomes[roll])
 
     return f"[System Note: Refer to the following dice roll for the character's next action: {outcomes[roll]}]"
 
