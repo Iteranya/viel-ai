@@ -10,7 +10,7 @@ from src.data.dimension_data import get_channel_whitelist
 # This is the main code that deals with determining what type of request is being given.
 ## Also the gateway to LAM
 
-auto_cap:int = 6 # How many times bot are allowed to auto-trigger, will prolly add this into config menu
+auto_cap:int = 4 # How many times bot are allowed to auto-trigger, will prolly add this into config menu
 current_num:int = 0
 last_bot = ""
 async def bot_behavior(message: discord.Message, client: discord.Client) -> bool:
