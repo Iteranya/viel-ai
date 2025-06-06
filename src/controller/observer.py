@@ -34,6 +34,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
             replied_to = await message.channel.fetch_message(message.reference.message_id)
             if replied_to and replied_to.author.display_name in whitelist:
                 await bot_think(message, replied_to.author.display_name.lower())
+                last_bot = replied_to.author.display_name
                 return True
         except Exception as e:
             print(f"Failed to fetch replied message: {e}")
