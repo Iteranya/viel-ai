@@ -49,10 +49,10 @@ def roll_d20(bot):
     roll = random.randint(1, 20)
     
     outcomes = {
-        1: f"{bot} rolled a 1/20 — {bot} fail spectacularly on whatever {bot} try to do next.",
-        2: f"{bot} rolled a 2/20 — {bot} next action will fumble clumsily.",
-        3: f"{bot} rolled a 3/20 — Terrible prepare for a weak outcome or terrible out come for {bot}.",
-        4: f"{bot} rolled a 4/20 — {bot} try, but it’s not impressive still failed or getting hit hard.",
+        1: f"{bot} rolled a 1/20 — {bot} fail spectacularly on whatever {bot} try to do next. If {bot}'s defending, they're fucked",
+        2: f"{bot} rolled a 2/20 — {bot} next action will fumble clumsily. If {bot}'s defending, they're fucked",
+        3: f"{bot} rolled a 3/20 — Terrible prepare for a weak outcome for {bot}. If {bot}'s defending, they're fucked",
+        4: f"{bot} rolled a 4/20 — {bot} try, but it’s not impressive still failed or If {bot}'s defending, {bot} got hit where it Hurts.",
         5: f"{bot} rolled a 5/20 — {bot} miss the mark or getting hit hard.",
         6: f"{bot} rolled a 6/20 — {bot} barely managed to do it, but don’t count on it.",
         7: f"{bot} rolled a 7/20 — things happen but probably not how {bot} intended.",
