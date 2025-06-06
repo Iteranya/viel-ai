@@ -22,7 +22,7 @@ class PromptEngineer:
         locationvar = self.dimension.getDict().get("location", "")
         instructionvar = self.dimension.getDict().get("instruction", "")
         if "<battle_rp>" in self.dimension.instruction:
-            instructionvar += roll_d20()
+            instructionvar += roll_d20(self.bot.bot_name)
 
         # Safety Filter for Discord ToS Sake, please don't disable. Just use NSFW Channel like a normal person.
         if not self.message.channel.is_nsfw():
@@ -45,30 +45,30 @@ class PromptEngineer:
         return prompt
 import random
 
-def roll_d20():
+def roll_d20(bot):
     roll = random.randint(1, 20)
     
     outcomes = {
-        1: "You rolled a 1 — you fail spectacularly on whatever you try to do next.",
-        2: "You rolled a 2 — your next action will fumble clumsily.",
-        3: "You rolled a 3 — not good... prepare for a weak outcome.",
-        4: "You rolled a 4 — you try, but it’s not impressive.",
-        5: "You rolled a 5 — you miss the mark.",
-        6: "You rolled a 6 — barely functional, but don’t count on it.",
-        7: "You rolled a 7 — it’ll go through, but probably not how you intended.",
-        8: "You rolled an 8 — you’ll get close, but no critical success.",
-        9: "You rolled a 9 — mediocre result incoming.",
-        10: "You rolled a 10 — a balanced, neutral outcome awaits.",
-        11: "You rolled an 11 — your next move is just slightly better than average.",
-        12: "You rolled a 12 — not bad, could go your way.",
-        13: "You rolled a 13 — a stroke of decent fortune may assist you.",
-        14: "You rolled a 14 — likely success with minor effort.",
-        15: "You rolled a 15 — things are leaning in your favor.",
-        16: "You rolled a 16 — you’re in the zone, expect a good outcome.",
-        17: "You rolled a 17 — you act with confidence and precision.",
-        18: "You rolled an 18 — near mastery, your next step will shine.",
-        19: "You rolled a 19 — whatever you do next will probably work really well.",
-        20: "You rolled a 20 — a critical success! Your next action is legendary.",
+        1: f"{bot} rolled a 1 — {bot} fail spectacularly on whatever {bot} try to do next.",
+        2: f"{bot} rolled a 2 — {bot} next action will fumble clumsily.",
+        3: f"{bot} rolled a 3 — not good... prepare for a weak outcome or terrible out come for {bot}.",
+        4: f"{bot} rolled a 4 — {bot} try, but it’s not impressive still failed or getting hit hard.",
+        5: f"{bot} rolled a 5 — {bot} miss the mark or getting hit hard.",
+        6: f"{bot} rolled a 6 — {bot} barely managed to do it, but don’t count on it.",
+        7: f"{bot} rolled a 7 — it’ll go through, but probably not how {bot} intended.",
+        8: f"{bot} rolled an 8 — you’ll get close, but no critical success for {bot}.",
+        9: f"{bot} rolled a 9 — mediocre result incoming.",
+        10: f"{bot} rolled a 10 — a balanced, neutral outcome awaits.",
+        11: f"{bot} rolled an 11 — {bot}'s next move is just slightly better than average.",
+        12: f"{bot} rolled a 12 — not bad, could go {bot}'s way.",
+        13: f"{bot} rolled a 13 — a stroke of decent fortune may assist {bot}.",
+        14: f"{bot} rolled a 14 — likely success with minor effort.",
+        15: f"{bot} rolled a 15 — things are leaning in {bot}'s favor.",
+        16: f"{bot} rolled a 16 — {bot}'s in the zone, expect a good outcome.",
+        17: f"{bot} rolled a 17 — {bot} act with confidence and precision, whatever she does, it's amazing.",
+        18: f"{bot} rolled an 18 — {bot}'s near mastery, their next step will shine bright.",
+        19: f"{bot} rolled a 19 — whatever {bot} do next will work really well.",
+        20: f"{bot} rolled a 20 — a critical success! {bot}'s next action is legendary.",
     }
     print(outcomes[roll])
 
