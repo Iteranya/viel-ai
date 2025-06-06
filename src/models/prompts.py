@@ -22,7 +22,7 @@ class PromptEngineer:
         locationvar = self.dimension.getDict().get("location", "")
         instructionvar = self.dimension.getDict().get("instruction", "")
         if "<battle_rp>" in self.dimension.instruction:
-            instructionvar += roll_d20
+            instructionvar += roll_d20()
 
         # Safety Filter for Discord ToS Sake, please don't disable. Just use NSFW Channel like a normal person.
         if not self.message.channel.is_nsfw():
