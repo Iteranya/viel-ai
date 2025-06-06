@@ -19,6 +19,6 @@ class Config:
     ai_endpoint: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
     base_llm: str = "gemini-2.5-pro-exp-03-25"
     temperature: float = 0.5
-    auto_cap = 0
+    auto_cap:int = 0
     ai_key: str = ""
     discord_key: str = ""
