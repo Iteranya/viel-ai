@@ -49,6 +49,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
             for bot in whitelist:
                 if bot in text:
                     await bot_think(message,bot.lower())
+                    last_bot = bot
                     current_num = 0
                     #return True
 
