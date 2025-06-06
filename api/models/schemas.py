@@ -52,6 +52,7 @@ class BotConfigModel(BaseModel):
                            description="AI API endpoint")
     base_llm: str = Field("gemini-2.5-pro-exp-03-25", description="Base LLM model name")
     temperature: float = Field(0.5, description="Temperature setting for AI generation")
+    auto_cap: int = Field(0, description = "How many times should the bot auto-reply before stuck in a loop")
     ai_key: str = Field("", description="AI API key")
     discord_key: str = Field("", description="Discord API key")
     
@@ -62,6 +63,7 @@ class BotConfigModel(BaseModel):
                 "ai_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai/",
                 "base_llm": "gemini-2.5-pro-exp-03-25",
                 "temperature": 0.7,
+                "auto_cap": 0,
                 "ai_key": "your-api-key",
                 "discord_key": "your-discord-key"
             }
