@@ -14,6 +14,7 @@ auto_cap:int = 6 # How many times bot are allowed to auto-trigger, will prolly a
 current_num:int = 0
 async def bot_behavior(message: discord.Message, client: discord.Client) -> bool:
     global current_num
+    last_bot = ""
 
     if isinstance(message.channel,discord.DMChannel): # Check if DM or Nah
         if message.author.display_name == client.user.display_name:
@@ -63,8 +64,11 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
             # Check for bot mentions in text
             for bot in whitelist:
                 if bot in text and bot.lower()!=message.author.display_name.lower():
+                    if bot.lower() == last_bot.lower():
+                        pass
                     print("triggering "+bot)
                     await bot_think(message, bot.lower())
+                    last_bot = bot
                     current_num += 1
 
             return 
