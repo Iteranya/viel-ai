@@ -66,7 +66,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
             for bot in whitelist:
                 if bot in text and bot.lower()!=message.author.display_name.lower():
                     if bot.lower() == last_bot.lower():
-                        pass
+                        continue
                     print("triggering "+bot)
                     await bot_think(message, bot.lower())
                     last_bot = bot
