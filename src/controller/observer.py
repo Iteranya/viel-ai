@@ -44,8 +44,6 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
         text = message.content
         if text.startswith("//"):
             return True
-        if "[KNOCK OUT]" in text:
-            return True
         if whitelist!=None:
             for bot in whitelist:
                 if bot in text:
@@ -59,7 +57,10 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
         if current_num >= data.auto_cap:
             print("Auto Trigger Cap Reached")
             return
+        if "[KNOCK OUT]" in text:
+            return 
         text = message.content
+
         if whitelist!=None:
             if message.author.display_name.lower() not in [bot.lower() for bot in whitelist]:
                 print("Not bot Webhook")
