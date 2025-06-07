@@ -44,6 +44,8 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
         text = message.content
         if text.startswith("//"):
             return True
+        if "[KNOCK OUT]" in text:
+            return True
         if whitelist!=None:
             for bot in whitelist:
                 if bot in text:
