@@ -145,6 +145,37 @@ class ConfigCommands(app_commands.Group):
         response = dim.get_instruction(interaction)
         await interaction.response.send_message(response, ephemeral=True)
         
+    @app_commands.command(name="toggle_battle_rp", description="Toggles Battle RP mode by adding/removing the <battle_rp> tag.")
+    async def toggle_battle_rp(self, interaction: discord.Interaction):
+        """
+        Toggles a specific tag in the instruction string.
+        """
+        # Define the specific tag for Battle RP
+        rp_tag = "<battle_rp>"
+        
+        # Get the current instruction string from your data manager
+        current_instruction = dim.get_instruction(interaction)
+        
+        new_instruction = ""
+        status_message = ""
+
+        # Check if the tag exists in the current instruction
+        if rp_tag in current_instruction:
+            # If it exists, remove it and set the status to OFF
+            new_instruction = current_instruction.replace(rp_tag, "").strip()
+            status_message = "Battle RP is now **OFF**."
+        else:
+            # If it doesn't exist, append it and set the status to ON
+            # We add a space before the tag for clean formatting. .strip() handles case where original instruction is empty.
+            new_instruction = (current_instruction + " " + rp_tag).strip()
+            status_message = "Battle RP is now **ON**."
+            
+        # Save the modified instruction using your existing edit function
+        dim.edit_instruction(interaction, new_instruction)
+        
+        # Send an ephemeral confirmation message to the user who ran the command
+        await interaction.response.send_message(status_message, ephemeral=True)
+        
     @app_commands.command(name="set_global", description="Edit Global Data")
     async def set_global(self, interaction: discord.Interaction, global_var: str):
         response = dim.edit_global(interaction, global_var)
