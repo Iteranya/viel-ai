@@ -22,7 +22,8 @@ class PromptEngineer:
         locationvar = self.dimension.getDict().get("location", "")
         instructionvar = self.dimension.getDict().get("instruction", "")
         if "<battle_rp>" in self.dimension.instruction:
-            instructionvar += roll_d20(self.bot.bot_name)
+            instructionvar += roll_defend(self.bot.bot_name)
+            instructionvar += roll_attack(self.bot.bot_name)
 
         # Safety Filter for Discord ToS Sake, please don't disable. Just use NSFW Channel like a normal person.
         if not self.message.channel.is_nsfw():
@@ -65,7 +66,7 @@ def roll_d20(bot):
         14: f"{bot} rolled a 14/20 — likely success with minor effort.",
         15: f"{bot} rolled a 15/20 — things are leaning in {bot}'s favor.",
         16: f"{bot} rolled a 16/20 — {bot}'s in the zone, expect a good outcome.",
-        17: f"{bot} rolled a 17/20 — {bot} act with confidence and precision, whatever she does, it's amazing.",
+        17: f"{bot} rolled a 17/20 — {bot} act with confidence and precision, whatever they do, it's amazing.",
         18: f"{bot} rolled an 18/20 — {bot}'s near mastery, their next step will shine bright.",
         19: f"{bot} rolled a 19/20 — whatever {bot} do next will work really well.",
         20: f"{bot} rolled a 20/20 — a critical success! {bot}'s next action is legendary.",
@@ -74,3 +75,62 @@ def roll_d20(bot):
 
     return f"[System Note: Refer to the following dice roll for the character's next action: {outcomes[roll]}]"
 
+def roll_defend(bot):
+    roll = random.randint(1, 20)
+    
+    outcomes = {
+        1: f"{bot} rolled a 1/20 — {bot} failed miserably to defend themselves, they're gonna get wrecked",
+        2: f"{bot} rolled a 2/20 — {bot} failed miserably to defend themselves, they're gonna get wrecked",
+        3: f"{bot} rolled a 3/20 — {bot} failed miserably to defend themselves, they're gonna get hit where it hurts",
+        4: f"{bot} rolled a 4/20 — {bot} failed to defend themselves, they're gonna get hit where it hurts.",
+        5: f"{bot} rolled a 5/20 — {bot} tried to defend themselves, they're gonna get hit where it hurts.",
+        6: f"{bot} rolled a 6/20 — {bot} tried to defend themselves, they tanked it but it hurts",
+        7: f"{bot} rolled a 7/20 — {bot} tried to defend themselves, they tanked the damage",
+        8: f"{bot} rolled an 8/20 — {bot} defend themselves, they tanked the damage.",
+        9: f"{bot} rolled a 9/20 — {bot} defend themselves, they took the hit",
+        10: f"{bot} rolled a 10/20 — {bot} defend themselves and took the hit like a champ",
+        11: f"{bot} rolled an 11/20 — {bot} defend themselves and just barely dodged the attack, it still hit them hard",
+        12: f"{bot} rolled a 12/20 — {bot} defend themselves and just barely dodged the attack, it still hit them head on",
+        13: f"{bot} rolled a 13/20 — {bot} defend themselves and dodged the attack, it still hit them head on",
+        14: f"{bot} rolled a 14/20 — {bot} defend themselves and dodged the attack, it still hit them",
+        15: f"{bot} rolled a 15/20 — {bot} defend themselves and dodged the attack, it barely hit them",
+        16: f"{bot} rolled a 16/20 — {bot} defend themselves and dodged the attack, it grazed them",
+        17: f"{bot} rolled a 17/20 — {bot} defend themselves and dodged the attack, it barely grazed them",
+        18: f"{bot} rolled an 18/20 — {bot} defend themselves and dodged the attack, it didn't leave a scratch",
+        19: f"{bot} rolled a 19/20 — {bot} defend themselves and dodged the attack, it has little effect on {bot}",
+        20: f"{bot} rolled a 20/20 — {bot} defend themselves and dodged the attack, it has little effect on {bot}",
+    }
+    print(outcomes[roll])
+
+    return f"[System Note: Refer to the following dice roll for the character's defensive action: {outcomes[roll]}]"
+
+import random
+
+def roll_attack(bot):
+    roll = random.randint(1, 20)
+    
+    outcomes = {
+        1: f"{bot} rolled a 1/20 — {bot} fumbled their attack horribly! They might've hurt themselves...",
+        2: f"{bot} rolled a 2/20 — {bot} missed completely and looks foolish doing it.",
+        3: f"{bot} rolled a 3/20 — {bot} swung wide and lost their balance.",
+        4: f"{bot} rolled a 4/20 — {bot}'s attack missed by a mile.",
+        5: f"{bot} rolled a 5/20 — {bot}'s attack barely missed the target.",
+        6: f"{bot} rolled a 6/20 — {bot}'s attack connected, but did almost no damage.",
+        7: f"{bot} rolled a 7/20 — {bot} landed a weak hit.",
+        8: f"{bot} rolled an 8/20 — {bot} hit their target, but it wasn’t impressive.",
+        9: f"{bot} rolled a 9/20 — {bot} hit the target, but it's not very effective.",
+        10: f"{bot} rolled a 10/20 — {bot} landed a standard hit.",
+        11: f"{bot} rolled an 11/20 — {bot} struck solidly, causing noticeable damage.",
+        12: f"{bot} rolled a 12/20 — {bot} landed a strong hit!",
+        13: f"{bot} rolled a 13/20 — {bot}'s attack hit with decent force.",
+        14: f"{bot} rolled a 14/20 — {bot} delivered a well-placed hit.",
+        15: f"{bot} rolled a 15/20 — {bot}'s attack was clean and effective.",
+        16: f"{bot} rolled a 16/20 — {bot} delivered a powerful strike!",
+        17: f"{bot} rolled a 17/20 — {bot}'s attack was very strong and well-executed.",
+        18: f"{bot} rolled an 18/20 — {bot} struck with impressive power!",
+        19: f"{bot} rolled a 19/20 — {bot} delivered a devastating blow!",
+        20: f"{bot} rolled a 20/20 — Critical hit! {bot}'s attack is perfectly executed and devastating!",
+    }
+    print(outcomes[roll])
+    
+    return f"[System Note: Refer to the following dice roll for the character's attack action: {outcomes[roll]}]"
