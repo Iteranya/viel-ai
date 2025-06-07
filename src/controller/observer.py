@@ -54,12 +54,13 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
 
         return 
     else:
+        text = message.content
         if current_num >= data.auto_cap:
             print("Auto Trigger Cap Reached")
             return
         if "[KNOCK OUT]" in text:
             return 
-        text = message.content
+        
 
         if whitelist!=None:
             if message.author.display_name.lower() not in [bot.lower() for bot in whitelist]:
