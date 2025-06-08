@@ -11,7 +11,7 @@ class PromptEngineer:
         self.message = message
         self.dimension = dimension
         self.stopping_string = None
-        self.prefill = None
+        self.prefill = None 
         print(self.user)
 
     async def create_text_prompt(self) -> str:
@@ -22,8 +22,12 @@ class PromptEngineer:
         locationvar = self.dimension.getDict().get("location", "")
         instructionvar = self.dimension.getDict().get("instruction", "")
         if "<battle_rp>" in self.dimension.instruction:
-            instructionvar += roll_defend(self.bot.bot_name)
-            instructionvar += roll_attack(self.bot.bot_name)
+            try:
+                globalvar+= get_opponent(self.bot.bot_name,self.message)
+                instructionvar += roll_defend(self.bot.bot_name)
+                instructionvar += roll_attack(self.bot.bot_name)
+            except Exception as e:
+                print(e)
 
         # Safety Filter for Discord ToS Sake, please don't disable. Just use NSFW Channel like a normal person.
         if not self.message.channel.is_nsfw():
@@ -45,6 +49,11 @@ class PromptEngineer:
         #print(prompt)
         return prompt
 import random
+
+def get_opponent(bot, mes:discord.Message):
+    opponent = AICharacter(mes.author.display_name)
+    persona = opponent.get_persona()
+    return f"[{bot}'s current Opponent: {persona}]"
 
 def roll_d20(bot):
     roll = random.randint(1, 20)
