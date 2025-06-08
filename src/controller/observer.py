@@ -58,7 +58,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
         if current_num >= data.auto_cap:
             print("Auto Trigger Cap Reached")
             return
-        if "[I FORFEIT]" in text:
+        if "[DEFEAT]" in text:
             return 
         
 
