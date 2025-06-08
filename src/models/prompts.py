@@ -23,7 +23,10 @@ class PromptEngineer:
         instructionvar = self.dimension.getDict().get("instruction", "")
         if "<battle_rp>" in self.dimension.instruction:
             try:
-                globalvar+= get_opponent(self.bot.bot_name,self.message)
+                try:
+                    globalvar+= get_opponent(self.bot.bot_name,self.message)
+                except Exception as e:
+                    pass
                 instructionvar += roll_defend(self.bot.bot_name)
                 instructionvar += roll_attack(self.bot.bot_name)
             except Exception as e:
