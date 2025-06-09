@@ -226,3 +226,8 @@ def generate_tarot_reading(spread_name="general", reversed_allowed=True, card_ty
         instructions.append(f"{position}: {card} ({reversed_status})")
 
     return "\n".join(instructions)
+
+# Example usage
+if __name__ == "__main__":
+    reading = generate_tarot_reading("celtic_cross", reversed_allowed=True, card_type="all")
+    print(reading)
