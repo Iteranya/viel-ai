@@ -153,6 +153,7 @@ def roll_attack(bot):
 
 import random
 
+
 def shuffle_tarot(num_cards=3, reversed_allowed=True, card_type="all"):
     major_arcana = [
         "The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor",
@@ -174,13 +175,13 @@ def shuffle_tarot(num_cards=3, reversed_allowed=True, card_type="all"):
         deck = major_arcana + minor_arcana
 
     selected = random.sample(deck, num_cards)
-    output_lines = []
+    output = []
 
     for i, card in enumerate(selected):
         reversed_status = "Reversed" if reversed_allowed and random.choice([True, False]) else "Upright"
-        output_lines.append(f"Card {i + 1}: {card} ({reversed_status})")
+        output.append((card, reversed_status))
 
-    return "\n".join(output_lines)
+    return output
 
 def generate_tarot_reading(spread_name="general", reversed_allowed=True, card_type="all"):
     spreads = {
