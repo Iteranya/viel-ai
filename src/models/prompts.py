@@ -31,6 +31,9 @@ class PromptEngineer:
                 instructionvar += roll_attack(self.bot.bot_name)
             except Exception as e:
                 print(e)
+        
+        if"<tarot>" in self.message.content:
+            instructionvar+=f"[System Note: The following is the Tarot Shuffle Result, please have {self.bot.bot_name} interpret it in character. \n\n{generate_tarot_reading()}]"
 
         # Safety Filter for Discord ToS Sake, please don't disable. Just use NSFW Channel like a normal person.
         if not self.message.channel.is_nsfw():
@@ -110,7 +113,7 @@ def roll_defend(bot):
         17: f"{bot} rolled a 17/20 — {bot} defend themselves and dodged the attack, it barely grazed them",
         18: f"{bot} rolled an 18/20 — {bot} defend themselves and dodged the attack, it didn't leave a scratch",
         19: f"{bot} rolled a 19/20 — {bot} defend themselves and dodged the attack, it has little effect on {bot}",
-        20: f"{bot} rolled a 20/20 — {bot} defend themselves and dodged the attack, it has little effect on {bot}",
+        20: f"{bot} rolled a 20/20 — {bot} defend themselves and dodged the attack, it has absolutely no effect on {bot}",
     }
     print(outcomes[roll])
 
@@ -146,3 +149,79 @@ def roll_attack(bot):
     print(outcomes[roll])
     
     return f"[System Note: Refer to the following dice roll for the character's attack action: {outcomes[roll]}]"
+
+
+import random
+
+def shuffle_tarot(num_cards=3, reversed_allowed=True, card_type="all"):
+    major_arcana = [
+        "The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor",
+        "The Hierophant", "The Lovers", "The Chariot", "Strength", "The Hermit",
+        "Wheel of Fortune", "Justice", "The Hanged Man", "Death", "Temperance",
+        "The Devil", "The Tower", "The Star", "The Moon", "The Sun",
+        "Judgement", "The World"
+    ]
+
+    minor_suits = ["Wands", "Cups", "Swords", "Pentacles"]
+    minor_ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Page", "Knight", "Queen", "King"]
+    minor_arcana = [f"{rank} of {suit}" for suit in minor_suits for rank in minor_ranks]
+
+    if card_type == "major":
+        deck = major_arcana
+    elif card_type == "minor":
+        deck = minor_arcana
+    else:
+        deck = major_arcana + minor_arcana
+
+    selected = random.sample(deck, num_cards)
+    output_lines = []
+
+    for i, card in enumerate(selected):
+        reversed_status = "Reversed" if reversed_allowed and random.choice([True, False]) else "Upright"
+        output_lines.append(f"Card {i + 1}: {card} ({reversed_status})")
+
+    return "\n".join(output_lines)
+
+def generate_tarot_reading(spread_name="general", reversed_allowed=True, card_type="all"):
+    spreads = {
+        "general": {
+            "positions": ["Past", "Present", "Future"],
+            "description": "This is a 3-card general reading: past influences, current situation, and possible outcome."
+        },
+        "celtic_cross": {
+            "positions": [
+                "Present Situation",
+                "Challenge",
+                "Past Influences",
+                "Future Possibilities",
+                "Conscious Goal",
+                "Subconscious Influence",
+                "Advice",
+                "External Influences",
+                "Hopes and Fears",
+                "Outcome"
+            ],
+            "description": "This is the Celtic Cross spread, a 10-card layout providing deep insight into a complex situation."
+        },
+        "relationship": {
+            "positions": ["You", "The Other Person", "The Relationship"],
+            "description": "A 3-card spread exploring dynamics in a relationship."
+        },
+        "career": {
+            "positions": ["Current Job", "Challenges", "Advice"],
+            "description": "A 3-card career-focused spread identifying work-related insights."
+        }
+    }
+
+    if spread_name not in spreads:
+        return f"Unknown spread: {spread_name}"
+
+    spread = spreads[spread_name]
+    num_cards = len(spread["positions"])
+    cards = shuffle_tarot(num_cards, reversed_allowed, card_type)
+
+    instructions = [spread["description"], ""]
+    for position, (card, reversed_status) in zip(spread["positions"], cards):
+        instructions.append(f"{position}: {card} ({reversed_status})")
+
+    return "\n".join(instructions)

@@ -13,7 +13,7 @@ class DiscordHandler:
     """Handles Discord interactions including message history, sending, and webhooks."""
     
     def __init__(self):
-        self.message_chunk_size = 1500
+        self.message_chunk_size = 1999
     
     @staticmethod
     def _is_valid_url(url: str) -> bool:
