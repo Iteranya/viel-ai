@@ -33,7 +33,15 @@ class PromptEngineer:
                 print(e)
         
         if"<tarot>" in self.message.content:
-            instructionvar+=f"[System Note: The following is the Tarot Shuffle Result, please have {self.bot.bot_name} interpret it in character. \n\n{generate_tarot_reading()}]"
+            if "celtic" in self.message.content:
+                tarot = generate_tarot_reading("celtic_cross")
+            elif "relationship" in self.message.content:
+                tarot = generate_tarot_reading("relationship")
+            elif "career" in self.message.content:
+                tarot = generate_tarot_reading("career")
+            else:
+                tarot = generate_tarot_reading()
+            instructionvar+=f"[System Note: The following is the Tarot Shuffle Result, please have {self.bot.bot_name} interpret it in character. \n\n{tarot}]"
 
         # Safety Filter for Discord ToS Sake, please don't disable. Just use NSFW Channel like a normal person.
         if not self.message.channel.is_nsfw():
