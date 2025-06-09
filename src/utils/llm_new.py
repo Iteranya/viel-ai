@@ -81,7 +81,8 @@ def clean_thonk(s):
     # Find </think> and remove everything before it (including </think>)
     match = re.search(r'</think>', s)
     if match:
-        return s[match.end():]
+        # Recursively clean the remaining string
+        return clean_thonk(s[match.end():])
     else:
         return s
 
