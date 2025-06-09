@@ -3,16 +3,15 @@ from src.models.queue import QueueItem
 from src.models.prompts import PromptEngineer
 from src.data.config_data import load_or_create_config,Config,get_key
 import re
+import traceback
 
 async def generate_response(task: QueueItem):
     try:
         ai_config: Config = load_or_create_config()
-
         client = OpenAI(
             base_url=ai_config.ai_endpoint,
             api_key=get_key(),
         )
-
         user_message = clean_string(task.message.content)
         if task.plugin:
             user_message = f"[System Note: {task.plugin}]\n{user_message}"
@@ -35,17 +34,43 @@ async def generate_response(task: QueueItem):
                 }
             ]
         )
-
         result = completion.choices[0].message.content if completion.choices else f"//[OOC: Sorry, the AI broke on my end, can you check the log? Thanks]"
         result = result.replace("[Reply]","")
         result = result.replace(f"{task.bot}:","")
         result = clean_thonk(result)
         # print(completion)
         task.result = result
-
     except Exception as e:
-        task.result = f"Error: {str(e)}"
-
+        # Comprehensive error handling
+        error_type = type(e).__name__
+        error_message = str(e)
+        error_traceback = traceback.format_exc()
+        
+        # Log the full error for debugging
+        print(f"Error in generate_response: {error_type}: {error_message}\n{error_traceback}")
+        
+        # Create a detailed error message
+        detailed_error = f"//[OOC: AI Error - {error_type}]\n"
+        
+        # Handle specific OpenAI errors
+        if hasattr(e, 'status_code'):
+            detailed_error += f"Status Code: {e.status_code}\n"
+        
+        if hasattr(e, 'response') and e.response:
+            detailed_error += f"Response: {e.response}\n"
+        
+        # Add context about what was being processed
+        try:
+            detailed_error += f"Task ID: {getattr(task, 'id', 'Unknown')}\n"
+            detailed_error += f"Model: {getattr(ai_config, 'base_llm', 'Unknown')}\n"
+            detailed_error += f"Message Length: {len(getattr(task.message, 'content', ''))}\n"
+        except:
+            detailed_error += "Unable to retrieve task context\n"
+        
+        detailed_error += f"Error Details: {error_message}\n"
+        detailed_error += f"Full Traceback:\n{error_traceback}"
+        
+        task.result = detailed_error
     return task
 
 def clean_string(s):
