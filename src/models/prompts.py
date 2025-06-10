@@ -33,7 +33,7 @@ class PromptEngineer:
             except Exception as e:
                 print(e)
         
-        if"<tarot>" in self.message.content:
+        if"<tarot>" in self.message.content.lower():
             tarot = generate_tarot_reading(self.message.content)
             instructionvar+=f"[System Note: The following is the Tarot Shuffle Result, please have {self.bot.bot_name} interpret it in character. \n\n{tarot}]"
 
