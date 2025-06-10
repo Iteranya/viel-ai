@@ -1,3 +1,4 @@
+import asyncio
 import re
 import discord
 from src.controller.config import queue_to_process_everything
@@ -72,6 +73,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
                     if bot.lower() == last_bot.lower():
                         continue
                     print("triggering "+bot)
+                    await asyncio.sleep(5)
                     await bot_think(message, bot.lower())
                     last_bot = bot
                     current_num += 1
