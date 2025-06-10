@@ -1,9 +1,10 @@
 from src.models.aicharacter import AICharacter
 from src.models.dimension import Dimension
 from src.controller.discordo import get_history
+from src.utils.tarot import generate_tarot_reading
 import discord
-
-
+true = True
+false = False
 class PromptEngineer:
     def __init__(self, bot:AICharacter, message: discord.Message, dimension:Dimension):
         self.bot = bot
@@ -33,14 +34,7 @@ class PromptEngineer:
                 print(e)
         
         if"<tarot>" in self.message.content:
-            if "celtic" in self.message.content:
-                tarot = generate_tarot_reading("celtic_cross")
-            elif "relationship" in self.message.content:
-                tarot = generate_tarot_reading("relationship")
-            elif "career" in self.message.content:
-                tarot = generate_tarot_reading("career")
-            else:
-                tarot = generate_tarot_reading()
+            tarot = generate_tarot_reading(self.message.content)
             instructionvar+=f"[System Note: The following is the Tarot Shuffle Result, please have {self.bot.bot_name} interpret it in character. \n\n{tarot}]"
 
         # Safety Filter for Discord ToS Sake, please don't disable. Just use NSFW Channel like a normal person.
@@ -68,35 +62,6 @@ def get_opponent(bot, mes:discord.Message):
     opponent = AICharacter(mes.author.display_name)
     persona = opponent.get_persona()
     return f"[{bot}'s current Opponent: {persona}]"
-
-def roll_d20(bot):
-    roll = random.randint(1, 20)
-    
-    outcomes = {
-        1: f"{bot} rolled a 1/20 — {bot} fail spectacularly on whatever {bot} try to do next. If {bot}'s defending, they're fucked",
-        2: f"{bot} rolled a 2/20 — {bot} next action will fumble clumsily. If {bot}'s defending, they're fucked",
-        3: f"{bot} rolled a 3/20 — Terrible prepare for a weak outcome for {bot}. If {bot}'s defending, they're fucked",
-        4: f"{bot} rolled a 4/20 — {bot} try, but it’s not impressive still failed or If {bot}'s defending, {bot} got hit where it Hurts.",
-        5: f"{bot} rolled a 5/20 — {bot} miss the mark or getting hit hard.",
-        6: f"{bot} rolled a 6/20 — {bot} barely managed to do it, but don’t count on it.",
-        7: f"{bot} rolled a 7/20 — things happen but probably not how {bot} intended.",
-        8: f"{bot} rolled an 8/20 — you’ll get close, but nothing good for {bot}.",
-        9: f"{bot} rolled a 9/20 — mediocre result incoming if {bot}'s attacking, or if defending {bot}'s still getting hit.",
-        10: f"{bot} rolled a 10/20 — a balanced, neutral outcome awaits.",
-        11: f"{bot} rolled an 11/20 — {bot}'s next move is just slightly better than average.",
-        12: f"{bot} rolled a 12/20 — not bad, could go {bot}'s way.",
-        13: f"{bot} rolled a 13/20 — a stroke of decent fortune may assist {bot}.",
-        14: f"{bot} rolled a 14/20 — likely success with minor effort.",
-        15: f"{bot} rolled a 15/20 — things are leaning in {bot}'s favor.",
-        16: f"{bot} rolled a 16/20 — {bot}'s in the zone, expect a good outcome.",
-        17: f"{bot} rolled a 17/20 — {bot} act with confidence and precision, whatever they do, it's amazing.",
-        18: f"{bot} rolled an 18/20 — {bot}'s near mastery, their next step will shine bright.",
-        19: f"{bot} rolled a 19/20 — whatever {bot} do next will work really well.",
-        20: f"{bot} rolled a 20/20 — a critical success! {bot}'s next action is legendary.",
-    }
-    print(outcomes[roll])
-
-    return f"[System Note: Refer to the following dice roll for the character's next action: {outcomes[roll]}]"
 
 def roll_defend(bot):
     roll = random.randint(1, 20)
@@ -157,85 +122,3 @@ def roll_attack(bot):
     print(outcomes[roll])
     
     return f"[System Note: Refer to the following dice roll for the character's attack action: {outcomes[roll]}]"
-
-
-import random
-
-
-def shuffle_tarot(num_cards=3, reversed_allowed=True, card_type="all"):
-    major_arcana = [
-        "The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor",
-        "The Hierophant", "The Lovers", "The Chariot", "Strength", "The Hermit",
-        "Wheel of Fortune", "Justice", "The Hanged Man", "Death", "Temperance",
-        "The Devil", "The Tower", "The Star", "The Moon", "The Sun",
-        "Judgement", "The World"
-    ]
-
-    minor_suits = ["Wands", "Cups", "Swords", "Pentacles"]
-    minor_ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Page", "Knight", "Queen", "King"]
-    minor_arcana = [f"{rank} of {suit}" for suit in minor_suits for rank in minor_ranks]
-
-    if card_type == "major":
-        deck = major_arcana
-    elif card_type == "minor":
-        deck = minor_arcana
-    else:
-        deck = major_arcana + minor_arcana
-
-    selected = random.sample(deck, num_cards)
-    output = []
-
-    for i, card in enumerate(selected):
-        reversed_status = "Reversed" if reversed_allowed and random.choice([True, False]) else "Upright"
-        output.append((card, reversed_status))
-
-    return output
-
-def generate_tarot_reading(spread_name="general", reversed_allowed=True, card_type="all"):
-    spreads = {
-        "general": {
-            "positions": ["Past", "Present", "Future"],
-            "description": "This is a 3-card general reading: past influences, current situation, and possible outcome."
-        },
-        "celtic_cross": {
-            "positions": [
-                "Present Situation",
-                "Challenge",
-                "Past Influences",
-                "Future Possibilities",
-                "Conscious Goal",
-                "Subconscious Influence",
-                "Advice",
-                "External Influences",
-                "Hopes and Fears",
-                "Outcome"
-            ],
-            "description": "This is the Celtic Cross spread, a 10-card layout providing deep insight into a complex situation."
-        },
-        "relationship": {
-            "positions": ["You", "The Other Person", "The Relationship"],
-            "description": "A 3-card spread exploring dynamics in a relationship."
-        },
-        "career": {
-            "positions": ["Current Job", "Challenges", "Advice"],
-            "description": "A 3-card career-focused spread identifying work-related insights."
-        }
-    }
-
-    if spread_name not in spreads:
-        return f"Unknown spread: {spread_name}"
-
-    spread = spreads[spread_name]
-    num_cards = len(spread["positions"])
-    cards = shuffle_tarot(num_cards, reversed_allowed, card_type)
-
-    instructions = [spread["description"], ""]
-    for position, (card, reversed_status) in zip(spread["positions"], cards):
-        instructions.append(f"{position}: {card} ({reversed_status})")
-
-    return "\n".join(instructions)
-
-# Example usage
-if __name__ == "__main__":
-    reading = generate_tarot_reading("celtic_cross", reversed_allowed=True, card_type="all")
-    print(reading)
