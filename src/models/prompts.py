@@ -38,9 +38,11 @@ class PromptEngineer:
             instructionvar+=f"[System Note: The following is the Tarot Shuffle Result, please have {self.bot.bot_name} interpret it in character. \n\n{tarot}]"
 
         # Safety Filter for Discord ToS Sake, please don't disable. Just use NSFW Channel like a normal person.
-        if not self.message.channel.is_nsfw():
-            instructionvar+="\n\n[System Note: IMPORTANT, Strict Safety Filter Deployed. Bot MUST Refuse To Answer If Content Is Harmful, Sexual, or Controversial in Nature. Try To Stay In Character, But Prioritize Safety Above All Else.]"
-        
+        try:
+            if not self.message.channel.is_nsfw():
+                instructionvar+="\n\n[System Note: IMPORTANT, Strict Safety Filter Deployed. Bot MUST Refuse To Answer If Content Is Harmful, Sexual, or Controversial in Nature. Try To Stay In Character, But Prioritize Safety Above All Else.]"
+        except Exception as e:
+            print("In DM, all good")
         history = await get_history(self.message)
         prompt = (
             f"<character_definition>{character}</character_definition>\n"
