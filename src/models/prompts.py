@@ -2,7 +2,9 @@ from src.models.aicharacter import AICharacter
 from src.models.dimension import Dimension
 from src.controller.discordo import get_history
 from src.utils.tarot import generate_tarot_reading
+from src.utils.bot_thonk import extract_plugin_docs_as_string
 import discord
+import random
 true = True
 false = False
 class PromptEngineer:
@@ -58,7 +60,70 @@ class PromptEngineer:
         self.stopping_string = ["[System", "(System", self.user + ":", "[End","[/"] 
         #print(prompt)
         return prompt
-import random
+    
+    async def create_smart_prompt(self)->str:
+        character = await self.bot.get_character_prompt()
+        tools = extract_plugin_docs_as_string()
+        globalvar = f"""
+[System Note: Free coding is enabled. You may only use the following libraries: 
+
+import re
+import math
+import json
+import datetime
+import time
+from typing import Dict
+import urllib.request
+import urllib.parse
+import statistics
+
+And the following functions:
+
+{tools}
+
+Please pay attention, your next response must be written in the following format:
+
+```py
+async def create_reply():
+    # Some code and functions
+    return "Understood"
+```
+
+Check Notes for a valid function:
+
+- Must be a single create_reply() function
+- Must be async (even when it's not, add like 1 second timeout to make it async)
+- Must return a string (this is your final answer)
+]
+"""
+        instructionvar = """
+        [System Note: Write a python code that helps you answer the instruction above. If there's no instruction, simply write down your answer in character
+        Example:
+        ```py
+        async def create_reply():
+            return "1+1=2, I dont need to use math library for that..."
+        ```
+        ]"""
+
+        # Safety Filter for Discord ToS Sake, please don't disable. Just use NSFW Channel like a normal person.
+        try:
+            print(globalvar)
+            if not self.message.channel.is_nsfw():
+                instructionvar+="\n\n[System Note: IMPORTANT, Strict Safety Filter Deployed. Bot MUST Refuse To Answer If Content Is Harmful, Sexual, or Controversial in Nature. Try To Stay In Character, But Prioritize Safety Above All Else.]"
+        except Exception as e:
+            print("In DM, all good")
+        history = await get_history(self.message)
+        prompt = (
+            f"<character_definition>{character}</character_definition>\n"
+            f"<tools>{globalvar}</tools>\n"
+            f"<conversation_history>{history}</conversation_history>\n"
+            f"<additional_note>{instructionvar}</additional_note>\n"
+        )
+        self.prefill = f"\n[Reply] {self.bot.name}:"
+        self.stopping_string = ["[System", "(System", self.user + ":", "[End","[/"] 
+        #print(prompt)
+        return prompt
+
 
 def get_opponent(bot, mes:discord.Message):
     opponent = AICharacter(mes.author.display_name)
@@ -93,8 +158,6 @@ def roll_defend(bot):
     print(outcomes[roll])
 
     return f"[System Note: Refer to the following dice roll for the character's defensive action: {outcomes[roll]}]"
-
-import random
 
 def roll_attack(bot):
     roll = random.randint(1, 20)

@@ -1,6 +1,5 @@
 from openai import OpenAI
 from src.models.queue import QueueItem
-from src.models.prompts import PromptEngineer
 from src.data.config_data import load_or_create_config,Config,get_key
 import re
 import traceback

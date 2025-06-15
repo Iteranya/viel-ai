@@ -14,6 +14,7 @@ from src.utils.image_gen import generate_sd_prompt
 from src.utils.pollination import fetch_image
 from src.utils.hidream import invoke_chute
 from src.utils.duckduckgo import research,image_research
+from src.utils.bot_thonk import extract_all_functions,create_script_environment
 
 def format_traceback(error: Exception, *, _print: bool = False) -> str:
     # https://github.com/InterStella0/stella_bot/blob/896c94e847829575d4699c0dd9d9b925d01c4b44/utils/useful.py#L132~L140
@@ -58,6 +59,8 @@ async def think() -> None:
         try:
             if message_content.startswith("//"):
                 pass
+            elif message_content.startswith("^"):
+                await send_llm_message(bot,message,dimension, plugin="thonk")
             elif message_content.startswith("img_search>"):
                 search_query = message.content.replace("img_search>","")
                 search_query = search_query.lower()
@@ -79,20 +82,6 @@ async def think() -> None:
                 print(search_query)
                 search_result = await research(search_query)
                 await send_llm_message(bot,message,dimension,plugin = search_result)
-            elif message_content.startswith("enpic>"):
-                image_prompt = await generate_sd_prompt(message)
-                await invoke_chute(image_prompt) # Use Chutes
-                await send_llm_message(bot,message,dimension)
-            elif message_content.startswith("hipic>"):
-                image_prompt = message.content.replace("pic>","")
-                image_prompt = image_prompt.replace(bot.bot_name,"")
-                await invoke_chute(image_prompt) # Use Chutes
-                await send_llm_message(bot,message,dimension)
-            elif message_content.startswith("pic>"):
-                image_prompt = message.content.replace("pic>","")
-                image_prompt = image_prompt.replace(bot.bot_name,"")
-                await fetch_image(image_prompt,"temp.jpg",**params) # Use Pollination
-                await send_llm_message(bot,message,dimension)
             else:
                 await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
         except Exception as e:
@@ -122,6 +111,17 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
             dm=dm,
             message=prompter.message,
             images=["temp.jpg"]
+            )
+    elif plugin == "thonk":
+        queueItem = QueueItem(
+            prompt=await prompter.create_smart_prompt(),
+            bot = bot.name,
+            user = message.author.display_name,
+            stop=prompter.stopping_string,
+            prefill=prompter.prefill,
+            dm=dm,
+            message=prompter.message,
+            plugin=plugin
             )
     elif isinstance(plugin,str):
         queueItem = QueueItem(
@@ -162,6 +162,14 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
         queueItem.result = f"[System Note: Attached is the generated image by {queueItem.bot}]"
     if not queueItem.result:
         queueItem.result = "//Something Went Wrong, AI Failed to Generate"
+    if "create_reply()" in queueItem.result:
+        print(queueItem.result)
+        script_to_run = extract_all_functions(queueItem.result)
+        print("Final Function: "+ str(script_to_run))
+        script = create_script_environment(script_to_run)
+        final = await script()
+        queueItem.result = final
+        print("Final script result: "+final)
     
     await send(bot,message,queueItem)
     try:
