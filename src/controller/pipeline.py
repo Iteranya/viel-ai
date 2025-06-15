@@ -49,6 +49,7 @@ async def think() -> None:
         message:discord.Message = content["message"]
         bot:AICharacter = content["bot"]
         dimension:Dimension = content["dimension"]
+        default:bool = content["default"]
 
         try:
             await message.add_reaction('✨')
@@ -59,29 +60,8 @@ async def think() -> None:
         try:
             if message_content.startswith("//"):
                 pass
-            elif message_content.startswith("^"):
+            elif message_content.startswith("^") or default==True:
                 await send_llm_message(bot,message,dimension, plugin="thonk")
-            elif message_content.startswith("img_search>"):
-                search_query = message.content.replace("img_search>","")
-                search_query = search_query.lower()
-                search_query = search_query.replace(bot.bot_name.lower(),"") # Wait, why is it not working???
-                print(search_query)
-                search_result = await image_research(search_query,50,'on')
-                await send_llm_message(bot,message,dimension,plugin = search_result)
-            elif message_content.startswith("nsfw_search>"):
-                search_query = message.content.replace("nsfw_search>","")
-                search_query = search_query.lower()
-                search_query = search_query.replace(bot.bot_name.lower(),"") # Wait, why is it not working???
-                print(search_query)
-                search_result = await image_research(search_query,50,'off')
-                await send_llm_message(bot,message,dimension,plugin = search_result)
-            elif message_content.startswith("search>"):
-                search_query = message.content.replace("search>","")
-                search_query = search_query.lower()
-                search_query = search_query.replace(bot.bot_name.lower(),"") # Wait, why is it not working???
-                print(search_query)
-                search_result = await research(search_query)
-                await send_llm_message(bot,message,dimension,plugin = search_result)
             else:
                 await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
         except Exception as e:
@@ -121,7 +101,8 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
             prefill=prompter.prefill,
             dm=dm,
             message=prompter.message,
-            plugin=plugin
+            plugin=plugin,
+            default=True
             )
     elif isinstance(plugin,str):
         queueItem = QueueItem(

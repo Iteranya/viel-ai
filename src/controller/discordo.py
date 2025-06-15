@@ -183,6 +183,8 @@ class DiscordHandler:
             await self._send_error_message(queue_item, message)
         elif queue_item.dm:
             await self._send_dm_message(queue_item, bot, message)
+        elif queue_item.default:
+            await self._send_dm_message(queue_item, bot, message)
         else:
             await self._send_bot_message(queue_item, bot, message)
     

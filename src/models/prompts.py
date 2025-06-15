@@ -64,7 +64,10 @@ class PromptEngineer:
     async def create_smart_prompt(self)->str:
         character = await self.bot.get_character_prompt()
         tools = extract_plugin_docs_as_string()
-        globalvar = f"""
+        globalvar = self.dimension.getDict().get("globalvar", "")
+        locationvar = self.dimension.getDict().get("location", "")
+        instructionvar = self.dimension.getDict().get("instruction", "")
+        globalvar += f"""
 [System Note: Free coding is enabled. You may only use the following libraries: 
 
 import re
@@ -96,12 +99,12 @@ Check Notes for a valid function:
 - Must return a string (this is your final answer)
 ]
 """
-        instructionvar = """
-        [System Note: Write a python code that helps you answer the instruction above. If there's no instruction, simply write down your answer in character
+        instructionvar += """
+        [System Note: Write a python code that helps you answer the instruction above. If there's no instruction, simply write down your answer in character. Always write your answer through this python format, this is your way to interact with reality.
         Example:
         ```py
         async def create_reply():
-            return "1+1=2, I dont need to use math library for that..."
+            return "Hi~ Hi~ Hello!\nCan you hear me?"
         ```
         ]"""
 

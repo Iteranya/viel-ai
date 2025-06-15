@@ -15,3 +15,4 @@ class QueueItem:
     prefill:str = None
     message:discord.Message = None
     plugin:str = None
+    default:bool = False

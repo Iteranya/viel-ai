@@ -8,14 +8,13 @@ from src.models.dimension import Dimension
 from src.data.config_data import load_or_create_config
 from src.data.dimension_data import get_channel_whitelist
 
-# This is the main code that deals with determining what type of request is being given.
-## Also the gateway to LAM
 current_num:int = 0
 last_bot = ""
 async def bot_behavior(message: discord.Message, client: discord.Client) -> bool:
     global current_num
     global last_bot
     data = load_or_create_config()
+
     if isinstance(message.channel,discord.DMChannel): # Check if DM or Nah
         if message.author.display_name == client.user.display_name:
             return
@@ -24,6 +23,20 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
         if message.author.display_name.lower() != char.lower():
             await bot_think(message,char)
         return 
+    
+    if message.reference or client.user in message.mentions:
+        try:
+            replied_to = await message.channel.fetch_message(message.reference.message_id)
+            if replied_to and replied_to.author.id == client.user.id:
+                if message.author.display_name == client.user.display_name:
+                    return
+                char = data.default_character
+                if message.author.display_name.lower() != char.lower():
+                    await bot_think(message, char, True)
+                return
+        except Exception as e:
+            print(f"Failed to fetch replied message for mention+reply combo: {e}")
+
 
     whitelist = await get_channel_whitelist(message.channel.guild.name,message.channel.name)
     print("Author: "+str(message.author.display_name))
@@ -51,7 +64,6 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
                     await bot_think(message,bot.lower())
                     last_bot = bot
                     current_num = 0
-                    #return True
 
         return 
     else:
@@ -82,7 +94,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
     return 
 
 
-async def bot_think(message: discord.message.Message, bot: str) -> None:
+async def bot_think(message: discord.message.Message, bot: str, default = False) -> None:
     channel = get_context(message)
     print(type(channel))
     aicharacter = AICharacter(bot)
@@ -94,7 +106,8 @@ async def bot_think(message: discord.message.Message, bot: str) -> None:
     queue_item = {
         "bot" : aicharacter,
         "message":message, # Yes, the actual message object 
-        "dimension":dimension
+        "dimension":dimension,
+        "default":default
     }
     queue_to_process_everything.put_nowait(queue_item)
     return
