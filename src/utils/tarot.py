@@ -132,8 +132,8 @@ SPREADS = {
             "Crown Chakra (Spirituality, Connection)"
         ],
         "description": "A 7-card spread to assess the energy and balance of your major chakras.",
-        "reversed": True,
-        "cards_used": "all"
+        "reversed": False,
+        "cards_used": "major"
     }
 }
 
