@@ -24,7 +24,7 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
             await bot_think(message,char)
         return 
     
-    if message.reference or client.user in message.mentions:
+    if client.user in message.mentions:
         try:
             if message.author.display_name == client.user.display_name:
                 return
