@@ -3,6 +3,7 @@ from src.models.dimension import Dimension
 from src.controller.discordo import get_history
 from src.utils.tarot import generate_tarot_reading
 from src.utils.bot_thonk import extract_plugin_docs_as_string
+from src.utils.duckduckgo import research
 import discord
 import random
 true = True
@@ -24,6 +25,18 @@ class PromptEngineer:
         globalvar = self.dimension.getDict().get("globalvar", "")
         locationvar = self.dimension.getDict().get("location", "")
         instructionvar = self.dimension.getDict().get("instruction", "")
+
+        if self.message.content.startswith("search>"):
+            try:
+                search_query = self.message.content.replace("search>","")
+                search_query = search_query.lower()
+                search_query = search_query.replace(self.bot.bot_name.lower(),"") # Wait, why is it not working???
+                #print(search_query)
+                search_result = await research(search_query)
+                instructionvar+=search_result
+            except Exception as e:
+                print (e)
+
         if "<battle_rp>" in self.dimension.instruction:
             try:
                 try:

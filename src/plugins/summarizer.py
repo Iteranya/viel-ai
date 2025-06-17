@@ -1,12 +1,12 @@
 
 import re
-from src.utils.llm_new import generate_blank
+from src.utils.llm_new import generate_in_character
 from src.controller.plugin_registry import plugin
 
 @plugin
 async def summarize(content: str):
     """
-    Summarizes the given text content into a concise, markdown-friendly snippet highlighting only the core information.
+    Summarizes the given text content or search result into a concise, markdown-friendly snippet highlighting only the core information.
 
     This asynchronous function uses a prompt-based approach to guide a language model (presumably via `generate_blank`)
     into producing a well-formatted summary wrapped in <summary> tags. The summary is extracted and returned as plain text.
@@ -32,7 +32,7 @@ async def summarize(content: str):
     assistant_prompt = "Understood, here is the summary of the given text between <summary>  </summary>"
     user_prompt = f"Please summarize the following text: <text>{content}</text>"
     
-    response = await generate_blank(summary_prompt, user_prompt, assistant_prompt)
+    response = await generate_in_character(summary_prompt, user_prompt, assistant_prompt)
 
     # Pull out the juicy core summary wrapped in <summary> tags
     match = re.search(r"<summary>(.*?)</summary>", response, re.DOTALL)

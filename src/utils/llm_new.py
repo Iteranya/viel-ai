@@ -3,6 +3,7 @@ from src.models.queue import QueueItem
 from src.data.config_data import load_or_create_config,Config,get_key
 import re
 import traceback
+from src.models.aicharacter import AICharacter
 
 async def generate_response(task: QueueItem):
     try:
@@ -101,6 +102,45 @@ async def generate_blank(system,user,assistant):
                 {
                     "role": "system",
                     "content": system
+                },
+                {
+                    "role": "user",
+                    "content":user
+                },
+                {
+                    "role": "assistant",
+                    "content": assistant
+                }
+            ]
+        )
+
+        result = completion.choices[0].message.content if completion.choices else f"//[Error]"
+        result = clean_thonk(result)
+    except Exception as e:
+        result = str(e)
+    return result
+
+async def generate_in_character(system,user,assistant):
+    config = load_or_create_config()
+    bot = AICharacter(config.default_character)
+    char_prompt = await bot.get_character_prompt()
+    system_prompt = char_prompt + system
+
+    try:
+        ai_config: Config = load_or_create_config()
+
+        client = OpenAI(
+            base_url=ai_config.ai_endpoint,
+            api_key=get_key(),
+        )
+
+        completion = client.chat.completions.create(
+            model=ai_config.base_llm,
+            temperature=ai_config.temperature,
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt
                 },
                 {
                     "role": "user",

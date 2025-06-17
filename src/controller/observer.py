@@ -26,14 +26,12 @@ async def bot_behavior(message: discord.Message, client: discord.Client) -> bool
     
     if message.reference or client.user in message.mentions:
         try:
-            replied_to = await message.channel.fetch_message(message.reference.message_id)
-            if replied_to and replied_to.author.id == client.user.id:
-                if message.author.display_name == client.user.display_name:
-                    return
-                char = data.default_character
-                if message.author.display_name.lower() != char.lower():
-                    await bot_think(message, char, True)
+            if message.author.display_name == client.user.display_name:
                 return
+            char = data.default_character
+            if message.author.display_name.lower() != char.lower():
+                await bot_think(message, char, True)
+            return
         except Exception as e:
             print(f"Failed to fetch replied message for mention+reply combo: {e}")
 
