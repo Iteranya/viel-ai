@@ -108,7 +108,7 @@ async def research(search):
     for i, query in enumerate(queries):
         # Add delay between searches (except for the first one)
         if i > 0:
-            await asyncio.sleep(1.5)  # Wait 1.5 seconds between searches
+            await asyncio.sleep(5)  # Wait 1.5 seconds between searches
             
         bebek = Bebek(query)
         try:

@@ -31,9 +31,11 @@ class PromptEngineer:
                 search_query = self.message.content.replace("search>","")
                 search_query = search_query.lower()
                 search_query = search_query.replace(self.bot.bot_name.lower(),"") # Wait, why is it not working???
-                #print(search_query)
+                print(search_query)
                 search_result = await research(search_query)
-                instructionvar+=search_result
+                #print(search_result)
+                instructionvar += search_result
+                #print(instructionvar)
             except Exception as e:
                 print (e)
 
@@ -59,6 +61,7 @@ class PromptEngineer:
         except Exception as e:
             print("In DM, all good")
         history = await get_history(self.message)
+        print("Instruction ====== " + instructionvar)
         prompt = (
             f"<character_definition>{character}</character_definition>\n"
             f"<lore>{globalvar}</lore>\n"
