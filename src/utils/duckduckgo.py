@@ -21,7 +21,7 @@ class Bebek:
         try:
             # Run the synchronous text search in a thread pool
             results = await self._run_in_executor(
-                self.ddgs.text,
+                self.ddgs.text(backend="lite"),
                 self.query,
                 region='wt-wt',
                 safesearch="off",
