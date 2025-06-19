@@ -17,7 +17,7 @@ Neither I, nor any potential evolution of me (including but not limited to Start
 ## 🚫 No Paywalls, No Premium Nonsense
 
 I solemnly and dramatically swear that I shall **never, ever**:
-- Lock any portion of this project behind a paywall
+- Lock any portion of this project source code behind a paywall
 - Offer “premium”, “pro”, “enterprise”, or “unicorn elite” editions
 - Introduce “donor-only” features, “early access” gimmicks, or “supporter perks”
 - Sell out for VC funding, IPO dreams, or fancy ergonomic chairs with lumbar support
@@ -37,6 +37,7 @@ This pledge does **not** apply to rewrites where someone just slaps a new UI on 
 
 You are explicitly permitted to:
 - Run this project as a hosted paid service
+- Create a premium/pro/enterprise version access (given all premium source code stays open)
 - Offer paid hosting or managed deployments
 - Modify and enhance it (as long as your changes also follow the AGPL-3.0-only license and are made publicly available)
 
