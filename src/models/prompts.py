@@ -6,6 +6,8 @@ from src.utils.bot_thonk import extract_plugin_docs_as_string
 from src.utils.duckduckgo import research
 import discord
 import random
+import re
+# wtf? are you allergic to using caps or somethin?
 true = True
 false = False
 class PromptEngineer:
@@ -30,8 +32,8 @@ class PromptEngineer:
             try:
                 search_query = self.message.content.replace("search>","")
                 search_query = search_query.lower()
-                search_query = search_query.replace(self.bot.bot_name.lower(),"") # Wait, why is it not working???
-                print(search_query)
+                search_query = re.sub(re.escape(self.bot.bot_name.lower()), "", search_query, flags=re.I)
+                #print(search_query)
                 search_result = await research(search_query)
                 #print(search_result)
                 instructionvar += search_result
