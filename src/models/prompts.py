@@ -35,7 +35,9 @@ class PromptEngineer:
                 search_query = re.sub(re.escape(self.bot.bot_name.lower()), "", search_query, flags=re.I)
                 #print(search_query)
                 search_result = await research(search_query)
-                instructionvar+=search_result
+                #print(search_result)
+                instructionvar += search_result
+                #print(instructionvar)
             except Exception as e:
                 print (e)
 
@@ -61,6 +63,7 @@ class PromptEngineer:
         except Exception as e:
             print("In DM, all good")
         history = await get_history(self.message)
+        print("Instruction ====== " + instructionvar)
         prompt = (
             f"<character_definition>{character}</character_definition>\n"
             f"<lore>{globalvar}</lore>\n"

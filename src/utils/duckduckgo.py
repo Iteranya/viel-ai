@@ -25,7 +25,8 @@ class Bebek:
                 self.query,
                 region='wt-wt',
                 safesearch="off",
-                max_results=max_results
+                max_results=max_results,
+                backend = 'lite'
             )
             return list(results)  # Convert generator to list
         except Exception as e:
@@ -40,7 +41,7 @@ class Bebek:
                 self.query,
                 region='wt-wt',
                 safesearch="off",
-                max_results=max_results
+                max_results=max_results,
             )
             return list(results)
         except Exception as e:
@@ -55,7 +56,7 @@ class Bebek:
                 self.query,
                 region='wt-wt',
                 safesearch=safesearch,
-                max_results=max_results
+                max_results=max_results,
             )
             return list(results)
         except Exception as e:

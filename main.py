@@ -1,10 +1,8 @@
 # main.py
 """Main FastAPI application entry point."""
 
-import os
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.routers import characters, servers, config, discord
