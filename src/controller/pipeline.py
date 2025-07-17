@@ -60,8 +60,8 @@ async def think() -> None:
         try:
             if message_content.startswith("//"):
                 pass
-            elif default==True:
-                await send_llm_message(bot,message,dimension, plugin="thonk")
+            # elif default==True:
+            #     await send_llm_message(bot,message,dimension, plugin="thonk")
             else:
                 await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
         except Exception as e:
