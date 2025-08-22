@@ -10,3 +10,6 @@ wheels/
 .venv
 venv
 temp.jpg
+*.png
+*.jpg
+*.webp
