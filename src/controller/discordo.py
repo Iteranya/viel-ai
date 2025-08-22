@@ -49,18 +49,31 @@ class DiscordHandler:
     
     async def _get_image_caption(self, message: discord.Message) -> Optional[str]:
         """
-        Gets an image caption for a message, using cache if available,
-        otherwise generating and saving a new one.
+        Gets an image caption for a message, relying solely on the captions.jsonl file.
+        If not found, it generates and saves a new one.
         Processes only the first valid image attachment.
         """
         if not message.attachments:
             return None
 
-        # Check cache first
-        if message.id in self.captions_cache:
-            return self.captions_cache[message.id]
+        # ### MODIFIED ###
+        # Search the captions.jsonl file directly instead of checking the cache.
+        if os.path.exists(self.captions_file):
+            try:
+                with open(self.captions_file, "r", encoding="utf-8") as f:
+                    for line in f:
+                        try:
+                            data = json.loads(line)
+                            if data.get("message_id") == message.id:
+                                # Found in the file, return the caption.
+                                return data.get("caption")
+                        except json.JSONDecodeError:
+                            # Ignore corrupted lines
+                            continue
+            except IOError as e:
+                print(f"Warning: Could not read captions file during lookup: {e}")
 
-        # Find the first valid image attachment
+        # If not found in the file, proceed to generate a new one.
         image_attachment = None
         for attachment in message.attachments:
             if attachment.content_type and attachment.content_type.startswith("image/"):
@@ -85,9 +98,21 @@ class DiscordHandler:
             # Get description from the downloaded file
             print(f"Generating new caption for message {message.id}...")
             caption = strip_thinking(await describe_image(temp_path))
+            print(caption)
 
-            # Save the new caption
-            self._save_caption(message.id, caption)
+            # ### MODIFIED ###
+            # Save the new caption directly to the file, bypassing the cache.
+            # Note: This is less efficient but fulfills the request.
+            entry = {"message_id": message.id, "caption": caption}
+            try:
+                with open(self.captions_file, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(entry) + "\n")
+                # Also add to cache so the original _save_caption method isn't needed
+                # and to prevent potential inconsistencies if other methods use it.
+                self.captions_cache[message.id] = caption
+            except IOError as e:
+                print(f"Error: Could not save caption to file: {e}")
+
             return caption
 
         except Exception as e:
@@ -97,8 +122,10 @@ class DiscordHandler:
             # Clean up the temporary file
             if os.path.exists(temp_path):
                 os.remove(temp_path)
+
     
     @staticmethod
+    
     def _is_valid_url(url: str) -> bool:
         """Check if a string is a valid URL."""
         try:
@@ -204,7 +231,7 @@ class DiscordHandler:
         image_caption = await self._get_image_caption(message)
         if image_caption:
             # Append the description to the message content
-            content += f" [Image description: {image_caption}]"
+            content += f" [Attached File/Image Description: {image_caption}]"
 
         if content.startswith("[System"):
             return content.strip()

@@ -111,14 +111,14 @@ def describe_image_hf(image_path: str) -> str:
 
 def strip_thinking(text: str) -> str:
     """
-    Removes hidden reasoning/thinking sections marked with ◁think▶ ... ◁/think▶
-    or <think> ... </think>.
+    Removes everything before and including the closing think markers:
+    - </think>
+    - ◁/think▶
+    - \u25c1/think\u25b7 (literal unicode escape)
     Returns the cleaned text.
     """
-    # Remove ◁think▶ ... ◁/think▶
-    cleaned = re.sub(r"◁think▶.*?◁/think▶", "", text, flags=re.DOTALL)
-    # Remove <think> ... </think>
-    cleaned = re.sub(r"<think>.*?</think>", "", cleaned, flags=re.DOTALL)
+    # Remove everything up to and including any closing think marker
+    cleaned = re.sub(r"(?s)^.*?(?:</think>|◁/think▶|◁/think▷|\\u25c1/think\\u25b7)", "", text)
     return cleaned.strip()
 
 # # Example usage
