@@ -94,7 +94,7 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
             )
     elif plugin == "thonk":
         queueItem = QueueItem(
-            prompt=await prompter.create_smart_prompt(),
+            prompt=await prompter.create_text_prompt(),
             bot = bot.name,
             user = message.author.display_name,
             stop=prompter.stopping_string,
