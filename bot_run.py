@@ -1,5 +1,8 @@
 import asyncio
+import json
 import logging
+import os
+from typing import Optional
 import discord
 from discord import app_commands
 import src.controller.observer as observer
@@ -14,7 +17,7 @@ intents: discord.Intents = discord.Intents.all()
 intents.message_content = True
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
-
+CAPTIONS_FILE  = "res/captions.jsonl"
 # Modal
 class EditMessageModal(discord.ui.Modal, title='Edit Message'):
     def __init__(self, original_message):
@@ -86,6 +89,101 @@ class EditMessageModal(discord.ui.Modal, title='Edit Message'):
 
             await interaction.response.send_message(f"An error occurred while editing the message: {e}", ephemeral=True)
 
+class EditCaptionModal(discord.ui.Modal, title='Edit Image Caption'):
+    def __init__(self, original_message: discord.Message):
+        super().__init__()
+        self.original_message = original_message
+
+        # Helper function to get the current caption from the file
+        existing_caption = self._get_caption_from_file(self.original_message.id)
+
+        # Create the text input field
+        self.new_caption = discord.ui.TextInput(
+            label='Image Caption',
+            style=discord.TextStyle.long,
+            placeholder='Enter a description for the image in the message...',
+            required=False,  # Allow submitting an empty string to remove a caption
+            default=existing_caption
+        )
+        self.add_item(self.new_caption)
+
+    def _get_caption_from_file(self, message_id: int) -> Optional[str]:
+        """Reads the jsonl file to find a caption for a specific message ID."""
+        if not os.path.exists(CAPTIONS_FILE):
+            return None
+        try:
+            with open(CAPTIONS_FILE, "r", encoding="utf-8") as f:
+                for line in f:
+                    try:
+                        data = json.loads(line)
+                        if data.get("message_id") == message_id:
+                            return data.get("caption")
+                    except json.JSONDecodeError:
+                        continue # Skip corrupted lines
+        except IOError as e:
+            print(f"Error reading captions file: {e}")
+        return None
+
+    def _save_caption_to_file(self, message_id: int, new_caption: str):
+        """
+        Updates or adds a caption in the jsonl file.
+        This reads all data, modifies it in memory, and rewrites the file.
+        """
+        lines_to_write = []
+        entry_found = False
+
+        # Read existing entries
+        if os.path.exists(CAPTIONS_FILE):
+            try:
+                with open(CAPTIONS_FILE, "r", encoding="utf-8") as f:
+                    for line in f:
+                        try:
+                            data = json.loads(line)
+                            if data.get("message_id") == message_id:
+                                # This is the entry we want to edit
+                                if new_caption: # Update if new caption is not empty
+                                    data["caption"] = new_caption
+                                    lines_to_write.append(data)
+                                # If new_caption is empty, we effectively delete it by not appending it
+                                entry_found = True
+                            else:
+                                # Keep all other entries
+                                lines_to_write.append(data)
+                        except json.JSONDecodeError:
+                            continue # Skip corrupted lines
+            except IOError as e:
+                print(f"Error reading captions file for saving: {e}")
+                # Potentially raise an exception here to notify the user
+                raise
+
+        # If the entry was not found and the new caption is not empty, add it
+        if not entry_found and new_caption:
+            lines_to_write.append({"message_id": message_id, "caption": new_caption})
+
+        # Write all the data back to the file
+        try:
+            with open(CAPTIONS_FILE, "w", encoding="utf-8") as f:
+                for entry in lines_to_write:
+                    f.write(json.dumps(entry) + "\n")
+        except IOError as e:
+            print(f"Error writing captions file: {e}")
+            raise
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            # Get the new content from the text input
+            new_text = self.new_caption.value.strip()
+
+            # Save the new caption to the jsonl file
+            self._save_caption_to_file(self.original_message.id, new_text)
+
+            # Let the user know it was successful
+            await interaction.response.send_message("Caption updated successfully!", ephemeral=True)
+
+        except Exception as e:
+            print(f"An error occurred while editing the caption: {e}")
+            await interaction.response.send_message(f"An error occurred: {e}", ephemeral=True)
+
 async def delete_message_context(interaction: discord.Interaction, message: discord.Message):
     await delete(message,interaction)
 
@@ -96,6 +194,10 @@ async def edit_message_context(interaction: discord.Interaction, message: discor
     else:
         await interaction.response.send_modal(EditMessageModal(message))
     await interaction.response.send_message("This isn't a bot's message, this is human's message",ephemeral=True)
+
+async def edit_caption_context(interaction: discord.Interaction, message: discord.Message):
+
+    await interaction.response.send_modal(EditCaptionModal(message))
 
 async def edit(message:discord.Message, webhook_id, new_content):
     print(webhook_id)
@@ -261,8 +363,15 @@ def setup_bot():
         callback=delete_message_context,
         type=discord.AppCommandType.message
     )
+
+    edit_caption = discord.app_commands.ContextMenu(
+        name= 'Edit / View Caption',
+        callback=edit_caption_context,
+        type=discord.AppCommandType.message
+    )
     
     # Initialize the Commands
+    tree.add_command(edit_caption)
     tree.add_command(edit_message)
     tree.add_command(delete_message)
     setup_commands()
