@@ -1,4 +1,5 @@
 import base64
+import re
 import requests
 import json
 from src.data.config_data import get_key
@@ -57,40 +58,39 @@ async def describe_image_koboldcpp(image_path: str, prompt: str = "Write a descr
 
 async def describe_image(image_path: str) -> str:
     """
-    Takes an image file path, sends it to OpenAI Vision,
+    Takes an image file path, sends it to a vision model,
     and returns a description of the image.
     """
-    import base64
-    from openai import OpenAI
-
-    with open(image_path, "rb") as f:
-        img_b64 = base64.b64encode(f.read()).decode("utf-8")
-
-    client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=get_key(),
-    )
-
     try:
+        with open(image_path, "rb") as f:
+            img_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+        client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=get_key(),
+        )
+
         response = client.chat.completions.create(
-            model="moonshotai/kimi-vl-a3b-thinking:free", 
+            model="moonshotai/kimi-vl-a3b-thinking:free",
             messages=[
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "Write a descriptive caption for this image."},
-                        {"type": "image_url", "image_url": f"data:image/png;base64,{img_b64}"},
+                        {"type": "text", "text": "Write a descriptive caption for this image, if it contains writing, be sure to write all the text down."},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{img_b64}"}},
                     ],
                 }
             ],
+            max_tokens=1024, # Added a token limit for safety
         )
 
-        # ✅ Access correctly
-        print(response)
-        return response.choices[0].message.content[0]
+        description = response.choices[0].message.content
+        # Kimi sometimes returns content in a list, ensure we handle that
+        return description[0] if isinstance(description, list) else description
 
     except Exception as e:
-        return f"Error: {e}"
+        print(f"Error describing image: {e}")
+        return f"<ERROR> Image Failed To Load"
 
 def describe_image_hf(image_path: str) -> str:
     API_URL = " https://huggingface.co/api/models/MiaoshouAI/Florence-2-base-PromptGen-v2.0"
@@ -109,6 +109,17 @@ def describe_image_hf(image_path: str) -> str:
 
     return response.json()
 
+def strip_thinking(text: str) -> str:
+    """
+    Removes hidden reasoning/thinking sections marked with ◁think▶ ... ◁/think▶
+    or <think> ... </think>.
+    Returns the cleaned text.
+    """
+    # Remove ◁think▶ ... ◁/think▶
+    cleaned = re.sub(r"◁think▶.*?◁/think▶", "", text, flags=re.DOTALL)
+    # Remove <think> ... </think>
+    cleaned = re.sub(r"<think>.*?</think>", "", cleaned, flags=re.DOTALL)
+    return cleaned.strip()
 
-# Example usage
-print(describe_image_hf("Herta.png"))
+# # Example usage
+# print(describe_image_hf("Herta.png"))

@@ -1,3 +1,6 @@
+import asyncio
+import json
+import aiohttp
 import discord
 import re
 import os
@@ -7,6 +10,7 @@ from src.controller import config
 from src.models.queue import QueueItem
 from src.models.aicharacter import AICharacter
 from src.utils.image_embed import ImageGalleryView
+from src.utils.image_eval import describe_image, strip_thinking
 
 
 class DiscordHandler:
@@ -14,6 +18,85 @@ class DiscordHandler:
     
     def __init__(self):
         self.message_chunk_size = 1999
+        self.captions_file = "res/captions.jsonl"
+        self.captions_cache = self._load_captions()
+        self.temp_image_dir = "temp_images"
+        os.makedirs(self.temp_image_dir, exist_ok=True)
+
+    def _load_captions(self) -> dict:
+        """Loads message_id:caption pairs from the jsonl file."""
+        cache = {}
+        if not os.path.exists(self.captions_file):
+            return cache
+        try:
+            with open(self.captions_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    data = json.loads(line)
+                    cache[data["message_id"]] = data["caption"]
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"Warning: Could not load captions file: {e}")
+        return cache
+    
+    def _save_caption(self, message_id: int, caption: str):
+        """Saves a new caption to the jsonl file and in-memory cache."""
+        self.captions_cache[message_id] = caption
+        entry = {"message_id": message_id, "caption": caption}
+        try:
+            with open(self.captions_file, "a", encoding="utf-8") as f:
+                f.write(json.dumps(entry) + "\n")
+        except IOError as e:
+            print(f"Error: Could not save caption to file: {e}")
+    
+    async def _get_image_caption(self, message: discord.Message) -> Optional[str]:
+        """
+        Gets an image caption for a message, using cache if available,
+        otherwise generating and saving a new one.
+        Processes only the first valid image attachment.
+        """
+        if not message.attachments:
+            return None
+
+        # Check cache first
+        if message.id in self.captions_cache:
+            return self.captions_cache[message.id]
+
+        # Find the first valid image attachment
+        image_attachment = None
+        for attachment in message.attachments:
+            if attachment.content_type and attachment.content_type.startswith("image/"):
+                image_attachment = attachment
+                break
+
+        if not image_attachment:
+            return None
+
+        # Download, describe, and save
+        temp_path = os.path.join(self.temp_image_dir, f"{message.id}_{image_attachment.filename}")
+        try:
+            # Asynchronously download the image
+            async with aiohttp.ClientSession() as session:
+                async with session.get(image_attachment.url) as resp:
+                    if resp.status == 200:
+                        with open(temp_path, "wb") as f:
+                            f.write(await resp.read())
+                    else:
+                        return "[Could not download image for description]"
+
+            # Get description from the downloaded file
+            print(f"Generating new caption for message {message.id}...")
+            caption = strip_thinking(await describe_image(temp_path))
+
+            # Save the new caption
+            self._save_caption(message.id, caption)
+            return caption
+
+        except Exception as e:
+            print(f"Failed during caption generation for message {message.id}: {e}")
+            return "[Error generating image description]"
+        finally:
+            # Clean up the temporary file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
     
     @staticmethod
     def _is_valid_url(url: str) -> bool:
@@ -88,54 +171,49 @@ class DiscordHandler:
     async def get_history(self, message: discord.Message, limit: int = 100) -> str:
         """
         Retrieve and format message history from a Discord channel.
-        
-        Args:
-            message: The Discord message to get context from
-            limit: Maximum number of messages to retrieve
-            
-        Returns:
-            Formatted history string
+        Includes descriptions for messages with image attachments.
         """
-        history = []
         context = self.get_context(message)
-        
-        async for msg in context.history(limit=limit):
-            formatted_message = self._format_message(msg)
-            if formatted_message:
-                history.append(formatted_message)
-        
+
+        # Fetch messages first
+        messages = [msg async for msg in context.history(limit=limit)]
+
+       # Create formatting tasks to run concurrently
+        tasks = [self._format_message(msg) for msg in messages]
+        formatted_messages = await asyncio.gather(*tasks)
+
+        # Filter out any ignored messages (which return None)
+        history = [fm for fm in formatted_messages if fm]
+
         # Reverse to get chronological order
         history.reverse()
-        
+
         # Join messages and apply reset logic
         content = "\n\n".join(history)
         content = self._apply_reset_logic(content)
         return content + "\n\n"
     
-    def _format_message(self, message: discord.Message) -> Optional[str]:
+    async def _format_message(self, message: discord.Message) -> Optional[str]:
         """
-        Format a Discord message based on its content and prefix.
-        
-        Args:
-            message: The Discord message to format
-            
-        Returns:
-            Formatted message string or None if message should be ignored
+        Format a Discord message, adding image descriptions if attachments exist.
         """
         name = self._sanitize_name(message.author.display_name)
         content = self._clean_content(message.content)
-        
+
+        # ### NEW ###: Get image caption if an image is attached
+        image_caption = await self._get_image_caption(message)
+        if image_caption:
+            # Append the description to the message content
+            content += f" [Image description: {image_caption}]"
+
         if content.startswith("[System"):
             return content.strip()
         elif content.startswith("//"):
-            # Ignore comments
             return None
         elif content.startswith("^"):
-            # Reply format
-            content = content[1:]  # Remove ^ prefix
+            content = content[1:]
             return f"[Reply]{name}: {content.strip()}[End]"
         else:
-            # Regular message
             return f"[Reply]{name}: {content.strip()}[End]"
     
     @staticmethod
@@ -517,7 +595,8 @@ def get_context(message: discord.Message):
 
 async def get_history(message: discord.Message, limit: int = 100):
     """Backward compatibility function."""
-    return await discord_handler.get_history(message, limit)
+    history = await discord_handler.get_history(message, limit)
+    return history
 
 async def send(bot, message: discord.Message, queue_item: QueueItem):
     """Backward compatibility function."""
