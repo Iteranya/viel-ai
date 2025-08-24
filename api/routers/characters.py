@@ -6,7 +6,7 @@ import os
 from fastapi import APIRouter, Body, Path, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pathlib import Path as FilePath
-from typing import Any, List
+from typing import List
 
 from api.models.schemas import CharacterModel, PatchOperation
 from api.constants import CHARACTERS_DIR

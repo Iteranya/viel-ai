@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viel Bot Dashboard</title>
+
+    <!-- 1. Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 2. Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 3. Your custom CSS file -->
+    <link rel="stylesheet" href="frontend/index.css">
+
+    <!-- 4. Preact Devtools (optional) -->
+    <script type="module">
+        import 'https://esm.sh/preact/devtools';
+    </script>
+
+    <!-- BABEL IS GONE! -->
+
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+    <!-- The root element where your Preact app will be mounted -->
+    <div id="app"></div>
+
+    <!-- 5. Your application script - back to type="module" -->
+    <script type="module">
+        // Import Preact's rendering functions
+        import { h, render } from 'https://esm.sh/preact';
+
+        // Import your main App component
+        import { App } from './frontend/App.js';
+
+        // We can use JSX here because this is the only file the browser sees directly
+        // But to be consistent, we'll use the h() function which is what JSX compiles to.
+        render(h(App), document.getElementById('app'));
+    </script>
+</body>
+</html>

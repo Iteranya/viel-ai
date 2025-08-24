@@ -4,6 +4,7 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from api.routers import characters, servers, config, discord
 
@@ -14,7 +15,7 @@ app = FastAPI(
 )
 
 # Set up static files
-# app.mount("/interface", StaticFiles(directory="interface"), name="interface")
+app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
 
 # Include routers
 app.include_router(characters.router)
