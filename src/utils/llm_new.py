@@ -1,4 +1,4 @@
-from openai import OpenAI
+from openai import AsyncOpenAI
 from src.models.queue import QueueItem
 from src.data.config_data import load_or_create_config,Config,get_key
 import re
@@ -8,14 +8,14 @@ from src.models.aicharacter import AICharacter
 async def generate_response(task: QueueItem):
     try:
         ai_config: Config = load_or_create_config()
-        client = OpenAI(
+        client = AsyncOpenAI(
             base_url=ai_config.ai_endpoint,
             api_key=get_key(),
         )
         user_message = clean_string(task.message.content)
         if task.plugin:
             user_message = f"[System Note: {task.plugin}]\n{user_message}"
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
             model=ai_config.base_llm,
             stop=task.stop,
             temperature=ai_config.temperature,
@@ -90,12 +90,12 @@ async def generate_blank(system,user,assistant):
     try:
         ai_config: Config = load_or_create_config()
 
-        client = OpenAI(
+        client = AsyncOpenAI(
             base_url=ai_config.ai_endpoint,
             api_key=get_key(),
         )
 
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
             model=ai_config.base_llm,
             temperature=ai_config.temperature,
             messages=[
@@ -129,12 +129,12 @@ async def generate_in_character(system,user,assistant):
     try:
         ai_config: Config = load_or_create_config()
 
-        client = OpenAI(
+        client = AsyncOpenAI(
             base_url=ai_config.ai_endpoint,
             api_key=get_key(),
         )
 
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
             model=ai_config.base_llm,
             temperature=ai_config.temperature,
             messages=[
