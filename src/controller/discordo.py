@@ -105,11 +105,12 @@ class DiscordHandler:
             # Note: This is less efficient but fulfills the request.
             entry = {"message_id": message.id, "caption": caption}
             try:
-                with open(self.captions_file, "a", encoding="utf-8") as f:
-                    f.write(json.dumps(entry) + "\n")
-                # Also add to cache so the original _save_caption method isn't needed
-                # and to prevent potential inconsistencies if other methods use it.
-                self.captions_cache[message.id] = caption
+                if "<ERROR>" not in caption:
+                    with open(self.captions_file, "a", encoding="utf-8") as f:
+                        f.write(json.dumps(entry) + "\n")
+                    # Also add to cache so the original _save_caption method isn't needed
+                    # and to prevent potential inconsistencies if other methods use it.
+                    self.captions_cache[message.id] = caption
             except IOError as e:
                 print(f"Error: Could not save caption to file: {e}")
 
