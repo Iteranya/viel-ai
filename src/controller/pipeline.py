@@ -41,6 +41,7 @@ params = {
 async def think() -> None:
 
     while True:
+        research_result = ""
         content = await queue_to_process_everything.get()
         try:
             delete_file("temp.jpg") # Hacky Solution, I know
@@ -57,6 +58,7 @@ async def think() -> None:
             print("Hi!")
 
         message_content = str(message.content)
+
         try:
             if message_content.startswith("//"):
                 pass
@@ -91,40 +93,6 @@ async def send_llm_message(bot: AICharacter,message:discord.message.Message,dime
             dm=dm,
             message=prompter.message,
             images=["temp.jpg"]
-            )
-    elif plugin == "thonk":
-        queueItem = QueueItem(
-            prompt=await prompter.create_text_prompt(),
-            bot = bot.name,
-            user = message.author.display_name,
-            stop=prompter.stopping_string,
-            prefill=prompter.prefill,
-            dm=dm,
-            message=prompter.message,
-            plugin=plugin,
-            default=True
-            )
-    elif isinstance(plugin,str):
-        queueItem = QueueItem(
-            prompt=await prompter.create_text_prompt(),
-            bot = bot.name,
-            user = message.author.display_name,
-            stop=prompter.stopping_string,
-            prefill=prompter.prefill,
-            dm=dm,
-            message=prompter.message,
-            plugin=plugin
-            )
-    elif isinstance(plugin,list):
-        queueItem = QueueItem(
-            prompt=await prompter.create_text_prompt(),
-            bot = bot.name,
-            user = message.author.display_name,
-            stop=prompter.stopping_string,
-            prefill=prompter.prefill,
-            dm=dm,
-            message=prompter.message,
-            images=plugin
             )
     else:
         queueItem = QueueItem(
