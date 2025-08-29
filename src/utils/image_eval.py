@@ -66,12 +66,12 @@ async def describe_image(image_path: str) -> str:
             img_b64 = base64.b64encode(f.read()).decode("utf-8")
 
         client = OpenAI(
-            base_url="https://text.pollinations.ai/openai",
+            base_url="https://openrouter.ai/api/v1",
             api_key=get_key(),
         )
 
         response = client.chat.completions.create(
-            model="openai-large",
+            model="google/gemini-2.5-flash-image-preview:free",
             messages=[
                 {
                     "role": "user",
