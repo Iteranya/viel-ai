@@ -52,12 +52,11 @@ async def favicon():
     return FileResponse(file_path, media_type="image/x-icon")
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run FastAPI app with configurable options 🚀"
     )
-    
+
     parser.add_argument(
         "--host",
         choices=["127.0.0.1", "0.0.0.0", "localhost"],
@@ -68,9 +67,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--port",
         type=int,
-        choices=[5000, 5666, 8000, 8080, 9000],
         default=5666,
-        help="Port to run the server on (default: 5666)"
+        metavar="PORT",
+        help="Port to run the server on (default: 5666). Example: --port 8080"
     )
 
     parser.add_argument(
