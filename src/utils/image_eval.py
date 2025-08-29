@@ -71,7 +71,7 @@ async def describe_image(image_path: str) -> str:
         )
 
         response = client.chat.completions.create(
-            model="moonshotai/kimi-vl-a3b-thinking:free",
+            model="google/gemini-2.5-flash-image-preview:free",
             messages=[
                 {
                     "role": "user",
