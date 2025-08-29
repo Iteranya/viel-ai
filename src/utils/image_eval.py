@@ -71,7 +71,7 @@ async def describe_image(image_path: str) -> str:
         )
 
         response = client.chat.completions.create(
-            model="google/gemini-2.5-flash-image-preview:free",
+            model="openai-large",
             messages=[
                 {
                     "role": "user",
