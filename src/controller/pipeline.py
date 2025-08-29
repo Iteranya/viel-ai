@@ -10,10 +10,6 @@ from src.models.prompts import PromptEngineer
 from src.models.queue import QueueItem
 from src.utils.llm_new import generate_response
 from src.controller.discordo import send
-from src.utils.image_gen import generate_sd_prompt
-from src.utils.pollination import fetch_image
-from src.utils.hidream import invoke_chute
-from src.utils.duckduckgo import research,image_research
 from src.utils.bot_thonk import extract_all_functions,create_script_environment
 
 def format_traceback(error: Exception, *, _print: bool = False) -> str:
