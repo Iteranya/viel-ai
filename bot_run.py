@@ -18,6 +18,7 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 CAPTIONS_FILE  = "res/captions.jsonl"
+bot_invite = None
 # Modal
 class EditMessageModal(discord.ui.Modal, title='Edit Message'):
     def __init__(self, original_message):
@@ -388,14 +389,15 @@ async def start_bot(config: conf.Config):
 
 @client.event
 async def on_ready():
+    global bot_invite
     print(f"Discord Bot is logged in as {client.user}")
     conf.bot_user = client.user
-
-    # NOTE: You're not supposed to sync tree on ready, you should be doing this on
-    # demand (Like using "/reload" command or something), but I'm not gonna
-    # deal with that
+    app_info = await client.application_info()
     await tree.sync(guild=None)
     print("Discord Bot is up and running.")
+    bot_invite = f"Bot Invite: https://discord.com/oauth2/authorize?client_id={app_info.id}&permissions=533113207808&integration_type=0&scope=bot"
+    print(bot_invite)
+    
 
 @client.event
 async def on_message(message: discord.Message):

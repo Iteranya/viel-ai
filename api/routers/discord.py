@@ -3,6 +3,7 @@ import threading
 import asyncio
 from bot_run import client, start_bot
 from src.data.config_data import load_or_create_config
+import bot_run
 router = APIRouter()
 _bot_thread = None
 _bot_loop = None
@@ -60,14 +61,24 @@ async def check_bot_status():
     
 @router.get("/discord/invite")
 async def get_discord_invite():
+    print(bot_run.bot_invite)
     try:
-        if client.is_ready():
-            app_info = await client.application_info()
-            invite_url = f"https://discord.com/oauth2/authorize?client_id={app_info.id}&scope=bot&permissions=8"
-            return {"status": "active", "invite": invite_url}
+        if bot_run.bot_invite is not None:
+            return {
+                "status": "active",
+                "invite": bot_run.bot_invite
+            }
         else:
-            return {"status": "inactive"}
+            return {
+                "status": "inactive",
+                "message": "Initializing Invite, please refresh page after enabling bot"
+            }
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {
+            "status": "error",
+            "message": "Initializing Invite, please refresh page after enabling bot"
+        }
+
+
 
 
