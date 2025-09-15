@@ -57,3 +57,17 @@ async def check_bot_status():
             return {"status": "inactive"}
     except Exception as e:
         return {"status": "error", "detail": str(e)}
+    
+@router.get("/discord/invite")
+async def get_discord_invite():
+    try:
+        if client.is_ready():
+            app_info = await client.application_info()
+            invite_url = f"https://discord.com/oauth2/authorize?client_id={app_info.id}&scope=bot&permissions=8"
+            return {"status": "active", "invite": invite_url}
+        else:
+            return {"status": "inactive"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+

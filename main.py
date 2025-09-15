@@ -20,9 +20,6 @@ app = FastAPI(
     description="API for managing character, channel, and bot configurations"
 )
 
-# Set up static files
-app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
-
 # Include routers
 app.include_router(characters.router)
 app.include_router(servers.router)
