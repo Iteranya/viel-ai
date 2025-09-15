@@ -232,6 +232,25 @@ class CoreCommands(app_commands.Group):
         dim.init_channel(interaction.guild.name,interaction.channel.name)
         await interaction.response.send_message("Channel registered!", ephemeral=True)
 
+    @app_commands.command(name="clean_up",description="Clean Up Channel")
+    async def cleanup_all(ctx):
+        """Delete ALL messages in the channel that contain Instagram links."""
+        deleted = 0
+        async for message in ctx.channel.history(limit=None, oldest_first=True):  # Walk the entire history
+            content_lower = message.content.lower()
+            if "instagram" in content_lower and ("http://" in content_lower or "https://" in content_lower):
+                try:
+                    await message.delete()
+                    deleted += 1
+                except discord.Forbidden:
+                    await ctx.send("⚠️ I don’t have permission to delete some messages.")
+                    break
+                except discord.HTTPException:
+                    pass  # Sometimes Discord rate-limits, bot will just skip
+
+        await ctx.send(f"🧹 Finished cleanup! Deleted {deleted} Instagram link(s).", delete_after=10)
+
+
 # Configuration commands subgroup
 class ConfigCommands(app_commands.Group):
     def __init__(self):

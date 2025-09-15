@@ -74,7 +74,7 @@ class PromptEngineer:
         # JUST USE AN F STRING YOU GODDAMN NEANDERTHAL!!!!!
         # SHUT THE FUCK UP I'M PROTOTYPING!!!
         # THERE I USED FSTRING, HAPPY NOW?!!?!?
-        self.prefill = f"\n[Reply] {self.bot.name}:"
+        # self.prefill = f"\n[Reply] {self.bot.name}:" This unfortunately breaks Deepseek V3
         self.stopping_string = ["[System", "(System", self.user + ":", "[End","[/"] 
         #print(prompt)
         return prompt
