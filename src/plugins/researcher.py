@@ -67,7 +67,10 @@ async def research(search):
             print(f"Searching for: '{query}'...")
 
             # Get top 5 search results
-            results = await bebek.get_top_search_result(max_results=5)
+            if "news" in search:
+                results = await bebek.get_news()
+            else:
+                results = await bebek.get_top_search_result(max_results=5)
             if results:
                 all_results.extend(results)
 
