@@ -86,7 +86,7 @@ def clean_thonk(s):
     else:
         return s
 
-async def generate_blank(system,user,assistant):
+async def generate_blank(system,user):
     try:
         ai_config: Config = load_or_create_config()
 
