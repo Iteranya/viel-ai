@@ -198,6 +198,7 @@ class DiscordMessenger:
     def _sanitize_queue_item(item: QueueItem) -> QueueItem:
         if hasattr(item, "result") and isinstance(item.result, str):
             item.result = item.result.replace("@everyone", "@/everyone").replace("@here", "@/here")
+        item.result = item.result.replace("<｜end▁of▁sentence｜>","")
         return item
         
     @staticmethod
