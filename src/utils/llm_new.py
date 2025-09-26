@@ -27,11 +27,11 @@ async def generate_response(task: QueueItem):
                 {
                     "role": "user",
                     "content": f"[Reply] {user_message} [End]"
-                },
-                {
-                    "role": "assistant",
-                    "content": task.prefill
                 }
+                # {
+                #     "role": "assistant",
+                #     "content": task.prefill
+                # }
             ]
         )
         result = completion.choices[0].message.content if completion.choices else f"//[OOC: Sorry, the AI broke on my end, can you check the log? Thanks]"
