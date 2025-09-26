@@ -1,6 +1,6 @@
 import re
 import traceback
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 from typing import *
 import asyncio
 import discord
@@ -146,8 +146,7 @@ async def image_research(prompt: str, images_per_query: int = 50, safesearch: st
         # Generate a single image search query using LLM
         image_query = await generate_blank(
             system="Your task is to generate ONE search query from a specific prompt. For example, if the prompt is: \"Fetch me images of fish\" you will write: (fish) and nothing else. Use parentheses around the term.",
-            user=f"The prompt is: {prompt}. Based on this prompt, write down ONE image search term to look up. Follow the format.",
-            assistant=f"Understood, here is the image search query for {prompt}."
+            user=f"The prompt is: {prompt}. Based on this prompt, write down ONE image search term to look up. Follow the format."
         )
 
         # Extract the search term from parentheses
