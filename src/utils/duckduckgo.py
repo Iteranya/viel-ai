@@ -93,7 +93,6 @@ async def research(search):
     search_queries = await generate_blank(
         system=f"Your task is to generate a list of search terms for a given query. For example if the query is: \"Give me latest news on Ohio\" you will then write down in the following format: [(Latest news Ohio), (Events in Ohio), (Ohio News), (Ohio gossips), (Ohio current situation)]. Follow the format, you must put each of the search term between parenthesis.",
         user=f"The query is {search}, based on this query, write down 5 sentence/search term to look up. Use the given example as format.",
-        assistant=f"Understood, here are the search query."
     )
    
     # Extract search terms using regex

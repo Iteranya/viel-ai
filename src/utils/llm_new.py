@@ -106,10 +106,6 @@ async def generate_blank(system,user,assistant):
                 {
                     "role": "user",
                     "content":user
-                },
-                {
-                    "role": "assistant",
-                    "content": assistant
                 }
             ]
         )
