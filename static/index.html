@@ -1,0 +1,400 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viel AI - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+        }
+        
+        body {
+            background-color: var(--darker);
+            color: var(--light);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        
+        .log-stream {
+            font-family: 'Fira Code', monospace;
+            background-color: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        .log-entry {
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .status-active {
+            background-color: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+        
+        .status-inactive {
+            background-color: #ef4444;
+        }
+        
+        .status-starting {
+            background-color: #f59e0b;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+        
+        .nav-link.active {
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .power-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .power-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .power-btn.active {
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-darker text-light">
+    <div class="flex flex-col min-h-screen">
+        <!-- Navbar -->
+        <nav class="bg-darker border-b border-gray-800">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <span class="text-primary font-bold text-xl">Viel AI</span>
+                        </div>
+                        <div class="hidden md:block">
+                            <div class="ml-10 flex items-baseline space-x-4">
+                                <a href="/" class="nav-link active px-3 py-2 rounded-md text-sm font-medium text-white">
+                                    <i class="fas fa-home mr-2"></i> Dashboard
+                                </a>
+                                <a href="/servers" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
+                                    <i class="fas fa-server mr-2"></i> Servers
+                                </a>
+                                <a href="/characters" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
+                                    <i class="fas fa-robot mr-2"></i> Characters
+                                </a>
+                                <a href="/ai-config" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
+                                    <i class="fas fa-cog mr-2"></i> AI Config
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-4 flex items-center md:ml-6">
+                            <span class="text-sm text-gray-400 mr-2">Status:</span>
+                            <span id="bot-status-indicator" class="status-indicator status-inactive"></span>
+                            <span id="bot-status-text" class="ml-1 text-sm">Inactive</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-grow p-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-white">Admin Dashboard</h1>
+                    <p class="text-gray-400 mt-2">Manage your Viel AI instance</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Bot Control Panel -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                            <h2 class="text-xl font-semibold mb-4 text-white">Bot Control</h2>
+                            
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <span class="text-sm text-gray-400">Current Status:</span>
+                                    <div class="flex items-center mt-1">
+                                        <span id="control-status-indicator" class="status-indicator status-inactive"></span>
+                                        <span id="control-status-text" class="ml-2 text-white">Inactive</span>
+                                    </div>
+                                </div>
+                                <button id="power-btn" class="power-btn bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg flex items-center">
+                                    <i class="fas fa-power-off mr-2"></i> Activate
+                                </button>
+                            </div>
+                            
+                            <div id="invite-container" class="hidden">
+                                <div class="mt-4">
+                                    <label class="block text-sm font-medium text-gray-400 mb-1">Invite Link</label>
+                                    <div class="flex">
+                                        <input id="invite-link" type="text" readonly class="bg-gray-800 border border-gray-700 text-white text-sm rounded-l-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="Bot not active">
+                                        <button id="copy-invite" class="bg-gray-700 hover:bg-gray-600 text-white px-3 rounded-r-lg">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Log Stream -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800 h-full">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-xl font-semibold text-white">Bot Logs</h2>
+                                <div class="flex items-center">
+                                    <span class="text-xs text-gray-400 mr-2">Auto-scroll</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input id="auto-scroll-toggle" type="checkbox" value="" class="sr-only peer" checked>
+                                        <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="log-container" class="log-stream rounded-lg p-4 h-96 overflow-y-auto">
+                                <div class="text-gray-500 text-sm">Waiting for logs...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const powerBtn = document.getElementById('power-btn');
+            const botStatusIndicator = document.getElementById('bot-status-indicator');
+            const botStatusText = document.getElementById('bot-status-text');
+            const controlStatusIndicator = document.getElementById('control-status-indicator');
+            const controlStatusText = document.getElementById('control-status-text');
+            const logContainer = document.getElementById('log-container');
+            const autoScrollToggle = document.getElementById('auto-scroll-toggle');
+            const inviteContainer = document.getElementById('invite-container');
+            const inviteLink = document.getElementById('invite-link');
+            const copyInviteBtn = document.getElementById('copy-invite');
+            
+            let eventSource;
+            let botActive = false;
+            
+            // Check initial bot status
+            fetch('/api/discord/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateStatus(data.status);
+                    if (data.status === 'active') {
+                        fetchInviteLink();
+                    }
+                });
+            
+            // Set up log stream
+            setupLogStream();
+            
+            // Power button click handler
+            powerBtn.addEventListener('click', function() {
+                if (botActive) {
+                    // Deactivate bot
+                    fetch('/api/discord/deactivate', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            addLogEntry('Sending shutdown signal to bot...');
+                        }
+                    })
+                    .catch(error => {
+                        addLogEntry(`Error: ${error.message}`);
+                    });
+                } else {
+                    // Activate bot
+                    fetch('/api/discord/activate', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            addLogEntry('Bot activation initiated...');
+                        }
+                    })
+                    .catch(error => {
+                        addLogEntry(`Error: ${error.message}`);
+                    });
+                }
+            });
+            
+            // Copy invite link handler
+            copyInviteBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(inviteLink.value)
+                    .then(() => {
+                        const originalIcon = copyInviteBtn.innerHTML;
+                        copyInviteBtn.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            copyInviteBtn.innerHTML = originalIcon;
+                        }, 2000);
+                    });
+            });
+            
+            // Auto-scroll handler
+            autoScrollToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    scrollToBottom();
+                }
+            });
+            
+            // Update bot status UI
+            function updateStatus(status) {
+                // Remove all status classes
+                botStatusIndicator.classList.remove('status-active', 'status-inactive', 'status-starting');
+                controlStatusIndicator.classList.remove('status-active', 'status-inactive', 'status-starting');
+                
+                // Update status text and indicator
+                if (status === 'active') {
+                    botActive = true;
+                    botStatusIndicator.classList.add('status-active');
+                    controlStatusIndicator.classList.add('status-active');
+                    botStatusText.textContent = 'Active';
+                    controlStatusText.textContent = 'Active';
+                    powerBtn.innerHTML = '<i class="fas fa-power-off mr-2"></i> Deactivate';
+                    powerBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                    powerBtn.classList.remove('bg-gray-800', 'hover:bg-gray-700');
+                } else if (status === 'starting') {
+                    botActive = false;
+                    botStatusIndicator.classList.add('status-starting');
+                    controlStatusIndicator.classList.add('status-starting');
+                    botStatusText.textContent = 'Starting';
+                    controlStatusText.textContent = 'Starting';
+                    powerBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Starting...';
+                    powerBtn.disabled = true;
+                } else {
+                    botActive = false;
+                    botStatusIndicator.classList.add('status-inactive');
+                    controlStatusIndicator.classList.add('status-inactive');
+                    botStatusText.textContent = 'Inactive';
+                    controlStatusText.textContent = 'Inactive';
+                    powerBtn.innerHTML = '<i class="fas fa-power-off mr-2"></i> Activate';
+                    powerBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    powerBtn.classList.add('bg-gray-800', 'hover:bg-gray-700');
+                    powerBtn.disabled = false;
+                }
+            }
+            
+            // Set up log stream connection
+            function setupLogStream() {
+                if (eventSource) {
+                    eventSource.close();
+                }
+                
+                eventSource = new EventSource('/api/discord/stream-logs');
+                
+                eventSource.onmessage = function(e) {
+                    addLogEntry(e.data);
+                    
+                    // Check for status updates in logs
+                    if (e.data.includes('Bot starting up')) {
+                        updateStatus('starting');
+                    } else if (e.data.includes('Bot has shut down cleanly') || e.data.includes('Bot crashed')) {
+                        updateStatus('inactive');
+                        inviteContainer.classList.add('hidden');
+                    } else if (e.data.includes('Logged in as')) {
+                        updateStatus('active');
+                        fetchInviteLink();
+                    }
+                };
+                
+                eventSource.onerror = function() {
+                    addLogEntry('Connection to log stream lost. Attempting to reconnect...');
+                    setTimeout(setupLogStream, 5000);
+                };
+            }
+            
+            // Add log entry to the container
+            function addLogEntry(message) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry py-2 text-sm';
+                
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'text-gray-500 mr-2';
+                timeSpan.textContent = `[${timeString}]`;
+                
+                const messageSpan = document.createElement('span');
+                messageSpan.className = 'text-gray-300';
+                messageSpan.textContent = message;
+                
+                logEntry.appendChild(timeSpan);
+                logEntry.appendChild(messageSpan);
+                
+                logContainer.appendChild(logEntry);
+                
+                // Auto-scroll if enabled
+                if (autoScrollToggle.checked) {
+                    scrollToBottom();
+                }
+                
+                // Clear "waiting for logs" message if it exists
+                if (logContainer.firstChild && logContainer.firstChild.textContent === 'Waiting for logs...') {
+                    logContainer.removeChild(logContainer.firstChild);
+                }
+            }
+            
+            // Scroll to bottom of log container
+            function scrollToBottom() {
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+            
+            // Fetch bot invite link
+            function fetchInviteLink() {
+                fetch('/api/discord/invite')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'active' && data.invite) {
+                            inviteLink.value = data.invite;
+                            inviteContainer.classList.remove('hidden');
+                        }
+                    });
+            }
+            
+            // Periodically check bot status
+            setInterval(() => {
+                fetch('/api/discord/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        updateStatus(data.status);
+                        if (data.status === 'active' && !inviteLink.value) {
+                            fetchInviteLink();
+                        }
+                    });
+            }, 10000);
+        });
+    </script>
+</body>
+</html>

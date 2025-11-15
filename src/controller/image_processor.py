@@ -3,7 +3,7 @@
 import aiohttp
 import os
 import discord
-from src.utils.image_eval import describe_image, strip_thinking
+from src.utils.image_eval import describe_image,strip_thinking
 
 class ImageProcessor:
     """Handles downloading and generating descriptions for images."""

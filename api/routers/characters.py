@@ -1,205 +1,165 @@
 # routers/characters.py
-"""Character-related API endpoints."""
+"""Character-related API endpoints, powered by the database."""
 
-import json
-import os
 from fastapi import APIRouter, Body, Path, HTTPException, Request
-from fastapi.responses import JSONResponse
-from pathlib import Path as FilePath
 from typing import List
 
-from api.models.schemas import CharacterModel, PatchOperation
-from api.constants import CHARACTERS_DIR
-from api.utils.file_operations import read_json_file, write_json_file, set_nested_value, remove_nested_value
+# --- Model and Database Imports ---
+# Assumes your models and db class are structured like this
+from api.models.models import Character, CharacterData 
+from api.db.database import Database
+
+# --- Initialize Database Client ---
+# This creates a single instance of the Database class for the router to use.
+db = Database()
+
 
 router = APIRouter(
-    prefix="/characters",
+    prefix="/api/characters",
     tags=["Characters"]
 )
 
+
+def parse_character_card(raw_data: dict) -> tuple[str, dict]:
+    """
+    Parses different character card formats (Pygmalion, Viel) and returns
+    a tuple of (name, data_dict) ready for the database.
+    The data_dict corresponds to the CharacterData model.
+    """
+    # Try parsing as a Pygmalion/SillyTavern card
+    if raw_data.get("data"):
+        raw_data = raw_data.get("data")
+
+    if "mes_example" in raw_data:
+        try:
+            name = raw_data.get("name")
+            if not name:
+                raise ValueError("Character name is missing from the card.")
+
+            description = raw_data.get("description", "")
+            examples_str = raw_data.get("mes_example", "")
+            personality = raw_data.get("personality", "")
+            system_prompt = raw_data.get("system_prompt", "")
+            post_history = raw_data.get("post_history_instructions", "")
+            avatar = raw_data.get("avatar", None)
+
+            # Replace placeholders
+            description = description.replace("{{user}}", "User").replace("{{char}}", name)
+            examples_str = examples_str.replace("{{user}}", "User").replace("{{char}}", name)
+
+            # Assemble the data into the CharacterData structure
+            character_data = {
+                "persona": f"<description>{description}</description>\n<personality>{personality}</personality>",
+                "examples": [examples_str] if examples_str else [],
+                "instructions": f"[System Note: {system_prompt}]\n[System Note: {post_history}]",
+                "avatar": avatar,
+                "info": "Imported from Pygmalion/Tavern Card"
+            }
+            return name, character_data
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to parse Pygmalion/Tavern card: {e}")
+
+    # Try parsing as a "Viel" type card (matching our internal structure)
+    elif "persona" in raw_data:
+        try:
+            name = raw_data.get("name")
+            if not name:
+                raise ValueError("Character name is missing from the card.")
+
+            character_data = {
+                "persona": raw_data.get("persona", ""),
+                "examples": raw_data.get("examples", []),
+                "instructions": raw_data.get("instructions", ""),
+                "avatar": raw_data.get("avatar", None),
+                "info": raw_data.get("info", "Imported from Viel Card")
+            }
+            return name, character_data
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to parse Viel card: {e}")
+    
+    raise HTTPException(status_code=400, detail="Incompatible or unrecognized character card format.")
+
+
 @router.get("/", response_model=List[str])
 async def list_characters():
-    """List all available characters."""
+    """List all available character names from the database."""
     try:
-        if not os.path.exists(CHARACTERS_DIR):
-            return []
-        return [f.stem for f in FilePath(CHARACTERS_DIR).glob("*.json")]
+        characters = db.list_characters()
+        return [char["name"] for char in characters]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
-@router.post("/import_character")
-async def importo_character(request: Request):
-    """Import a character from raw JSON data."""
-    try:
-        body_bytes = await request.body()
-        print("Raw request body (bytes):", body_bytes[:200]) # Print first 200 bytes
 
-        try:
-            # Explicitly decode from UTF-8 (most common for web)
-            body_str = body_bytes.decode('utf-8')
-            print("Decoded request body (string):", body_str[:200] + "...")
-        except UnicodeDecodeError as ude:
-            print(f"UnicodeDecodeError: {str(ude)}")
-            raise HTTPException(status_code=400, detail=f"Invalid character encoding. Expected UTF-8. Error: {str(ude)}")
-
-        try:
-            character_data = json.loads(body_str)
-            print("Parsed JSON data:", character_data)
-        except json.JSONDecodeError as jde:
-            print(f"JSON decode error: {str(jde)}")
-            # You can include more context from jde if needed, e.g., jde.lineno, jde.colno
-            raise HTTPException(status_code=400, detail=f"Invalid JSON: {str(jde)}")
-
-        print("About to convert data to CharacterModel")
-        character = convert_to_character_model(character_data)
-        print("Conversion successful:", character)
-        if not character:
-            raise HTTPException(status_code=500, detail=f"Import failed, Incompatible Card Format")
-        
-        # Use the existing create endpoint logic
-        file_path = f"{CHARACTERS_DIR}/{character.name}.json"
-        if os.path.exists(file_path):
-            raise HTTPException(status_code=409, detail=f"Character '{character.name}' already exists")
-        
-        character_dict = character.dict()
-        write_json_file(file_path, character_dict)
-        return character_dict
-    except Exception as e:
-        print("Exception occurred:", str(e), type(e))
-        # Return a 500 error with the exception details for debugging
-        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
-
-def convert_to_character_model(raw_data: dict) -> CharacterModel:
-    print("Try Converting...")
-    
-    if raw_data.get("data",None) != None:
-        try:
-            print("Pygmalion Type Card")
-            raw_data = raw_data.get("data",None)
-            name= raw_data.get("name")
-            description = raw_data.get("description","")
-            examples = raw_data.get("mes_example","")
-            personality = raw_data.get("personality","")
-            system_prompt = raw_data.get("system_prompt","")
-            post_history = raw_data.get("post_history_instructions","")
-            avatar = raw_data.get("avatar","")
-            if not name:
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet)"
-                )
-            description = description.replace("{{user}}","User")
-            description = description.replace("{{char}}",name)
-            examples = examples.replace("{{user}}","User")
-            examples = examples.replace("{{char}}",name)           
-            character = CharacterModel(
-                name= name,
-                persona=f"<description>{description}</description>\n<examples>{examples}</examples>\n<personality>{personality}</personality>\n",
-                examples=[],
-                instructions=f"[System Note: {system_prompt}]\n[System Note: {post_history}]",
-                avatar=avatar
-            )
-            return character
-        except Exception as e:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Failed to convert data to CharacterModel: {str(e)}"
-            )
-    else:
-        try:
-            print("Viel Type Card")
-            type = raw_data.get("type","")
-            if type == "viel-card":
-                print("Is Valid Viel Card")
-                return CharacterModel(
-                    name = raw_data.get("name"),
-                    persona = raw_data.get("persona",""),
-                    examples=raw_data.get("examples",[]),
-                    instructions= raw_data.get("instructions",""),
-                    avatar=raw_data.get("avatar","")
-                )
-        except Exception as e:
-            print(e)
-            raise HTTPException(
-                    status_code=400,
-                    detail=f"Failed to convert data to CharacterModel, Json Format Not Supported (yet)"
-                )
-
-@router.get("/{character_name}", response_model=CharacterModel)
+@router.get("/{character_name}", response_model=Character)
 async def get_character(character_name: str = Path(..., description="Name of the character")):
-    """Get a character's configuration."""
-    file_path = f"{CHARACTERS_DIR}/{character_name}.json"
-    if not os.path.exists(file_path):
+    """Get a character's full configuration from the database."""
+    character = db.get_character(name=character_name)
+    if not character:
         raise HTTPException(status_code=404, detail=f"Character '{character_name}' not found")
-    
-    data = read_json_file(file_path)
-    return data
+    return character
 
-@router.post("/{character_name}", response_model=CharacterModel)
-async def create_character(
-    character_name: str = Path(..., description="Name of the character"),
-    character: CharacterModel = Body(..., description="Character data")
-):
-    """Create a new character configuration."""
-    file_path = f"{CHARACTERS_DIR}/{character_name}.json"
-    if os.path.exists(file_path):
-        raise HTTPException(status_code=409, detail=f"Character '{character_name}' already exists")
-    
-    character_dict = character.dict()
-    write_json_file(file_path, character_dict)
-    return character_dict
 
-@router.put("/{character_name}", response_model=CharacterModel)
+@router.post("/import", response_model=Character)
+async def create_character_from_import(request: Request):
+    """
+    Create a new character by importing from a raw JSON character card.
+    This is the primary endpoint for creating new characters.
+    """
+    try:
+        raw_data = await request.json()
+        name, data_dict = parse_character_card(raw_data)
+        
+        # Check for conflicts
+        if db.get_character(name=name):
+            raise HTTPException(status_code=409, detail=f"Character '{name}' already exists.")
+            
+        # Create character in the database
+        db.create_character(name=name, data=data_dict)
+        
+        # Fetch the newly created character to return the full object
+        new_character = db.get_character(name=name)
+        if not new_character:
+            # This should not happen if creation was successful, but it's good practice
+            raise HTTPException(status_code=500, detail="Failed to retrieve character after creation.")
+            
+        return new_character
+    except HTTPException as e:
+        # Re-raise known HTTP exceptions
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred during import: {e}")
+
+
+@router.put("/{character_name}", response_model=Character)
 async def update_character(
     character_name: str = Path(..., description="Name of the character"),
-    character: CharacterModel = Body(..., description="Updated character data")
+    character_data: CharacterData = Body(..., description="The fields of the character to update")
 ):
-    """Update an existing character configuration."""
-    file_path = f"{CHARACTERS_DIR}/{character_name}.json"
-    if not os.path.exists(file_path):
+    """Update an existing character's data in the database."""
+    # Check if character exists
+    if not db.get_character(name=character_name):
         raise HTTPException(status_code=404, detail=f"Character '{character_name}' not found")
-    
-    character_dict = character.dict()
-    write_json_file(file_path, character_dict)
-    return character_dict
 
-@router.patch("/{character_name}", response_model=CharacterModel)
-async def patch_character(
-    character_name: str = Path(..., description="Name of the character"),
-    operations: List[PatchOperation] = Body(..., description="Patch operations")
-):
-    """Partially update a character configuration."""
-    file_path = f"{CHARACTERS_DIR}/{character_name}.json"
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail=f"Character '{character_name}' not found")
-    
-    data = read_json_file(file_path)
-    
-    for op in operations:
-        if op.op == "replace":
-            data = set_nested_value(data, op.path, op.value)
-        elif op.op == "add":
-            data = set_nested_value(data, op.path, op.value)
-        elif op.op == "remove":
-            data = remove_nested_value(data, op.path)
-        else:
-            raise HTTPException(status_code=400, detail=f"Unsupported operation: {op.op}")
-    
-    write_json_file(file_path, data)
-    return data
+    try:
+        # The data argument in update_character expects a dict
+        db.update_character(name=character_name, data=character_data.model_dump())
+        
+        # Fetch and return the updated character
+        updated_character = db.get_character(name=character_name)
+        return updated_character
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update character: {e}")
+
 
 @router.delete("/{character_name}")
 async def delete_character(character_name: str = Path(..., description="Name of the character")):
-    """Delete a character configuration."""
-    file_path = f"{CHARACTERS_DIR}/{character_name}.json"
-    if not os.path.exists(file_path):
+    """Delete a character from the database."""
+    # Check if character exists before trying to delete
+    if not db.get_character(name=character_name):
         raise HTTPException(status_code=404, detail=f"Character '{character_name}' not found")
     
     try:
-        os.remove(file_path)
-        return JSONResponse(content={"message": f"Character '{character_name}' deleted successfully"})
+        db.delete_character(name=character_name)
+        return {"message": f"Character '{character_name}' deleted successfully"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to delete character: {str(e)}")
-    
-# Add this to your existing routers/characters.py file
+        raise HTTPException(status_code=500, detail=f"Failed to delete character: {e}")

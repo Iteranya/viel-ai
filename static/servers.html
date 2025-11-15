@@ -1,0 +1,629 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viel AI - Server Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+        }
+        
+        body {
+            background-color: var(--darker);
+            color: var(--light);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        
+        .server-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+        
+        .server-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+        
+        .nav-link.active {
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .editor-textarea {
+            min-height: 150px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .tab-button {
+            transition: all 0.2s ease;
+        }
+        
+        .tab-button.active {
+            background-color: rgba(99, 102, 241, 0.2);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .lorebook-entry {
+            border-left: 3px solid var(--primary);
+        }
+        
+        .whitelist-chip {
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-darker text-light">
+    <div class="flex flex-col min-h-screen">
+        <!-- Navbar -->
+        <nav class="bg-darker border-b border-gray-800">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <span class="text-primary font-bold text-xl">Viel AI</span>
+                        </div>
+                        <div class="hidden md:block">
+                            <div class="ml-10 flex items-baseline space-x-4">
+                                <a href="/" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
+                                    <i class="fas fa-home mr-2"></i> Dashboard
+                                </a>
+                                <a href="/servers" class="nav-link active px-3 py-2 rounded-md text-sm font-medium text-white">
+                                    <i class="fas fa-server mr-2"></i> Servers
+                                </a>
+                                <a href="/characters" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
+                                    <i class="fas fa-robot mr-2"></i> Characters
+                                </a>
+                                <a href="/ai-config" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
+                                    <i class="fas fa-cog mr-2"></i> AI Config
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-4 flex items-center md:ml-6">
+                            <span class="text-sm text-gray-400 mr-2">Status:</span>
+                            <span id="bot-status-indicator" class="status-indicator status-inactive"></span>
+                            <span id="bot-status-text" class="ml-1 text-sm">Inactive</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-grow p-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-white">Server Management</h1>
+                    <p class="text-gray-400 mt-2">Configure bot settings for each Discord server and channel</p>
+                </div>
+
+                <!-- Server List -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Server cards will be loaded here -->
+                    <div class="text-center text-gray-500 py-10 col-span-full">
+                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                        <p>Loading servers...</p>
+                    </div>
+                </div>
+
+                <!-- Channel Editor -->
+                <div id="channel-editor" class="hidden bg-gray-800 rounded-lg border border-gray-700 p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold text-white" id="channel-editor-title">Channel Configuration</h2>
+                        <button id="close-channel-editor" class="text-gray-400 hover:text-white">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Basic Settings -->
+                        <div class="space-y-4">
+                            <div>
+                                <label for="channel-name" class="block text-sm font-medium text-gray-300 mb-1">Channel Name</label>
+                                <input type="text" id="channel-name" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="Enter channel name">
+                            </div>
+
+                            <div>
+                                <label for="channel-instruction" class="block text-sm font-medium text-gray-300 mb-1">Instructions</label>
+                                <textarea id="channel-instruction" class="editor-textarea bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="Channel-specific instructions for the bot"></textarea>
+                            </div>
+
+                            <div>
+                                <label for="channel-globalvar" class="block text-sm font-medium text-gray-300 mb-1">Global Variables</label>
+                                <textarea id="channel-globalvar" class="editor-textarea bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="key=value pairs (one per line)"></textarea>
+                            </div>
+
+                            <div>
+                                <label for="channel-location" class="block text-sm font-medium text-gray-300 mb-1">Location</label>
+                                <input type="text" id="channel-location" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="Describe the channel's location">
+                            </div>
+                        </div>
+
+                        <!-- Lorebook & Whitelist -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Lorebook</label>
+                                <div id="lorebook-entries" class="space-y-2 mb-2">
+                                    <!-- Lorebook entries will be added here -->
+                                </div>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="new-lorebook-key" class="flex-grow bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block p-2.5" placeholder="Entry name">
+                                    <button id="add-lorebook-btn" class="bg-primary hover:bg-primary-dark text-white px-3 py-2 rounded-lg text-sm">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <textarea id="new-lorebook-value" class="editor-textarea bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 mt-2" placeholder="Entry content" rows="3"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Whitelist</label>
+                                <div id="whitelist-tags" class="flex flex-wrap gap-2 mb-2">
+                                    <!-- Whitelist tags will be added here -->
+                                </div>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="new-whitelist-entry" class="flex-grow bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block p-2.5" placeholder="Character name">
+                                    <button id="add-whitelist-btn" class="bg-primary hover:bg-primary-dark text-white px-3 py-2 rounded-lg text-sm">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button id="cancel-channel-btn" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                            Cancel
+                        </button>
+                        <button id="save-channel-btn" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const serverList = document.querySelector('.grid.grid-cols-1');
+            const channelEditor = document.getElementById('channel-editor');
+            const closeChannelEditorBtn = document.getElementById('close-channel-editor');
+            const cancelChannelBtn = document.getElementById('cancel-channel-btn');
+            const saveChannelBtn = document.getElementById('save-channel-btn');
+            const channelEditorTitle = document.getElementById('channel-editor-title');
+            
+            // Channel fields
+            const channelName = document.getElementById('channel-name');
+            const channelInstruction = document.getElementById('channel-instruction');
+            const channelGlobalvar = document.getElementById('channel-globalvar');
+            const channelLocation = document.getElementById('channel-location');
+            
+            // Lorebook elements
+            const lorebookEntries = document.getElementById('lorebook-entries');
+            const newLorebookKey = document.getElementById('new-lorebook-key');
+            const newLorebookValue = document.getElementById('new-lorebook-value');
+            const addLorebookBtn = document.getElementById('add-lorebook-btn');
+            
+            // Whitelist elements
+            const whitelistTags = document.getElementById('whitelist-tags');
+            const newWhitelistEntry = document.getElementById('new-whitelist-entry');
+            const addWhitelistBtn = document.getElementById('add-whitelist-btn');
+            
+            let currentServer = null;
+            let currentChannel = null;
+            let isEditing = false;
+            
+            // Load servers on page load
+            loadServers();
+            
+            // Close channel editor handlers
+            closeChannelEditorBtn.addEventListener('click', closeChannelEditor);
+            cancelChannelBtn.addEventListener('click', closeChannelEditor);
+            
+            // Save channel handler
+            saveChannelBtn.addEventListener('click', saveChannel);
+            
+            // Add lorebook entry handler
+            addLorebookBtn.addEventListener('click', function() {
+                const key = newLorebookKey.value.trim();
+                const value = newLorebookValue.value.trim();
+                
+                if (!key) {
+                    alert('Please enter a lorebook entry name');
+                    return;
+                }
+                
+                addLorebookEntry(key, value);
+                newLorebookKey.value = '';
+                newLorebookValue.value = '';
+            });
+            
+            // Add whitelist entry handler
+            addWhitelistBtn.addEventListener('click', function() {
+                const entry = newWhitelistEntry.value.trim();
+                
+                if (!entry) {
+                    alert('Please enter a character name');
+                    return;
+                }
+                
+                addWhitelistEntry(entry);
+                newWhitelistEntry.value = '';
+            });
+            
+            // Load servers from API
+            function loadServers() {
+                fetch('/api/servers')
+                    .then(response => response.json())
+                    .then(servers => {
+                        serverList.innerHTML = '';
+                        
+                        if (servers.length === 0) {
+                            serverList.innerHTML = `
+                                <div class="col-span-full text-center py-10">
+                                    <i class="fas fa-server text-4xl text-gray-600 mb-4"></i>
+                                    <h3 class="text-xl font-medium text-gray-300 mb-2">No Servers Found</h3>
+                                    <p class="text-gray-500 mb-4">The bot hasn't been added to any servers yet</p>
+                                </div>
+                            `;
+                            return;
+                        }
+                        
+                        servers.forEach(server => {
+                            const serverCard = document.createElement('div');
+                            serverCard.className = 'server-card bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer';
+                            serverCard.innerHTML = `
+                                <div class="p-4">
+                                    <div class="flex items-center mb-3">
+                                        <i class="fas fa-server text-2xl text-primary mr-3"></i>
+                                        <h3 class="text-lg font-semibold truncate">${server}</h3>
+                                    </div>
+                                    <div class="flex justify-between text-sm text-gray-400">
+                                        <span><i class="fas fa-hashtag mr-1"></i> <span class="channel-count">Loading...</span> channels</span>
+                                        <span><i class="fas fa-calendar-alt mr-1"></i> Last active: <span class="last-active">Unknown</span></span>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-900 px-4 py-3 flex justify-end">
+                                    <button class="manage-server-btn text-white hover:text-primary" data-server="${server}">
+                                        <i class="fas fa-cog mr-1"></i> Manage
+                                    </button>
+                                </div>
+                            `;
+                            
+                            serverList.appendChild(serverCard);
+                            
+                            // Add event listener for the manage button
+                            serverCard.querySelector('.manage-server-btn').addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                manageServer(this.dataset.server);
+                            });
+                            
+                            // Load channel count for this server
+                            fetch(`/api/servers/${server}/channels`)
+                                .then(response => response.json())
+                                .then(channels => {
+                                    serverCard.querySelector('.channel-count').textContent = channels.length;
+                                })
+                                .catch(error => {
+                                    serverCard.querySelector('.channel-count').textContent = 'Error';
+                                });
+                        });
+                    })
+                    .catch(error => {
+                        serverList.innerHTML = `
+                            <div class="col-span-full text-center py-10 text-red-400">
+                                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                                <p>Failed to load servers: ${error.message}</p>
+                            </div>
+                        `;
+                    });
+            }
+            
+            // Manage server - show channels
+            function manageServer(serverName) {
+                currentServer = serverName;
+                fetch(`/api/servers/${serverName}/channels`)
+                    .then(response => response.json())
+                    .then(channels => {
+                        // Create a modal to show channels
+                        const modal = document.createElement('div');
+                        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                        modal.innerHTML = `
+                            <div class="bg-gray-900 rounded-lg shadow-xl border border-gray-800 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+                                <div class="p-6">
+                                    <div class="flex justify-between items-center mb-6">
+                                        <h2 class="text-xl font-semibold text-white">${serverName} - Channels</h2>
+                                        <button class="close-channels-modal text-gray-400 hover:text-white">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="space-y-3 mb-4">
+                                        ${channels.length > 0 ? 
+                                            channels.map(channel => `
+                                                <div class="channel-item bg-gray-800 rounded-lg p-3 flex justify-between items-center">
+                                                    <div>
+                                                        <h3 class="font-medium">${channel}</h3>
+                                                    </div>
+                                                    <div class="flex space-x-2">
+                                                        <button class="edit-channel-btn text-blue-400 hover:text-blue-300" data-channel="${channel}">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="delete-channel-btn text-red-400 hover:text-red-300" data-channel="${channel}">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            `).join('') : 
+                                            '<p class="text-gray-400 text-center py-4">No channels configured</p>'}
+                                    </div>
+                                    
+                                    <div class="flex justify-end">
+                                        <button class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg" id="add-channel-btn">
+                                            <i class="fas fa-plus mr-2"></i> Add Channel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        document.body.appendChild(modal);
+                        
+                        // Add event listeners
+                        modal.querySelector('.close-channels-modal').addEventListener('click', function() {
+                            modal.remove();
+                        });
+                        
+                        if (channels.length > 0) {
+                            modal.querySelectorAll('.edit-channel-btn').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    modal.remove();
+                                    editChannel(this.dataset.channel);
+                                });
+                            });
+                            
+                            modal.querySelectorAll('.delete-channel-btn').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    if (confirm(`Are you sure you want to delete channel "${this.dataset.channel}"?`)) {
+                                        deleteChannel(this.dataset.channel);
+                                        modal.remove();
+                                    }
+                                });
+                            });
+                        }
+                        
+                        modal.querySelector('#add-channel-btn').addEventListener('click', function() {
+                            modal.remove();
+                            addChannel();
+                        });
+                    })
+                    .catch(error => {
+                        alert(`Failed to load channels: ${error.message}`);
+                    });
+            }
+            
+            // Edit channel
+            function editChannel(channelName) {
+                fetch(`/api/servers/${currentServer}/channels/${channelName}`)
+                    .then(response => response.json())
+                    .then(channel => {
+                        currentChannel = channelName;
+                        isEditing = true;
+                        channelEditorTitle.textContent = `Editing ${channelName}`;
+                        
+                        // Populate fields
+                        channelName.value = channel.name || '';
+                        channelInstruction.value = channel.instruction || '';
+                        channelGlobalvar.value = channel.globalvar || '';
+                        channelLocation.value = channel.location || '';
+                        
+                        // Clear existing entries
+                        lorebookEntries.innerHTML = '';
+                        whitelistTags.innerHTML = '';
+                        
+                        // Add lorebook entries
+                        if (channel.lorebook && Object.keys(channel.lorebook).length > 0) {
+                            Object.entries(channel.lorebook).forEach(([key, value]) => {
+                                addLorebookEntry(key, value);
+                            });
+                        }
+                        
+                        // Add whitelist entries
+                        if (channel.whitelist && channel.whitelist.length > 0) {
+                            channel.whitelist.forEach(entry => {
+                                addWhitelistEntry(entry);
+                            });
+                        }
+                        
+                        channelEditor.classList.remove('hidden');
+                    })
+                    .catch(error => {
+                        alert(`Failed to load channel: ${error.message}`);
+                    });
+            }
+            
+            // Add new channel
+            function addChannel() {
+                currentChannel = null;
+                isEditing = false;
+                resetChannelEditor();
+                channelEditorTitle.textContent = 'Add New Channel';
+                channelEditor.classList.remove('hidden');
+            }
+            
+            // Delete channel
+            function deleteChannel(channelName) {
+                fetch(`/api/servers/${currentServer}/channels/${channelName}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        loadServers();
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    alert(`Failed to delete channel: ${error.message}`);
+                });
+            }
+            
+            // Save channel
+            function saveChannel() {
+                const channelData = {
+                    name: channelName.value.trim() || currentChannel,
+                    instruction: channelInstruction.value.trim(),
+                    globalvar: channelGlobalvar.value.trim(),
+                    location: channelLocation.value.trim(),
+                    lorebook: {},
+                    whitelist: []
+                };
+                
+                // Collect lorebook entries
+                lorebookEntries.querySelectorAll('.lorebook-entry').forEach(entry => {
+                    const key = entry.dataset.key;
+                    const value = entry.querySelector('textarea').value.trim();
+                    if (key && value) {
+                        channelData.lorebook[key] = value;
+                    }
+                });
+                
+                // Collect whitelist entries
+                whitelistTags.querySelectorAll('.whitelist-chip').forEach(chip => {
+                    channelData.whitelist.push(chip.textContent.trim());
+                });
+                
+                if (!channelData.name) {
+                    alert('Please enter a channel name');
+                    return;
+                }
+                
+                const endpoint = isEditing ? 
+                    `/api/servers/${currentServer}/channels/${currentChannel}` : 
+                    `/api/servers/${currentServer}/channels/${channelData.name}`;
+                
+                const method = isEditing ? 'PUT' : 'POST';
+                
+                fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(channelData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loadServers();
+                    closeChannelEditor();
+                    alert(`Channel ${isEditing ? 'updated' : 'created'} successfully!`);
+                })
+                .catch(error => {
+                    alert(`Failed to save channel: ${error.message}`);
+                });
+            }
+            
+            // Add lorebook entry to UI
+            function addLorebookEntry(key, value) {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'lorebook-entry bg-gray-700 p-3 rounded';
+                entryDiv.dataset.key = key;
+                entryDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-gray-300">${key}</span>
+                        <button class="delete-lorebook-btn text-red-400 hover:text-red-300">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <textarea class="editor-textarea bg-gray-800 border border-gray-700 text-white text-sm rounded-lg block w-full p-2" rows="3">${value}</textarea>
+                `;
+                
+                lorebookEntries.appendChild(entryDiv);
+                
+                entryDiv.querySelector('.delete-lorebook-btn').addEventListener('click', function() {
+                    entryDiv.remove();
+                });
+            }
+            
+            // Add whitelist entry to UI
+            function addWhitelistEntry(entry) {
+                const chip = document.createElement('div');
+                chip.className = 'whitelist-chip px-3 py-1 rounded-full text-sm flex items-center';
+                chip.innerHTML = `
+                    ${entry}
+                    <button class="delete-whitelist-btn ml-2 text-red-400 hover:text-red-300">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                whitelistTags.appendChild(chip);
+                
+                chip.querySelector('.delete-whitelist-btn').addEventListener('click', function() {
+                    chip.remove();
+                });
+            }
+            
+            // Reset channel editor to default state
+            function resetChannelEditor() {
+                channelName.value = '';
+                channelInstruction.value = '';
+                channelGlobalvar.value = '';
+                channelLocation.value = '';
+                lorebookEntries.innerHTML = '';
+                whitelistTags.innerHTML = '';
+                newLorebookKey.value = '';
+                newLorebookValue.value = '';
+                newWhitelistEntry.value = '';
+            }
+            
+            // Close channel editor
+            function closeChannelEditor() {
+                channelEditor.classList.add('hidden');
+            }
+            
+            // Check bot status periodically
+            function checkBotStatus() {
+                fetch('/api/discord/discord/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        const indicator = document.getElementById('bot-status-indicator');
+                        const text = document.getElementById('bot-status-text');
+                        
+                        indicator.className = 'status-indicator';
+                        
+                        if (data.status === 'active') {
+                            indicator.classList.add('status-active');
+                            text.textContent = 'Active';
+                        } else if (data.status === 'starting') {
+                            indicator.classList.add('status-starting');
+                            text.textContent = 'Starting';
+                        } else {
+                            indicator.classList.add('status-inactive');
+                            text.textContent = 'Inactive';
+                        }
+                    });
+            }
+            
+            // Initial status check
+            checkBotStatus();
+            
+            // Periodic status check
+            setInterval(checkBotStatus, 10000);
+        });
+    </script>
+</body>
+</html>

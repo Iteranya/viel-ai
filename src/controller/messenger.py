@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 
 from src.controller import config
 from src.models.queue import QueueItem
-from src.models.aicharacter import AICharacter
+from src.models.aicharacter import ActiveCharacter
 from src.utils.image_embed import ImageGalleryView
 from src.utils.discord_utils import is_valid_url, is_local_file
 
@@ -16,7 +16,7 @@ class DiscordMessenger:
     def __init__(self, message_chunk_size: int = 1999):
         self.message_chunk_size = message_chunk_size
 
-    async def send_message(self, bot: AICharacter, message: discord.Message, queue_item: QueueItem):
+    async def send_message(self, bot: ActiveCharacter, message: discord.Message, queue_item: QueueItem):
         """Main method to route and send a message based on the queue item."""
         await self._remove_processing_emoji(message)
         
@@ -29,7 +29,7 @@ class DiscordMessenger:
         else:
             await self._send_bot_message(sanitized_item, bot, message)
             
-    async def _send_bot_message(self, queue_item: QueueItem, bot: AICharacter, message: discord.Message):
+    async def _send_bot_message(self, queue_item: QueueItem, bot: ActiveCharacter, message: discord.Message):
         """Sends a message as the bot character, potentially using webhooks."""
         context = message.channel
         response = self._clean_bot_name_from_response(queue_item.result, bot.name)
@@ -51,7 +51,7 @@ class DiscordMessenger:
             if file_paths:
                 await self._send_file_webhook(file_paths, message, **webhook_context)
 
-    async def _get_webhook_context(self, context: discord.abc.Messageable, bot: AICharacter) -> dict:
+    async def _get_webhook_context(self, context: discord.abc.Messageable, bot: ActiveCharacter) -> dict:
         """Prepares the context needed for sending a webhook message."""
         channel, thread = self._get_channel_and_thread(context)
         webhook = await self._get_or_create_webhook(channel)
@@ -132,7 +132,7 @@ class DiscordMessenger:
             error_msg = f"❌ Failed to send files: {e}"
             await self._send_via_webhook(content=error_msg, context=message.channel, **kwargs)
 
-    async def _send_dm_message(self, queue_item: QueueItem, bot: AICharacter, author: discord.User):
+    async def _send_dm_message(self, queue_item: QueueItem, bot: ActiveCharacter, author: discord.User):
         """Send message as a direct message."""
         response = self._clean_bot_name_from_response(queue_item.result, bot.name)
         for chunk in self._chunk_message(response):
