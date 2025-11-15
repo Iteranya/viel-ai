@@ -34,6 +34,8 @@ class ActiveChannel:
         self.instruction: Optional[str] = data.get('instruction')
         self.whitelist: List[str] = data.get('whitelist', [])
 
+        self.is_system_channel: bool = data.get('is_system_channel', False)
+
     @classmethod
     def from_id(cls, channel_id: str, db: Database) -> Optional[ActiveChannel]:
         """
@@ -60,7 +62,8 @@ class ActiveChannel:
             "description": self.description,
             "global": self.global_note, # Note the mapping back to 'global'
             "instruction": self.instruction,
-            "whitelist": self.whitelist
+            "whitelist": self.whitelist,
+            "is_system_channel": self.is_system_channel
         }
         self.db.update_channel(self.channel_id, data=data_to_save)
         print(f"Successfully saved channel '{self.channel_id}' to the database.")
@@ -96,4 +99,9 @@ class ActiveChannel:
 
     def set_whitelist(self, whitelist: List[str]):
         self.whitelist = whitelist
+        self.save()
+
+    def set_is_system_channel(self, is_system: bool):
+        """Sets the system channel flag and saves it to the database."""
+        self.is_system_channel = is_system
         self.save()

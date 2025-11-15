@@ -42,6 +42,7 @@ class ChannelData(BaseModel):
     global_note: Optional[str] = Field(None, alias="global")
     instruction: Optional[str] = None
     whitelist: List[str] = Field(default_factory=list)
+    is_system_channel: bool = False
 
 
 class Channel(BaseModel):
