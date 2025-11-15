@@ -37,27 +37,36 @@ class ActiveCharacter:
     @classmethod
     def from_message(cls, text: str, db: Database) -> Optional[ActiveCharacter]:
         """
-        Scans a text message for trigger words and returns an instance of the
-        first matching character found in the database.
-
-        Args:
-            text (str): The input message to scan.
-            db (Database): An instance of the database manager.
-
-        Returns:
-            Optional[ActiveCharacter]: An instance of the triggered character, or None if no triggers match.
+        Returns the character whose name or trigger appears earliest in the text.
         """
         all_characters = db.list_characters()
         text_lower = text.lower()
 
+        earliest_match = None  # (index, character_data)
+
         for char_data in all_characters:
-            for trigger in char_data.get('triggers', []):
-                if trigger.lower() in text_lower:
-                    # A trigger was found, initialize and return this character
-                    return cls(character_data=char_data, db=db)
-        
-        # No triggers were found in the message
+            name = char_data.get("name", "").lower()
+            triggers = [t.lower() for t in char_data.get("triggers", [])]
+
+            # Add the name into the trigger pool
+            extended_triggers = triggers + [name]
+
+            for trigger in extended_triggers:
+                if not trigger:
+                    continue
+
+                idx = text_lower.find(trigger)
+                if idx != -1:
+                    # If it's the first match OR earlier than our current best, keep it
+                    if earliest_match is None or idx < earliest_match[0]:
+                        earliest_match = (idx, char_data)
+
+        if earliest_match:
+            return cls(character_data=earliest_match[1], db=db)
+
         return None
+
+
 
     def save(self):
         """Saves the current state of the character's data back to the database."""

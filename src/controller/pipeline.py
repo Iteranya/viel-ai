@@ -26,6 +26,7 @@ async def think(viel, db: Database, queue: asyncio.Queue) -> None:
         try:
             # Get the next message to process from the queue
             message: discord.Message = await queue.get()
+            print("Got message~")
 
             # 1. Get the channel configuration
             channel = ActiveChannel.from_id(str(message.channel.id), db)
@@ -53,6 +54,7 @@ async def think(viel, db: Database, queue: asyncio.Queue) -> None:
 
             # If still no character, there's nothing to do.
             if not character:
+                print("What the fuck?")
                 queue.task_done()
                 continue
 

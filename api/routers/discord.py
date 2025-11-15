@@ -1,5 +1,6 @@
 # api_router.py
 
+from collections import deque
 import threading
 import asyncio
 import logging
@@ -114,13 +115,27 @@ async def get_discord_invite():
 
 @router.get("/stream-logs")
 async def stream_logs(request: Request):
-    """Streams the contents of the bot's log file using Server-Sent Events."""
-    
+    """
+    Streams the bot's log file using Server-Sent Events.
+    Starts with the last 10 lines of the file and then continues to
+    stream new lines as they are added.
+    """
+
     async def log_generator():
         try:
             with open(LOG_FILE_PATH, 'r', encoding='utf-8') as f:
-                # Go to the end of the file
-                f.seek(0, 2)
+                # 1. Use deque to efficiently get the last 10 lines.
+                # This reads the whole file but only keeps the last 10 lines in memory.
+                # After this, the file pointer 'f' will be at the end of the file.
+                last_lines = deque(f, maxlen=10)
+
+                # 2. Send the initial batch of last lines to the client.
+                for line in last_lines:
+                    if line.strip():  # Avoid sending empty lines
+                        yield f"data: {line.strip()}\n\n"
+
+                # 3. Now, start tailing the file for new lines.
+                # The file pointer is already at the end, so this works perfectly.
                 while True:
                     if await request.is_disconnected():
                         logging.info("Client disconnected from log stream.")
@@ -128,12 +143,13 @@ async def stream_logs(request: Request):
 
                     line = f.readline()
                     if not line:
-                        # No new line, wait a bit
+                        # No new line, wait a bit before checking again.
                         await asyncio.sleep(0.5)
                         continue
-                    
-                    # SSE format: "data: <your message>\n\n"
+
+                    # Send any new line to the client.
                     yield f"data: {line.strip()}\n\n"
+
         except FileNotFoundError:
             yield f"data: Log file not found. It will be created when the bot is started.\n\n"
         except Exception as e:

@@ -1,3 +1,4 @@
+import copy
 import discord
 from jinja2 import Environment
 
@@ -97,15 +98,49 @@ class PromptEngineer:
 
     async def create_prompt(self) -> str:
         """
-        Gathers all context, runs plugins, and renders the final prompt string
-        using a Jinja2 template from the database.
+        Gathers context, pre-renders nested templates in character data,
+        and then renders the final prompt string.
         """
-        # 1. Gather all base context
         history = await get_history(self.message.channel, self.db)
+
+        # --- STEP 1: Create a context for the INNER templates ---
+        # This context will be used to render strings like the character's persona.
+        # Your idea to add 'char' was perfect for this.
+        inner_context = {
+            "char": self.bot.name,
+            "user": self.user_name
+        }
+
+        # --- STEP 2: Pre-render the character's data ---
+        # We create a deep copy to avoid modifying the original bot object.
+        rendered_character = copy.deepcopy(self.bot)
+        
+        # Render any fields that might contain Jinja templates
+        if rendered_character.persona:
+            template = self.jinja_env.from_string(rendered_character.persona)
+            rendered_character.persona = template.render(inner_context)
+
+        if rendered_character.examples:
+            # Create a new list to hold the rendered examples
+            rendered_examples = []
+            # Loop through each example string in the list
+            for example_string in rendered_character.examples:
+                # Treat each string as a template and render it
+                template = self.jinja_env.from_string(example_string)
+                rendered_examples.append(template.render(inner_context))
+            # Replace the old list with the new list of rendered strings
+            rendered_character.examples = rendered_examples
+            
+        if rendered_character.instructions:
+            template = self.jinja_env.from_string(rendered_character.instructions)
+            rendered_character.instructions = template.render(inner_context)
+
+        # --- STEP 3: Create the context for the MAIN template ---
+        # This now uses our pre-rendered character object.
         base_context = {
-            "character": self.bot,
+            "character": rendered_character, # <-- Using the rendered version!
             "channel": self.channel,
-            "user": {"name": self.user_name},
+            "user": self.user_name,
             "history": history,
             "message": self.message
         }
@@ -122,5 +157,5 @@ class PromptEngineer:
         # 5. Render the final prompt using Jinja2
         template = self.jinja_env.from_string(prompt_template_str)
         final_prompt = template.render(final_context)
-
+        #print(f"=====================\nFINAL PROMPT\n=======================\n{final_prompt}")
         return final_prompt
