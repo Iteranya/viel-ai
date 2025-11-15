@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 # --- Local Imports ---
-from api.routers import characters, servers, config, discord as discord_router
+from api.routers import characters, servers, config, discord as discord_router, preset
 from api.db.database import Database
 
 # --- Default Data for First-Time Setup ---
@@ -130,6 +130,7 @@ app.include_router(characters.router)
 app.include_router(servers.router)
 app.include_router(config.router)
 app.include_router(discord_router.router)
+app.include_router(preset.router)
 
 # Set up CORS
 app.add_middleware(
@@ -158,6 +159,11 @@ async def get_characters_html():
 async def get_servers_html():
     """Serve the servers.html page."""
     return "static/servers.html"
+
+@app.get("/ai-config", response_class=FileResponse)
+async def get_servers_html():
+    """Serve the servers.html page."""
+    return "static/ai-config.html"
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():

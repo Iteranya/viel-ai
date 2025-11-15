@@ -77,24 +77,29 @@ async def update_preset(
     preset_name: str = Path(..., description="The name of the preset to update"),
     preset_data: PresetBody = Body(..., description="The updated preset data")
 ):
-    """Update an existing preset's data."""
+    """Update an existing preset's data, ignoring any name changes."""
     # Ensure the preset to be updated exists
     if not db.get_preset(name=preset_name):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Preset '{preset_name}' not found"
         )
-    # If the name is being changed, ensure the new name doesn't conflict with another preset
-    if preset_name != preset_data.name and db.get_preset(name=preset_data.name):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Another preset with the name '{preset_data.name}' already exists."
-        )
 
     try:
-        db.update_preset(name=preset_name, **preset_data.model_dump())
-        # Fetch and return the updated preset using its new name
-        return db.get_preset(name=preset_data.name)
+        # Get the data from the request body
+        update_data = preset_data.model_dump()
+        
+        # === THE FIX IS HERE ===
+        # Remove the 'name' field from the dictionary to prevent the conflict.
+        # This ensures we only update the other fields, as requested.
+        update_data.pop('name', None)
+
+        # Now, `update_data` only contains fields like 'description' and 'prompt_template'.
+        # The `name` argument is supplied only by `preset_name` from the URL.
+        db.update_preset(name=preset_name, **update_data)
+        
+        # Fetch and return the updated preset using the original name from the path
+        return db.get_preset(name=preset_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to update preset: {e}")
 

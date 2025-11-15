@@ -3,571 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Viel AI - Character Management</title>
+    <title>Viel AI - Characters</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --dark: #1e293b;
-            --darker: #0f172a;
-            --light: #f8fafc;
+            --primary: #6366f1; --primary-dark: #4f46e5; --dark: #1e293b;
+            --darker: #0f172a; --light: #f8fafc;
         }
-        
-        body {
-            background-color: var(--darker);
-            color: var(--light);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
+        body { background-color: var(--darker); color: var(--light); font-family: 'Inter', sans-serif; }
+        .nav-link:hover { background-color: rgba(99, 102, 241, 0.1); }
+        .nav-link.active { border-bottom: 2px solid var(--primary); }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); }
+        input:read-only { background-color: #334155 !important; cursor: not-allowed; }
+
+        /* New styles for Modal */
+        .modal {
+            transition: opacity 0.3s ease;
         }
-        
-        .character-card {
-            transition: all 0.3s ease;
-            border: 1px solid rgba(99, 102, 241, 0.1);
-        }
-        
-        .character-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(99, 102, 241, 0.3);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .nav-link:hover {
-            background-color: rgba(99, 102, 241, 0.1);
-        }
-        
-        .nav-link.active {
-            border-bottom: 2px solid var(--primary);
-        }
-        
-        .editor-textarea {
-            min-height: 150px;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.9rem;
-        }
-        
-        .avatar-preview {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid rgba(99, 102, 241, 0.5);
-        }
-        
-        .tab-button {
-            transition: all 0.2s ease;
-        }
-        
-        .tab-button.active {
-            background-color: rgba(99, 102, 241, 0.2);
-            border-bottom: 2px solid var(--primary);
+        .modal-content {
+            max-height: 90vh;
         }
     </style>
 </head>
 <body class="bg-darker text-light">
-    <div class="flex flex-col min-h-screen">
-        <!-- Navbar -->
-        <nav class="bg-darker border-b border-gray-800">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <span class="text-primary font-bold text-xl">Viel AI</span>
-                        </div>
-                        <div class="hidden md:block">
-                            <div class="ml-10 flex items-baseline space-x-4">
-                                <a href="/" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
-                                    <i class="fas fa-home mr-2"></i> Dashboard
-                                </a>
-                                <a href="/servers" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
-                                    <i class="fas fa-server mr-2"></i> Servers
-                                </a>
-                                <a href="/characters" class="nav-link active px-3 py-2 rounded-md text-sm font-medium text-white">
-                                    <i class="fas fa-robot mr-2"></i> Characters
-                                </a>
-                                <a href="/ai-config" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
-                                    <i class="fas fa-cog mr-2"></i> AI Config
-                                </a>
-                            </div>
-                        </div>
+    <div id="toast-container" class="toast z-50"></div>
+
+    <!-- Navbar (Unchanged) -->
+    <nav class="bg-darker border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="/" class="flex items-center space-x-3 text-white">
+                            <img class="h-8 w-auto" src="https://cdn.discordapp.com/attachments/1439240977356161137/1439267698755239956/Viel.jpg?ex=6919e5ff&is=6918947f&hm=8fc964ad0a8b7bf35c8955d4c1bc2d2d91c398023bf5856f350c6366b2fb44f4&" alt="Viel AI Logo">
+                            <span class="font-bold text-xl hidden sm:inline">Viel AI</span>
+                        </a>
                     </div>
                     <div class="hidden md:block">
-                        <div class="ml-4 flex items-center md:ml-6">
-                            <span class="text-sm text-gray-400 mr-2">Status:</span>
-                            <span id="bot-status-indicator" class="status-indicator status-inactive"></span>
-                            <span id="bot-status-text" class="ml-1 text-sm">Inactive</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="flex-grow p-6">
-            <div class="max-w-7xl mx-auto">
-                <div class="mb-8 flex justify-between items-center">
-                    <div>
-                        <h1 class="text-3xl font-bold text-white">Character Management</h1>
-                        <p class="text-gray-400 mt-2">Create, edit and manage your AI characters</p>
-                    </div>
-                    <button id="new-character-btn" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg flex items-center">
-                        <i class="fas fa-plus mr-2"></i> New Character
-                    </button>
-                </div>
-
-                <!-- Character Grid -->
-                <div id="character-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <!-- Characters will be loaded here -->
-                    <div class="text-center text-gray-500 py-10">
-                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                        <p>Loading characters...</p>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Character Editor Modal -->
-        <div id="character-editor-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-            <div class="bg-gray-900 rounded-lg shadow-xl border border-gray-800 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold text-white" id="editor-title">New Character</h2>
-                        <button id="close-editor-btn" class="text-gray-400 hover:text-white">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Left Column -->
-                        <div class="lg:col-span-1">
-                            <div class="bg-gray-800 rounded-lg p-4">
-                                <div class="flex flex-col items-center mb-4">
-                                    <img id="avatar-preview" src="https://via.placeholder.com/150" alt="Avatar Preview" class="avatar-preview mb-4">
-                                    <input type="file" id="avatar-upload" class="hidden" accept="image/*">
-                                    <button id="upload-avatar-btn" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm">
-                                        <i class="fas fa-upload mr-2"></i> Upload Avatar
-                                    </button>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label for="character-name" class="block text-sm font-medium text-gray-300 mb-1">Character Name</label>
-                                    <input type="text" id="character-name" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="Enter character name">
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-300 mb-1">Character Type</label>
-                                    <div class="flex space-x-2">
-                                        <button id="viel-card-btn" class="tab-button active px-3 py-1 rounded text-sm">Viel Card</button>
-                                        <button id="pygmalion-btn" class="tab-button px-3 py-1 rounded text-sm">Pygmalion</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Right Column -->
-                        <div class="lg:col-span-2">
-                            <div class="bg-gray-800 rounded-lg p-4">
-                                <div class="mb-4">
-                                    <label for="persona-text" class="block text-sm font-medium text-gray-300 mb-1">Persona</label>
-                                    <textarea id="persona-text" class="editor-textarea bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="Describe the character's personality, background, etc."></textarea>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label for="examples-text" class="block text-sm font-medium text-gray-300 mb-1">Example Messages</label>
-                                    <textarea id="examples-text" class="editor-textarea bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="Enter example messages (one per line)"></textarea>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label for="instructions-text" class="block text-sm font-medium text-gray-300 mb-1">Instructions</label>
-                                    <textarea id="instructions-text" class="editor-textarea bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="Enter system instructions for the character"></textarea>
-                                </div>
-                                
-                                <div class="flex justify-end space-x-3 mt-4">
-                                    <button id="cancel-character-btn" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
-                                        Cancel
-                                    </button>
-                                    <button id="save-character-btn" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg">
-                                        Save Character
-                                    </button>
-                                </div>
-                            </div>
+                        <div class="ml-10 flex items-baseline space-x-4">
+                            <a href="/" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
+                                <i class="fas fa-home mr-2"></i> Dashboard
+                            </a>
+                            <a href="/servers" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
+                                <i class="fas fa-server mr-2"></i> Servers
+                            </a>
+                            <a href="/characters" class="nav-link active px-3 py-2 rounded-md text-sm font-medium text-white">
+                                <i class="fas fa-robot mr-2"></i> Characters
+                            </a>
+                             <a href="/ai-config" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-white">
+                                <i class="fas fa-cog mr-2"></i> Config
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </nav>
 
-        <!-- Import Modal -->
-        <div id="import-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-            <div class="bg-gray-900 rounded-lg shadow-xl border border-gray-800 w-full max-w-2xl">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold text-white">Import Character</h2>
-                        <button id="close-import-btn" class="text-gray-400 hover:text-white">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Paste Character JSON</label>
-                        <textarea id="import-json-text" class="editor-textarea bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-3 h-64" placeholder="Paste character JSON data here"></textarea>
-                    </div>
-                    
-                    <div class="flex justify-end space-x-3 mt-4">
-                        <button id="cancel-import-btn" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
-                            Cancel
-                        </button>
-                        <button id="confirm-import-btn" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg">
-                            Import Character
-                        </button>
+    <!-- Main Content -->
+    <main class="flex-grow p-6 sm:p-8">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-3xl font-bold text-white mb-8">Character Management</h1>
+
+            <!-- Character Grid -->
+            <div id="character-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                <!-- JS will populate this -->
+                <p class="text-gray-400 col-span-full">Loading characters...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Character Edit/Create Modal -->
+    <div id="character-modal" class="modal fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-40 opacity-0 pointer-events-none">
+        <div class="modal-content bg-gray-900 rounded-lg shadow-2xl w-full max-w-3xl overflow-y-auto border border-gray-700">
+            <div class="sticky top-0 bg-gray-900 border-b border-gray-800 p-6 z-10 flex justify-between items-center">
+                <h2 id="form-title" class="text-xl font-semibold text-white">Select or Create a Character</h2>
+                <button id="modal-close-btn" class="text-gray-400 hover:text-white transition">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
+            </div>
+            
+            <form id="character-form" class="space-y-6 p-6">
+                <!-- Character Name -->
+                <div>
+                    <label for="name" class="block mb-2 text-sm font-medium text-gray-300">Name</label>
+                    <input type="text" id="name" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" required>
+                </div>
+                
+                <!-- Persona -->
+                <div>
+                    <label for="persona" class="block mb-2 text-sm font-medium text-gray-300">Persona</label>
+                    <textarea id="persona" rows="4" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5"></textarea>
+                </div>
+                
+                <!-- Example Dialogues -->
+                <div>
+                    <label for="examples" class="block mb-2 text-sm font-medium text-gray-300">Example Dialogues</label>
+                    <textarea id="examples" rows="4" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="Separate each example with a line of three dashes, e.g., ---"></textarea>
+                </div>
+
+                <!-- Instructions -->
+                <div>
+                    <label for="instructions" class="block mb-2 text-sm font-medium text-gray-300">Instructions</label>
+                    <textarea id="instructions" rows="3" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5"></textarea>
+                </div>
+
+                <!-- Avatar -->
+                <div class="flex items-start space-x-4">
+                    <img id="avatar-preview" src="https://via.placeholder.com/96" alt="Avatar Preview" class="w-24 h-24 rounded-lg object-cover bg-gray-700">
+                    <div class="flex-grow">
+                        <label for="avatar-url" class="block mb-2 text-sm font-medium text-gray-300">Avatar URL</label>
+                        <input type="text" id="avatar-url" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" placeholder="Paste image link or upload a file">
+                        <label for="avatar-upload" class="block mt-2 text-sm font-medium text-gray-300">Or Upload Image</label>
+                        <input id="avatar-upload" type="file" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-dark cursor-pointer">
                     </div>
                 </div>
-            </div>
+                
+                <!-- Info -->
+                <div>
+                    <label for="info" class="block mb-2 text-sm font-medium text-gray-300">Info / Author Note</label>
+                    <input type="text" id="info" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" id="delete-btn" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Delete</button>
+                    <button type="submit" id="save-btn" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Create Character</button>
+                </div>
+            </form>
         </div>
     </div>
 
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const API_BASE = '/api/characters';
+            let currentCharacterName = null;
+
+            // --- DOM Elements ---
             const characterGrid = document.getElementById('character-grid');
-            const newCharacterBtn = document.getElementById('new-character-btn');
-            const editorModal = document.getElementById('character-editor-modal');
-            const closeEditorBtn = document.getElementById('close-editor-btn');
-            const cancelCharacterBtn = document.getElementById('cancel-character-btn');
-            const saveCharacterBtn = document.getElementById('save-character-btn');
-            const importModal = document.getElementById('import-modal');
-            const closeImportBtn = document.getElementById('close-import-btn');
-            const cancelImportBtn = document.getElementById('cancel-import-btn');
-            const confirmImportBtn = document.getElementById('confirm-import-btn');
-            const importJsonText = document.getElementById('import-json-text');
+            const modal = document.getElementById('character-modal');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
             
-            // Editor fields
-            const editorTitle = document.getElementById('editor-title');
-            const characterName = document.getElementById('character-name');
-            const personaText = document.getElementById('persona-text');
-            const examplesText = document.getElementById('examples-text');
-            const instructionsText = document.getElementById('instructions-text');
+            // Form Elements
+            const form = document.getElementById('character-form');
+            const formTitle = document.getElementById('form-title');
+            const nameInput = document.getElementById('name');
+            const personaInput = document.getElementById('persona');
+            const examplesInput = document.getElementById('examples');
+            const instructionsInput = document.getElementById('instructions');
+            const avatarUrlInput = document.getElementById('avatar-url');
+            const avatarUploadInput = document.getElementById('avatar-upload');
             const avatarPreview = document.getElementById('avatar-preview');
-            const avatarUpload = document.getElementById('avatar-upload');
-            const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
+            const infoInput = document.getElementById('info');
+            const saveBtn = document.getElementById('save-btn');
+            const deleteBtn = document.getElementById('delete-btn');
+            const toastContainer = document.getElementById('toast-container');
             
-            // Tab buttons
-            const vielCardBtn = document.getElementById('viel-card-btn');
-            const pygmalionBtn = document.getElementById('pygmalion-btn');
-            
-            let currentCharacter = null;
-            let isEditing = false;
-            
-            // Load characters on page load
-            loadCharacters();
-            
-            // New character button click handler
-            newCharacterBtn.addEventListener('click', function() {
-                currentCharacter = null;
-                isEditing = false;
-                resetEditor();
-                editorTitle.textContent = 'New Character';
-                editorModal.classList.remove('hidden');
-            });
-            
-            // Close editor modal handlers
-            closeEditorBtn.addEventListener('click', closeEditor);
-            cancelCharacterBtn.addEventListener('click', closeEditor);
-            
-            // Close import modal handlers
-            closeImportBtn.addEventListener('click', closeImportModal);
-            cancelImportBtn.addEventListener('click', closeImportModal);
-            
-            // Save character handler
-            saveCharacterBtn.addEventListener('click', saveCharacter);
-            
-            // Import character handler
-            confirmImportBtn.addEventListener('click', importCharacter);
-            
-            // Avatar upload handler
-            uploadAvatarBtn.addEventListener('click', function() {
-                avatarUpload.click();
-            });
-            
-            avatarUpload.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        avatarPreview.src = event.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            // Tab switch handlers
-            vielCardBtn.addEventListener('click', function() {
-                vielCardBtn.classList.add('active');
-                pygmalionBtn.classList.remove('active');
-                // Additional logic for Viel Card format
-            });
-            
-            pygmalionBtn.addEventListener('click', function() {
-                pygmalionBtn.classList.add('active');
-                vielCardBtn.classList.remove('active');
-                // Additional logic for Pygmalion format
-            });
-            
-            // Load characters from API
-            function loadCharacters() {
-                fetch('/api/characters')
-                    .then(response => response.json())
-                    .then(characters => {
-                        characterGrid.innerHTML = '';
-                        
-                        if (characters.length === 0) {
-                            characterGrid.innerHTML = `
-                                <div class="col-span-full text-center py-10">
-                                    <i class="fas fa-robot text-4xl text-gray-600 mb-4"></i>
-                                    <h3 class="text-xl font-medium text-gray-300 mb-2">No Characters Found</h3>
-                                    <p class="text-gray-500 mb-4">Create your first character to get started</p>
-                                    <button id="create-first-character" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg">
-                                        <i class="fas fa-plus mr-2"></i> Create Character
-                                    </button>
-                                </div>
-                            `;
-                            
-                            document.getElementById('create-first-character').addEventListener('click', function() {
-                                newCharacterBtn.click();
-                            });
-                            return;
-                        }
-                        
-                        characters.forEach(character => {
-                            const characterCard = document.createElement('div');
-                            characterCard.className = 'character-card bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer';
-                            characterCard.innerHTML = `
-                                <div class="p-4">
-                                    <div class="flex items-center mb-3">
-                                        <img src="https://via.placeholder.com/50" alt="${character}" class="w-10 h-10 rounded-full mr-3">
-                                        <h3 class="text-lg font-semibold truncate">${character}</h3>
-                                    </div>
-                                    <div class="flex justify-between text-sm text-gray-400">
-                                        <span><i class="fas fa-comment mr-1"></i> 12 chats</span>
-                                        <span><i class="fas fa-calendar-alt mr-1"></i> 2 days ago</span>
-                                    </div>
-                                </div>
-                                <div class="bg-gray-900 px-4 py-3 flex justify-end space-x-2">
-                                    <button class="edit-character-btn text-blue-400 hover:text-blue-300" data-character="${character}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="delete-character-btn text-red-400 hover:text-red-300" data-character="${character}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            `;
-                            
-                            characterGrid.appendChild(characterCard);
-                            
-                            // Add event listeners for the buttons
-                            characterCard.querySelector('.edit-character-btn').addEventListener('click', function(e) {
-                                e.stopPropagation();
-                                editCharacter(this.dataset.character);
-                            });
-                            
-                            characterCard.querySelector('.delete-character-btn').addEventListener('click', function(e) {
-                                e.stopPropagation();
-                                deleteCharacter(this.dataset.character);
-                            });
-                            
-                            characterCard.addEventListener('click', function() {
-                                viewCharacter(this.querySelector('h3').textContent);
-                            });
-                        });
-                    })
-                    .catch(error => {
-                        characterGrid.innerHTML = `
-                            <div class="col-span-full text-center py-10 text-red-400">
-                                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                                <p>Failed to load characters: ${error.message}</p>
-                            </div>
+            // --- Modal Management ---
+            function openModal() {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+            }
+            function closeModal() {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+            }
+
+            // --- Core Functions ---
+
+            // Fetch and display all characters in the grid
+            async function fetchAndDisplayCharacters() {
+                characterGrid.innerHTML = '<p class="text-gray-400 col-span-full">Loading characters...</p>';
+                try {
+                    const response = await fetch(API_BASE);
+                    if (!response.ok) throw new Error('Failed to fetch character list');
+                    const names = await response.json();
+                    
+                    // Since the list endpoint only returns names, we fetch full data for avatars.
+                    // For large lists, an API endpoint returning names + avatars would be better.
+                    const characterPromises = names.map(name => 
+                        fetch(`${API_BASE}/${name}`).then(res => res.json())
+                    );
+                    const characters = await Promise.all(characterPromises);
+
+                    characterGrid.innerHTML = ''; // Clear loading message
+
+                    // Add "New Character" card
+                    const newCharCard = document.createElement('div');
+                    newCharCard.className = 'flex items-center justify-center aspect-square bg-gray-900 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer hover:border-primary hover:text-primary transition-colors';
+                    newCharCard.innerHTML = `<div class="text-center"><i class="fas fa-plus fa-3x"></i><p class="mt-2 font-semibold">New Character</p></div>`;
+                    newCharCard.addEventListener('click', () => {
+                        resetForm();
+                        openModal();
+                    });
+                    characterGrid.appendChild(newCharCard);
+
+                    // Add cards for each character
+                    characters.forEach(char => {
+                        const card = document.createElement('div');
+                        card.className = 'group relative aspect-square bg-gray-900 rounded-lg cursor-pointer overflow-hidden shadow-lg transition-transform transform hover:scale-105 border border-gray-800';
+                        card.innerHTML = `
+                            <img src="${char.data.avatar || 'https://via.placeholder.com/200'}" alt="${char.name}" class="w-full h-full object-cover transition-transform group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                            <h3 class="absolute bottom-0 left-0 p-3 font-bold text-white text-lg">${char.name}</h3>
                         `;
+                        card.addEventListener('click', () => loadCharacterForEdit(char.name));
+                        characterGrid.appendChild(card);
                     });
-            }
-            
-            // Edit character
-            function editCharacter(name) {
-                fetch(`/api/characters/${name}`)
-                    .then(response => response.json())
-                    .then(character => {
-                        currentCharacter = character;
-                        isEditing = true;
-                        editorTitle.textContent = `Edit ${name}`;
-                        
-                        // Populate fields
-                        characterName.value = character.name || '';
-                        personaText.value = character.persona || '';
-                        examplesText.value = character.examples?.join('\n') || '';
-                        instructionsText.value = character.instructions || '';
-                        
-                        if (character.avatar) {
-                            avatarPreview.src = character.avatar;
-                        } else {
-                            avatarPreview.src = 'https://via.placeholder.com/150';
-                        }
-                        
-                        editorModal.classList.remove('hidden');
-                    })
-                    .catch(error => {
-                        alert(`Failed to load character: ${error.message}`);
-                    });
-            }
-            
-            // View character (read-only)
-            function viewCharacter(name) {
-                // In a real app, this would open a detailed view
-                alert(`Viewing character: ${name}`);
-            }
-            
-            // Delete character
-            function deleteCharacter(name) {
-                if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
-                    fetch(`/api/characters/${name}`, {
-                        method: 'DELETE'
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.message) {
-                            loadCharacters();
-                            alert(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        alert(`Failed to delete character: ${error.message}`);
-                    });
+
+                } catch (error) {
+                    characterGrid.innerHTML = '<p class="text-red-500 col-span-full">Failed to load characters.</p>';
+                    showToast('Failed to load characters.', 'error');
                 }
             }
-            
-            // Save character
-            function saveCharacter() {
-                const characterData = {
-                    name: characterName.value,
-                    persona: personaText.value,
-                    examples: examplesText.value.split('\n').filter(line => line.trim()),
-                    instructions: instructionsText.value,
-                    avatar: avatarPreview.src.includes('placeholder.com') ? '' : avatarPreview.src,
-                    type: 'viel-card'
-                };
+
+            // Load a specific character's data into the modal for editing
+            async function loadCharacterForEdit(name) {
+                try {
+                    const response = await fetch(`${API_BASE}/${name}`);
+                    const char = await response.json();
+                    
+                    resetForm();
+                    currentCharacterName = name;
+
+                    formTitle.textContent = `Editing: ${char.name}`;
+                    nameInput.value = char.name;
+                    nameInput.readOnly = true;
+
+                    personaInput.value = char.data.persona;
+                    examplesInput.value = char.data.examples.join('\n---\n');
+                    instructionsInput.value = char.data.instructions;
+                    avatarUrlInput.value = char.data.avatar || '';
+                    infoInput.value = char.data.info || '';
+
+                    updateAvatarPreview(char.data.avatar);
+
+                    saveBtn.textContent = 'Save Changes';
+                    deleteBtn.classList.remove('hidden');
+                    
+                    openModal();
+                } catch (error) {
+                    showToast(`Failed to load character: ${name}`, 'error');
+                }
+            }
+
+            // Reset the form to its default "create" state
+            function resetForm() {
+                currentCharacterName = null;
+                form.reset();
+                nameInput.readOnly = false;
+                formTitle.textContent = 'Create New Character';
+                saveBtn.textContent = 'Create Character';
+                deleteBtn.classList.add('hidden');
+                updateAvatarPreview('https://via.placeholder.com/96');
+            }
+
+            // Handle form submission (both create and update)
+            async function handleFormSubmit(event) {
+                event.preventDefault();
                 
-                if (!characterData.name) {
-                    alert('Please enter a character name');
+                const characterJson = {
+                    name: nameInput.value.trim(),
+                    persona: personaInput.value,
+                    examples: examplesInput.value.split('\n---\n').map(s => s.trim()).filter(Boolean),
+                    instructions: instructionsInput.value,
+                    avatar: avatarUrlInput.value.trim() || null,
+                    info: infoInput.value.trim() || null
+                };
+
+                if (!characterJson.name) {
+                    showToast('Character name is required.', 'error'); return;
+                }
+
+                try {
+                    let response;
+                    if (currentCharacterName) {
+                        const { name, ...data } = characterJson;
+                        response = await fetch(`${API_BASE}/${currentCharacterName}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                    } else {
+                        response = await fetch(`${API_BASE}/import`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(characterJson)
+                        });
+                    }
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'An unknown error occurred.');
+                    }
+
+                    const result = await response.json();
+                    showToast(`Character '${result.name}' saved successfully!`);
+                    closeModal();
+                    await fetchAndDisplayCharacters();
+
+                } catch (error) {
+                    showToast(`Error saving character: ${error.message}`, 'error');
+                }
+            }
+
+            // Handle character deletion
+            async function handleDelete() {
+                if (!currentCharacterName || !confirm(`Are you sure you want to delete '${currentCharacterName}'? This cannot be undone.`)) {
                     return;
                 }
                 
-                const endpoint = isEditing ? 
-                    `/api/characters/${currentCharacter.name}` : 
-                    `/api/characters/${characterData.name}`;
-                
-                const method = isEditing ? 'PUT' : 'POST';
-                
-                fetch(endpoint, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(characterData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    loadCharacters();
-                    closeEditor();
-                    alert(`Character ${isEditing ? 'updated' : 'created'} successfully!`);
-                })
-                .catch(error => {
-                    alert(`Failed to save character: ${error.message}`);
-                });
-            }
-            
-            // Import character
-            function importCharacter() {
                 try {
-                    const jsonData = importJsonText.value.trim();
-                    if (!jsonData) {
-                        alert('Please paste character JSON data');
-                        return;
+                    const response = await fetch(`${API_BASE}/${currentCharacterName}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'An unknown error occurred.');
                     }
-                    
-                    fetch('/api/characters/import_character', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: jsonData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.name) {
-                            loadCharacters();
-                            closeImportModal();
-                            alert(`Character "${data.name}" imported successfully!`);
-                        } else if (data.detail) {
-                            alert(`Import failed: ${data.detail}`);
-                        }
-                    })
-                    .catch(error => {
-                        alert(`Failed to import character: ${error.message}`);
-                    });
-                } catch (e) {
-                    alert(`Invalid JSON: ${e.message}`);
+                    showToast(`Character '${currentCharacterName}' deleted.`);
+                    closeModal();
+                    await fetchAndDisplayCharacters();
+                } catch (error) {
+                    showToast(`Error deleting character: ${error.message}`, 'error');
                 }
             }
             
-            // Reset editor to default state
-            function resetEditor() {
-                characterName.value = '';
-                personaText.value = '';
-                examplesText.value = '';
-                instructionsText.value = '';
-                avatarPreview.src = 'https://via.placeholder.com/150';
-                avatarUpload.value = '';
-                vielCardBtn.classList.add('active');
-                pygmalionBtn.classList.remove('active');
-            }
-            
-            // Close editor modal
-            function closeEditor() {
-                editorModal.classList.add('hidden');
-            }
-            
-            // Close import modal
-            function closeImportModal() {
-                importModal.classList.add('hidden');
-                importJsonText.value = '';
-            }
-            
-            // Check bot status periodically
-            function checkBotStatus() {
-                fetch('/api/discord/discord/status')
-                    .then(response => response.json())
-                    .then(data => {
-                        const indicator = document.getElementById('bot-status-indicator');
-                        const text = document.getElementById('bot-status-text');
-                        
-                        indicator.className = 'status-indicator';
-                        
-                        if (data.status === 'active') {
-                            indicator.classList.add('status-active');
-                            text.textContent = 'Active';
-                        } else if (data.status === 'starting') {
-                            indicator.classList.add('status-starting');
-                            text.textContent = 'Starting';
-                        } else {
-                            indicator.classList.add('status-inactive');
-                            text.textContent = 'Inactive';
-                        }
+            // Handle file upload for avatar (logic unchanged)
+            async function handleAvatarUpload() {
+                const file = avatarUploadInput.files[0];
+                if (!file) return;
+
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                const originalUrl = avatarUrlInput.value;
+                avatarUrlInput.value = 'Uploading...';
+                saveBtn.disabled = true;
+                
+                try {
+                    const response = await fetch(`${API_BASE}/upload_image`, {
+                        method: 'POST', body: formData
                     });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Upload failed.');
+                    }
+                    
+                    const result = await response.json();
+                    avatarUrlInput.value = result.cdn_url;
+                    updateAvatarPreview(result.cdn_url);
+                    showToast('Avatar uploaded successfully!');
+                } catch (error) {
+                    showToast(`Avatar upload failed: ${error.message}`, 'error');
+                    avatarUrlInput.value = originalUrl;
+                } finally {
+                    saveBtn.disabled = false;
+                    avatarUploadInput.value = '';
+                }
             }
-            
-            // Initial status check
-            checkBotStatus();
-            
-            // Periodic status check
-            setInterval(checkBotStatus, 10000);
+
+            function updateAvatarPreview(url) {
+                avatarPreview.src = url || 'https://via.placeholder.com/96';
+            }
+
+            // --- Utility Functions ---
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+                toast.className = `${bgColor} text-white py-2 px-4 rounded-lg shadow-lg animate-pulse`;
+                toast.textContent = message;
+                toastContainer.appendChild(toast);
+                setTimeout(() => { toast.remove(); }, 3000);
+            }
+
+            // --- Event Listeners ---
+            form.addEventListener('submit', handleFormSubmit);
+            deleteBtn.addEventListener('click', handleDelete);
+            avatarUploadInput.addEventListener('change', handleAvatarUpload);
+            avatarUrlInput.addEventListener('input', (e) => updateAvatarPreview(e.target.value));
+
+            // Modal close events
+            modalCloseBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) closeModal(); // Close only if backdrop is clicked
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') closeModal();
+            });
+
+            // --- Initial Load ---
+            fetchAndDisplayCharacters();
         });
     </script>
 </body>

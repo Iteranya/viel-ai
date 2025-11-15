@@ -6,19 +6,21 @@ import uuid  # For creating unique temporary filenames
 
 # Adjust import paths to match your project structure
 from api.db.database import Database
+from src.controller.messenger import DiscordMessenger
 from src.models.aicharacter import ActiveCharacter
 from src.models.dimension import ActiveChannel
 from src.models.prompts import PromptEngineer
 from src.models.queue import QueueItem
 from src.utils.llm_new import generate_response
-from src.controller.discordo import send  # Assuming this is the function to send messages
 from api.models.models import BotConfig
 
 
-async def think(db: Database, queue: asyncio.Queue) -> None:
+async def think(viel, db: Database, queue: asyncio.Queue) -> None:
     """The main thinking loop of the bot."""
     # Load the bot's configuration once at the start of the loop
     bot_config = BotConfig(**db.list_configs())
+
+    messenger = DiscordMessenger(viel)
 
     while True:
         try:
@@ -76,7 +78,9 @@ async def think(db: Database, queue: asyncio.Queue) -> None:
                 queue_item.result = "//[OOC: Something went wrong and the AI failed to generate a response.]"
             
             # 6. Send the response back to Discord
-            await send(character, message, queue_item)
+            await messenger.send_message(character, message, queue_item)
+
+            await message.remove_reaction('✨', viel.user)
 
         except Exception as e:
             print(f"An error occurred in the think loop: {e}\n{traceback.format_exc()}")

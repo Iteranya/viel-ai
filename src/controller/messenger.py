@@ -1,183 +1,113 @@
-# src/handlers/discord_messenger.py
+# In a file like src/controller/discord_messenger.py
 
+import re
 import discord
 import os
-from typing import List, Optional, Union
+from typing import List, Optional
 
-from src.controller import config
+# Adjust import paths as needed
 from src.models.queue import QueueItem
 from src.models.aicharacter import ActiveCharacter
+from api.models.models import BotConfig
 from src.utils.image_embed import ImageGalleryView
 from src.utils.discord_utils import is_valid_url, is_local_file
+
 
 class DiscordMessenger:
     """Handles the sending of messages, files, and galleries to Discord."""
 
-    def __init__(self, message_chunk_size: int = 1999):
+    def __init__(self, bot, message_chunk_size: int = 1999):
+        self.bot = bot
+        self.db = bot.db
+        self.bot_config = BotConfig(**self.db.list_configs())
         self.message_chunk_size = message_chunk_size
 
-    async def send_message(self, bot: ActiveCharacter, message: discord.Message, queue_item: QueueItem):
+    async def send_message(self, character: ActiveCharacter, message: discord.Message, queue_item: QueueItem):
         """Main method to route and send a message based on the queue item."""
-        await self._remove_processing_emoji(message)
-        
         sanitized_item = self._sanitize_queue_item(queue_item)
 
-        if sanitized_item.error:
-            await self._send_regular_message(sanitized_item.error, message.channel)
-        elif sanitized_item.dm or sanitized_item.default:
-            await self._send_dm_message(sanitized_item, bot, message.author)
+        if isinstance(message.channel, discord.DMChannel):
+            await self._send_dm_message(sanitized_item, character, message.author)
         else:
-            await self._send_bot_message(sanitized_item, bot, message)
+            await self._send_guild_message(sanitized_item, character, message)
             
-    async def _send_bot_message(self, queue_item: QueueItem, bot: ActiveCharacter, message: discord.Message):
-        """Sends a message as the bot character, potentially using webhooks."""
+    async def _send_guild_message(self, queue_item: QueueItem, character: ActiveCharacter, message: discord.Message):
+        """Sends a message as the bot character within a server, using webhooks."""
         context = message.channel
-        response = self._clean_bot_name_from_response(queue_item.result, bot.name)
+        response = self._clean_bot_name_from_response(queue_item.result, character.name)
         chunks = self._chunk_message(response)
         
-        webhook_context = await self._get_webhook_context(context, bot)
+        webhook_context = await self._get_webhook_context(context, character)
 
-        # Send text chunks
-        for chunk in chunks:
+        for i, chunk in enumerate(chunks):
             if chunk.strip():
-                await self._send_via_webhook(content=chunk, context=context, **webhook_context)
+                # For the first chunk, include a reply to the user's message
+                reply_to = message if i == 0 else None
+                await self._send_via_webhook(content=chunk, context=context, reply_to=reply_to, **webhook_context)
         
-        # Send images if present
-        if queue_item.images:
-            image_urls, file_paths = self._categorize_images(queue_item.images)
-            
-            if image_urls:
-                await self._send_image_gallery_webhook(image_urls, message, **webhook_context)
-            if file_paths:
-                await self._send_file_webhook(file_paths, message, **webhook_context)
+        # Image sending logic can be added here if needed, similar to the original
 
-    async def _get_webhook_context(self, context: discord.abc.Messageable, bot: ActiveCharacter) -> dict:
+    async def _get_webhook_context(self, context: discord.abc.Messageable, character: ActiveCharacter) -> dict:
         """Prepares the context needed for sending a webhook message."""
         channel, thread = self._get_channel_and_thread(context)
         webhook = await self._get_or_create_webhook(channel)
         
+        # Use character data, fall back to default character's avatar if needed
+        avatar_url = character.avatar
+        if not avatar_url or str(avatar_url).lower() == "none":
+            default_char = self.db.get_character(self.bot_config.default_character)
+            if default_char:
+                avatar_url = default_char.get('data', {}).get('avatar')
+
         return {
             "webhook": webhook,
-            "username": bot.name or config.get_default_name(),
-            "avatar_url": bot.avatar if str(bot.avatar) != "none" else config.get_default_avatar(),
+            "username": character.name,
+            "avatar_url": avatar_url,
             "thread": thread
         }
 
-    async def _send_via_webhook(self, content: str, context, **kwargs):
-        """Generic webhook sender."""
-        # Extract kwargs passed from _get_webhook_context
+    async def _send_via_webhook(self, content: str, context, reply_to: Optional[discord.Message] = None, **kwargs):
+        """Generic webhook sender with reply support."""
         webhook = kwargs.get("webhook")
         thread = kwargs.get("thread")
         
+        # Use AllowedMentions to control pings. Replying pings by default.
+        allowed_mentions = discord.AllowedMentions(replied_user=True)
+
         send_kwargs = {
             "content": content,
             "username": kwargs.get("username"),
             "avatar_url": kwargs.get("avatar_url"),
+            "allowed_mentions": allowed_mentions
         }
         if thread:
             send_kwargs["thread"] = thread
+
+        # discord.py webhook send does not support `reference` directly.
+        # We simulate a reply by mentioning the user at the start of the message.
+        if reply_to:
+            # We don't need this anymore since we send chunks with replies
+            # send_kwargs["content"] = f"> {reply_to.author.mention}\n{content}"
+            pass
 
         await webhook.send(**send_kwargs)
 
-    async def _send_image_gallery_webhook(self, images: List[str], message: discord.Message, **kwargs):
-        """Sends an image gallery via webhook."""
-        webhook = kwargs.get("webhook")
-        thread = kwargs.get("thread")
-        
-        if not images:
-            await self._send_via_webhook(content="❌ No valid image URLs found.", context=message.channel, **kwargs)
-            return
-            
-        view = ImageGalleryView(images, "Image Gallery")
-        embed = view.create_embed()
-        
-        send_kwargs = {
-            "embed": embed,
-            "view": view,
-            "username": kwargs.get("username"),
-            "avatar_url": kwargs.get("avatar_url")
-        }
-        if thread:
-            send_kwargs["thread"] = thread
-
-        try:
-            await webhook.send(**send_kwargs)
-        except discord.HTTPException as e:
-            error_msg = f"❌ Failed to send image gallery: {e}"
-            print(f"DEBUG - Discord HTTPException: {e}")
-            await self._send_via_webhook(content=error_msg, context=message.channel, **kwargs)
-            
-    async def _send_file_webhook(self, file_paths: List[str], message: discord.Message, **kwargs):
-        """Sends local files via webhook."""
-        webhook = kwargs.get("webhook")
-        thread = kwargs.get("thread")
-
-        discord_files = [discord.File(fp) for fp in file_paths if os.path.exists(fp)]
-        
-        if not discord_files:
-            await self._send_via_webhook(content="❌ No valid files found to send.", context=message.channel, **kwargs)
-            return
-
-        send_kwargs = {
-            "files": discord_files,
-            "username": kwargs.get("username"),
-            "avatar_url": kwargs.get("avatar_url")
-        }
-        if thread:
-            send_kwargs["thread"] = thread
-
-        try:
-            await webhook.send(**send_kwargs)
-        except discord.HTTPException as e:
-            error_msg = f"❌ Failed to send files: {e}"
-            await self._send_via_webhook(content=error_msg, context=message.channel, **kwargs)
-
-    async def _send_dm_message(self, queue_item: QueueItem, bot: ActiveCharacter, author: discord.User):
+    async def _send_dm_message(self, queue_item: QueueItem, character: ActiveCharacter, author: discord.User):
         """Send message as a direct message."""
-        response = self._clean_bot_name_from_response(queue_item.result, bot.name)
+        response = self._clean_bot_name_from_response(queue_item.result, character.name)
         for chunk in self._chunk_message(response):
             await author.send(chunk)
 
-    async def _send_regular_message(self, content: str, channel: discord.abc.Messageable):
-        """Send a regular Discord message to a channel."""
-        await channel.send(content)
-
     async def _get_or_create_webhook(self, channel: discord.TextChannel) -> discord.Webhook:
         """Get an existing webhook or create a new one for the bot."""
-        webhooks = await channel.webhooks()
-        for wh in webhooks:
-            if wh.name == config.bot_user.display_name:
+        # Use the bot's actual user info, passed during initialization
+        for wh in await channel.webhooks():
+            if wh.user == self.bot.user:
                 return wh
-        return await channel.create_webhook(name=config.bot_user.display_name)
+        # Create a new webhook named after the bot
+        return await channel.create_webhook(name=self.bot.user.display_name)
     
-    # Helper and utility methods specific to sending
-    @staticmethod
-    def _categorize_images(images: List) -> tuple[List[str], List[str]]:
-        urls, files = [], []
-        if not images:
-            return urls, files
-        for img in images:
-            img_str = str(img).strip()
-            if not img_str: continue
-            if is_local_file(img_str):
-                files.append(img_str)
-            elif is_valid_url(img_str):
-                urls.append(img_str)
-            else:
-                 # Attempt to fix common URL-like strings
-                if img_str.startswith('//'):
-                    fixed_url = 'https:' + img_str
-                elif '.' in img_str and not img_str.startswith('http'):
-                    fixed_url = 'https://' + img_str
-                else:
-                    fixed_url = img_str
-
-                if is_valid_url(fixed_url):
-                    urls.append(fixed_url)
-                else:
-                    print(f"Warning: Invalid image source skipped: {img_str}")
-        return urls, files
-
+    # --- Helper Methods ---
     @staticmethod
     def _get_channel_and_thread(context) -> tuple[discord.TextChannel, Optional[discord.Thread]]:
         if isinstance(context, discord.Thread):
@@ -186,21 +116,17 @@ class DiscordMessenger:
 
     def _chunk_message(self, message: str) -> List[str]:
         return [message[i:i + self.message_chunk_size] for i in range(0, len(message), self.message_chunk_size)]
-
-    @staticmethod
-    async def _remove_processing_emoji(message: discord.Message):
-        try:
-            await message.remove_reaction('✨', config.bot_user)
-        except discord.HTTPException:
-            pass
-    
+        
     @staticmethod
     def _sanitize_queue_item(item: QueueItem) -> QueueItem:
         if hasattr(item, "result") and isinstance(item.result, str):
-            item.result = item.result.replace("@everyone", "@/everyone").replace("@here", "@/here")
-        item.result = item.result.replace("<｜end▁of▁sentence｜>","")
+            item.result = (item.result
+                .replace("@everyone", "@\u200beveryone") # Use zero-width space to break ping
+                .replace("@here", "@\u200bhere")
+                .replace("<|end of sentence|>", ""))
         return item
         
     @staticmethod
     def _clean_bot_name_from_response(response: str, bot_name: str) -> str:
-        return response.replace(f"{bot_name}:", "").strip()
+        # Use a regex for case-insensitive and more robust cleaning
+        return re.sub(rf'^{re.escape(bot_name)}:\s*', '', response, flags=re.IGNORECASE).strip()

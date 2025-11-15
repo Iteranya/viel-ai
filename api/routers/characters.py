@@ -1,14 +1,19 @@
 # routers/characters.py
 """Character-related API endpoints, powered by the database."""
 
-from fastapi import APIRouter, Body, Path, HTTPException, Request
+import asyncio
+from fastapi import APIRouter, Body, Path, HTTPException, Request, UploadFile,File
 from typing import List
 
 # --- Model and Database Imports ---
 # Assumes your models and db class are structured like this
 from api.models.models import Character, CharacterData 
 from api.db.database import Database
+from typing import Annotated
 
+# This is the global bot instance managed by your discord router
+from api.bot_state import bot_state # <-- ADD THIS
+from src.utils.image_uploader import find_system_channel_id, upload_image_to_system_channel
 # --- Initialize Database Client ---
 # This creates a single instance of the Database class for the router to use.
 db = Database()
@@ -163,3 +168,35 @@ async def delete_character(character_name: str = Path(..., description="Name of 
         return {"message": f"Character '{character_name}' deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete character: {e}")
+    
+@router.post("/upload_image", response_model=dict)
+async def upload_image(
+    image: Annotated[UploadFile, File(description="The image file to upload.")]
+):
+    """
+    Accepts an image file, uploads it via the Discord bot in a thread-safe manner,
+    and returns the permanent Discord CDN link.
+    """
+    if not bot_state.bot_instance or not bot_state.bot_instance.is_ready():
+        raise HTTPException(status_code=503, detail="The Discord bot is not active.")
+
+    image_bytes = await image.read()
+    if not image_bytes:
+        raise HTTPException(status_code=400, detail="No image data received.")
+
+    # Run the synchronous, potentially blocking function in a separate thread
+    # to avoid stalling the FastAPI event loop.
+    cdn_url = await asyncio.to_thread(
+        upload_image_to_system_channel,
+        image_bytes=image_bytes,
+        filename=image.filename,
+        bot=bot_state.bot_instance
+    )
+
+    if not cdn_url:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to upload image. This could be due to a misconfiguration, a Discord API error, or a timeout. Check the server logs."
+        )
+
+    return {"filename": image.filename, "cdn_url": cdn_url}

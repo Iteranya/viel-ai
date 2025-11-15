@@ -49,6 +49,8 @@ class Viel(discord.Client):
         # Sync commands globally. For development, you might sync to a specific guild.
         await self.tree.sync()
 
+        self.think_task = asyncio.create_task(pipeline.think(self, self.db, self.queue))
+
     async def on_ready(self):
         print(f"Discord Bot is logged in as {self.user} (ID: {self.user.id})")
         app_info = await self.application_info()
@@ -101,7 +103,7 @@ class Viel(discord.Client):
                 raise ValueError("Discord key is not set in the database.")
             
             # Start background tasks
-            asyncio.create_task(pipeline.think(self.db, self.queue))
+            #asyncio.create_task(pipeline.think(self.db, self.queue))
             
             # Run the bot
             super().run(token, *args, **kwargs)

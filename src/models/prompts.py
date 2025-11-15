@@ -101,7 +101,7 @@ class PromptEngineer:
         using a Jinja2 template from the database.
         """
         # 1. Gather all base context
-        history = await get_history(self.message)
+        history = await get_history(self.message.channel, self.db)
         base_context = {
             "character": self.bot,
             "channel": self.channel,

@@ -14,6 +14,20 @@ class Database:
         self.db_path = path
         self._init_db()
 
+    def _parse_json_value(self, value: Any) -> Any:
+        """
+        Parses a value from a JSON column. If it's a string, it's decoded.
+        Otherwise, it's assumed to be a valid Python type (int, float, bool).
+        """
+        if isinstance(value, str):
+            try:
+                return json.loads(value)
+            except json.JSONDecodeError:
+                # If it's a string that isn't valid JSON, return it as-is.
+                return value
+        # If it's not a string (e.g., float, int), return it directly.
+        return value
+
     def _get_connection(self):
         """Returns a new database connection."""
         conn = sqlite3.connect(self.db_path)
@@ -113,6 +127,7 @@ class Database:
     def set_config(self, key: str, value: Any):
         """Create or update a configuration key-value pair."""
         with self._get_connection() as conn:
+            # No change here, this was always correct.
             conn.execute("REPLACE INTO config (key, value) VALUES (?, ?)", (key, json.dumps(value)))
             conn.commit()
 
@@ -120,16 +135,18 @@ class Database:
         """Read a configuration value by its key."""
         with self._get_connection() as conn:
             row = conn.execute("SELECT value FROM config WHERE key = ?", (key,)).fetchone()
-            return json.loads(row["value"]) if row else None
+            # --- MODIFIED LINE ---
+            return self._parse_json_value(row["value"]) if row else None
             
     def list_configs(self) -> Dict[str, Any]:
         """List all configuration key-value pairs."""
         with self._get_connection() as conn:
             rows = conn.execute("SELECT key, value FROM config").fetchall()
-            return {row["key"]: json.loads(row["value"]) for row in rows}
+            # --- MODIFIED LINE ---
+            return {row["key"]: self._parse_json_value(row["value"]) for row in rows}
 
     def delete_config(self, key: str):
-        """Delete a configuration key."""
+        # ... (this is the same) ...
         with self._get_connection() as conn:
             conn.execute("DELETE FROM config WHERE key = ?", (key,))
             conn.commit()
@@ -203,6 +220,19 @@ class Database:
             channels = []
             for row in rows:
                 channel = dict(row)
+                channel['data'] = json.loads(channel['data'])
+                channels.append(channel)
+            return channels
+        
+    def list_channels_for_server(self, server_id: str) -> List[Dict[str, Any]]:
+        """List all channels for a specific server by its ID."""
+        with self._get_connection() as conn:
+            # Use a WHERE clause to filter by server_id
+            rows = conn.execute("SELECT * FROM channels WHERE server_id = ?", (server_id,)).fetchall()
+            channels = []
+            for row in rows:
+                channel = dict(row)
+                # The 'data' column is a JSON string, so we need to parse it
                 channel['data'] = json.loads(channel['data'])
                 channels.append(channel)
             return channels

@@ -12,6 +12,7 @@ from fastapi.responses import StreamingResponse
 # Adjust import paths to match your project structure
 from bot_run import Viel
 import discord
+from api.bot_state import bot_state
 
 router = APIRouter(
     prefix="/api/discord",
@@ -50,9 +51,8 @@ def _run_bot_in_thread():
     try:
         logging.info("--- Bot thread started. Initializing bot... ---")
         intents = discord.Intents.all()
-        _bot_instance = Viel(intents=intents)
-        # The run() method is blocking and contains the main loop
-        _bot_instance.run()
+        bot_state.bot_instance = Viel(intents=intents)
+        bot_state.bot_instance.run()
         logging.info("--- Bot has shut down cleanly. ---")
     except Exception as e:
         logging.critical(f'!!! Bot thread crashed: {e} !!!', exc_info=True)
@@ -63,27 +63,29 @@ def _run_bot_in_thread():
 
 @router.post("/activate")
 async def activate_bot():
-    global _bot_thread
-    if (_bot_instance and _bot_instance.is_ready()) or (_bot_thread and _bot_thread.is_alive()):
+    # --- CHANGE THIS ---
+    # Check the shared state object
+    if (bot_state.bot_instance and bot_state.bot_instance.is_ready()) or (bot_state.bot_thread and bot_state.bot_thread.is_alive()):
         raise HTTPException(status_code=400, detail="Bot is already active or starting.")
     
     logging.info("Bot activation requested via API.")
-    _bot_thread = threading.Thread(target=_run_bot_in_thread, daemon=True)
-    _bot_thread.start()
+    # --- CHANGE THIS ---
+    bot_state.bot_thread = threading.Thread(target=_run_bot_in_thread, daemon=True)
+    bot_state.bot_thread.start()
     return {"success": True, "message": "Bot activation initiated."}
 
 
 @router.post("/deactivate")
 async def deactivate_bot():
-    if not _bot_instance or not _bot_instance.is_ready():
+    # --- CHANGE THIS ---
+    if not bot_state.bot_instance or not bot_state.bot_instance.is_ready():
         raise HTTPException(status_code=400, detail="Bot is not running.")
     
     try:
         logging.info("--- Sending shutdown signal to bot via API... ---")
-        # Use run_coroutine_threadsafe to safely call the async close method
-        # from this synchronous thread context.
-        future = asyncio.run_coroutine_threadsafe(_bot_instance.close(), _bot_instance.loop)
-        future.result(timeout=10) # Wait for the close operation to complete
+        # --- CHANGE THIS ---
+        future = asyncio.run_coroutine_threadsafe(bot_state.bot_instance.close(), bot_state.bot_instance.loop)
+        future.result(timeout=10)
         return {"success": True, "message": "Bot deactivation initiated."}
     except Exception as e:
         logging.error(f"Error during bot deactivation: {e}", exc_info=True)
@@ -92,9 +94,10 @@ async def deactivate_bot():
 
 @router.get("/status")
 async def check_bot_status():
-    if _bot_instance and _bot_instance.is_ready():
+    # --- CHANGE THIS ---
+    if bot_state.bot_instance and bot_state.bot_instance.is_ready():
         return {"status": "active"}
-    elif _bot_thread and _bot_thread.is_alive():
+    elif bot_state.bot_thread and bot_state.bot_thread.is_alive():
         return {"status": "starting"}
     else:
         return {"status": "inactive"}
@@ -102,8 +105,9 @@ async def check_bot_status():
 
 @router.get("/invite")
 async def get_discord_invite():
-    if _bot_instance and _bot_instance.invite_link:
-        return {"status": "active", "invite": _bot_instance.invite_link}
+    # --- CHANGE THIS ---
+    if bot_state.bot_instance and bot_state.bot_instance.invite_link:
+        return {"status": "active", "invite": bot_state.bot_instance.invite_link}
     else:
         return {"status": "inactive", "message": "Bot is not running or invite link is not yet available."}
 

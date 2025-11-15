@@ -1,5 +1,6 @@
 # src/controller/observer.py
 
+import re
 import discord
 
 # Adjust import paths as needed
@@ -59,26 +60,31 @@ async def bot_behavior(message: discord.Message, bot) -> None:
     # --- THIS IS THE CORRECTED BLOCK ---
     # C. Activated by a user message containing a trigger word for a WHITELISTED character
     if not message.webhook_id:
-        # Determine which characters' triggers we should even look for.
-        characters_to_check = []
+        # --- THIS IS THE CORRECTED LOGIC ---
+
+        # If the whitelist is empty, no characters are allowed to be triggered by ambient text.
+        # The bot will only respond to direct mentions or replies in this channel.
         if not channel.whitelist:
-            # If whitelist is empty, all characters are allowed.
-            characters_to_check = bot.db.list_characters()
-        else:
-            # If whitelist has names, only fetch those specific characters.
-            for name in channel.whitelist:
-                char_data = bot.db.get_character(name)
-                if char_data:
-                    characters_to_check.append(char_data)
+            return # Stop processing immediately.
+
+        # If the whitelist is not empty, fetch only the whitelisted characters.
+        characters_to_check = []
+        for name in channel.whitelist:
+            char_data = bot.db.get_character(name)
+            if char_data:
+                characters_to_check.append(char_data)
         
-        # Now, check for triggers only from the allowed characters.
+        # Now, check for triggers only from the specifically allowed characters.
         message_lower = message.content.lower()
         for char in characters_to_check:
             for trigger in char.get('triggers', []):
-                if trigger.lower() in message_lower:
+                # We also need to ensure the trigger isn't just a substring of a larger word.
+                # Using word boundaries (\b) in a regex is the most robust way.
+                # Example: Prevents 'cat' from triggering in 'caterpillar'.
+                if re.search(r'\b' + re.escape(trigger.lower()) + r'\b', message_lower):
                     print(f"User message contained trigger '{trigger}' for whitelisted character '{char['name']}'. Queuing message.")
                     await bot.queue.put(message)
-                    return # Important: Stop after the first match
+                    return # Stop after the first match
 
     # D. Activated by another bot's message (bot-to-bot interaction)
     if message.webhook_id and message.author.display_name in channel.whitelist:
