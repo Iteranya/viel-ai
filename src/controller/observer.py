@@ -36,7 +36,7 @@ async def bot_behavior(message: discord.Message, bot) -> None:
 
     # Reset the auto-reply counter if a human speaks
     if not message.webhook_id:
-        bot.auto_response_counts[message.channel.id] = 0
+        bot.auto_reply_count = 0
 
     # --- Determine if the bot should activate ---
 
@@ -61,7 +61,6 @@ async def bot_behavior(message: discord.Message, bot) -> None:
 
     # C. Activated by a user message containing a trigger word for a WHITELISTED character
     if not message.webhook_id:
-
         if not channel.whitelist:
             return  # Stop processing immediately.
 
@@ -93,13 +92,18 @@ async def bot_behavior(message: discord.Message, bot) -> None:
                     return  # Stop after the first match
 
 
+    # --- MODIFICATION: Updated bot-to-bot logic ---
     # D. Activated by another bot's message (bot-to-bot interaction)
-    if message.webhook_id and message.author.display_name in channel.whitelist:
-        # Check if the auto-reply cap has been reached
-        # current_cap = bot.auto_response_counts.get(message.channel.id, 0)
-        # if current_cap >= channel.auto_response_cap:
-        #     print(f"Auto-reply cap of {channel.auto_response_cap} reached in #{message.channel.name}. Ignoring bot message.")
-        #     return
+    if message.webhook_id:
+        if message.author.display_name == bot.user.display_name:
+            return
+        # Fetch the GLOBAL cap from the bot's loaded configuration
+        cap = bot.config.auto_cap
+        
+        # Check if the GLOBAL auto-reply cap has been reached
+        if bot.auto_reply_count >= cap:
+            print(f"Global auto-reply cap of {cap} reached. Ignoring bot message from '{message.author.display_name}'.")
+            return
 
         all_triggers = [char['triggers'] for char in bot.db.list_characters()]
         flat_triggers = [trigger for sublist in all_triggers for trigger in sublist]
@@ -108,6 +112,7 @@ async def bot_behavior(message: discord.Message, bot) -> None:
         # Check if another bot is being triggered
         if any(trigger.lower() in message_lower for trigger in flat_triggers):
             print(f"Bot '{message.author.display_name}' triggered another character. Queuing message.")
-            # bot.auto_response_counts[message.channel.id] = current_cap + 1 # Increment cap
+            # Increment the GLOBAL counter
+            bot.auto_reply_count += 1
             await bot.queue.put(message)
             return

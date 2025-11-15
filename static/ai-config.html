@@ -134,6 +134,11 @@
                                     <label for="multimodal_ai_endpoint" class="block mb-2 text-sm font-medium text-gray-300">Multimodal Endpoint URL</label>
                                     <input type="text" id="multimodal_ai_endpoint" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5">
                                 </div>
+                                <!-- NEWLY ADDED FIELD -->
+                                <div>
+                                    <label for="multimodal_ai_api" class="block mb-2 text-sm font-medium text-gray-300">Multimodal API Key</label>
+                                    <input type="password" id="multimodal_ai_api" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5" placeholder="Leave blank to keep existing key">
+                                </div>
                             </div>
                         </div>
                     </fieldset>
@@ -146,7 +151,7 @@
                     </div>
                 </form>
 
-                <!-- NEW: Prompt Template Editor -->
+                <!-- Prompt Template Editor -->
                 <fieldset class="border border-gray-700 rounded-lg p-4">
                     <legend class="text-lg font-semibold text-primary px-2">Prompt Template Editor (Default)</legend>
                     <div class="mt-4">
@@ -176,16 +181,17 @@
             const multimodalOptions = document.getElementById('multimodal-options');
             const multimodalInputs = multimodalOptions.querySelectorAll('input');
 
-            // NEW Prompt Editor Elements
+            // Prompt Editor Elements
             const promptTemplateInput = document.getElementById('prompt_template');
             const savePromptBtn = document.getElementById('save-prompt-btn');
-            let currentPresetDescription = null; // Store description to avoid overwriting it
+            let currentPresetDescription = null; 
 
             // Map keys to element IDs for easy access
+            // UPDATED: Added 'multimodal_ai_api'
             const fieldIds = [
                 'default_character', 'ai_endpoint', 'base_llm', 'temperature', 'auto_cap',
                 'ai_key', 'discord_key', 'use_prefill', 'multimodal_enable',
-                'multimodal_ai_model', 'multimodal_ai_endpoint'
+                'multimodal_ai_model', 'multimodal_ai_endpoint', 'multimodal_ai_api'
             ];
             const elements = Object.fromEntries(fieldIds.map(id => [id, document.getElementById(id)]));
 
@@ -237,8 +243,11 @@
                     }
 
                     showToast('Configuration saved successfully!');
+                    // UPDATED: Clear the new key field as well
                     elements['ai_key'].value = '';
                     elements['discord_key'].value = '';
+                    elements['multimodal_ai_api'].value = '';
+
 
                 } catch (error) { showToast(error.message, 'error'); }
             }
@@ -249,7 +258,7 @@
                 multimodalInputs.forEach(input => { input.disabled = !isEnabled; });
             }
 
-            // --- NEW Prompt Preset Functions ---
+            // --- Prompt Preset Functions ---
             async function loadPrompt() {
                 try {
                     const response = await fetch(`${PRESET_API_BASE}/Default`);
@@ -257,7 +266,7 @@
                     const preset = await response.json();
                     
                     promptTemplateInput.value = preset.prompt_template || '';
-                    currentPresetDescription = preset.description; // Save description for the PUT request
+                    currentPresetDescription = preset.description;
                 } catch (error) {
                     showToast(error.message, 'error');
                     promptTemplateInput.disabled = true;
@@ -302,11 +311,11 @@
             // --- Event Listeners ---
             form.addEventListener('submit', handleConfigSubmit);
             multimodalToggle.addEventListener('change', toggleMultimodalOptions);
-            savePromptBtn.addEventListener('click', savePrompt); // Listener for new button
+            savePromptBtn.addEventListener('click', savePrompt);
 
             // --- Initial Load ---
             loadConfig();
-            loadPrompt(); // Load the prompt template when the page loads
+            loadPrompt();
         });
     </script>
 </body>

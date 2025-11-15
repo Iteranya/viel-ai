@@ -17,7 +17,7 @@ class BotConfig(BaseModel):
     use_prefill: bool = False
     multimodal_enable: bool = False
     multimodal_ai_endpoint: Optional[str] = None
-    multimodal_ai_api: Optional[str] = None
+    multimodal_ai_api: Optional[str] = None # Key, I meant key, this is a fuckin' key
     multimodal_ai_model: Optional[str] = None
 
 

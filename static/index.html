@@ -206,107 +206,159 @@
             let eventSource;
             let botActive = false;
             
-            // Check initial bot status
-            fetch('/api/discord/status')
-                .then(response => response.json())
-                .then(data => {
-                    updateStatus(data.status);
-                    if (data.status === 'active') {
-                        fetchInviteLink();
-                    }
-                });
-            
-            // Set up log stream
-            setupLogStream();
-            
-            // Power button click handler
-            powerBtn.addEventListener('click', function() {
-                if (botActive) {
-                    // Deactivate bot
-                    fetch('/api/discord/deactivate', {
-                        method: 'POST'
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            addLogEntry('Sending shutdown signal to bot...');
-                        }
-                    })
-                    .catch(error => {
-                        addLogEntry(`Error: ${error.message}`);
-                    });
+    // --- Main Setup ---
+    checkBotStatus(); // Initial check
+    setupLogStream();
+    statusInterval = setInterval(checkBotStatus, 2500); // Poll every 2.5 seconds
+
+    // --- Event Listeners ---
+
+    powerBtn.addEventListener('click', function() {
+        if (powerBtn.dataset.status === 'active') {
+            deactivateBot();
+        } else if (powerBtn.dataset.status === 'inactive' || powerBtn.dataset.status === 'crashed') {
+            activateBot();
+        }
+        // Do nothing if it's starting or stopping
+    });
+
+    copyInviteBtn.addEventListener('click', function() {
+        navigator.clipboard.writeText(inviteLink.value)
+            .then(() => {
+                const originalIcon = copyInviteBtn.innerHTML;
+                copyInviteBtn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => { copyInviteBtn.innerHTML = originalIcon; }, 2000);
+            });
+    });
+
+    autoScrollToggle.addEventListener('change', function() {
+        if (this.checked) {
+            scrollToBottom();
+        }
+    });
+
+    // --- Core Functions ---
+
+    function activateBot() {
+        // Optimistic UI Update: Set to 'starting' immediately for instant feedback
+        updateStatus('starting');
+
+        fetch('/api/discord/activate', { method: 'POST' })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    addLogEntry('Bot activation initiated...');
+                }
+            })
+            .catch(error => {
+                addLogEntry(`Error activating bot: ${error.detail || error.message}`);
+                // Revert UI if API call fails
+                checkBotStatus();
+            });
+    }
+
+    function deactivateBot() {
+        // Optimistic UI Update: Set to 'stopping' immediately
+        updateStatus('stopping');
+
+        fetch('/api/discord/deactivate', { method: 'POST' })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    addLogEntry('Sending shutdown signal to bot...');
+                }
+            })
+            .catch(error => {
+                addLogEntry(`Error deactivating bot: ${error.detail || error.message}`);
+                // Revert UI if API call fails
+                checkBotStatus();
+            });
+    }
+
+    function checkBotStatus() {
+        fetch('/api/discord/status')
+            .then(response => response.json())
+            .then(data => {
+                updateStatus(data.status);
+                // Fetch invite link only when active
+                if (data.status === 'active') {
+                    fetchInviteLink();
                 } else {
-                    // Activate bot
-                    fetch('/api/discord/activate', {
-                        method: 'POST'
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            addLogEntry('Bot activation initiated...');
-                        }
-                    })
-                    .catch(error => {
-                        addLogEntry(`Error: ${error.message}`);
-                    });
+                    inviteContainer.classList.add('hidden');
                 }
+            })
+            .catch(error => {
+                console.error("Failed to fetch status:", error);
+                updateStatus('crashed'); // Assume crashed if we can't get status
             });
-            
-            // Copy invite link handler
-            copyInviteBtn.addEventListener('click', function() {
-                navigator.clipboard.writeText(inviteLink.value)
-                    .then(() => {
-                        const originalIcon = copyInviteBtn.innerHTML;
-                        copyInviteBtn.innerHTML = '<i class="fas fa-check"></i>';
-                        setTimeout(() => {
-                            copyInviteBtn.innerHTML = originalIcon;
-                        }, 2000);
-                    });
-            });
-            
-            // Auto-scroll handler
-            autoScrollToggle.addEventListener('change', function() {
-                if (this.checked) {
-                    scrollToBottom();
-                }
-            });
-            
-            // Update bot status UI
-            function updateStatus(status) {
-                // Remove all status classes
-                botStatusIndicator.classList.remove('status-active', 'status-inactive', 'status-starting');
-                controlStatusIndicator.classList.remove('status-active', 'status-inactive', 'status-starting');
-                
-                // Update status text and indicator
-                if (status === 'active') {
-                    botActive = true;
-                    botStatusIndicator.classList.add('status-active');
-                    controlStatusIndicator.classList.add('status-active');
-                    botStatusText.textContent = 'Active';
-                    controlStatusText.textContent = 'Active';
-                    powerBtn.innerHTML = '<i class="fas fa-power-off mr-2"></i> Deactivate';
-                    powerBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-                    powerBtn.classList.remove('bg-gray-800', 'hover:bg-gray-700');
-                } else if (status === 'starting') {
-                    botActive = false;
-                    botStatusIndicator.classList.add('status-starting');
-                    controlStatusIndicator.classList.add('status-starting');
-                    botStatusText.textContent = 'Starting';
-                    controlStatusText.textContent = 'Starting';
-                    powerBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Starting...';
-                    powerBtn.disabled = true;
-                } else {
-                    botActive = false;
-                    botStatusIndicator.classList.add('status-inactive');
-                    controlStatusIndicator.classList.add('status-inactive');
-                    botStatusText.textContent = 'Inactive';
-                    controlStatusText.textContent = 'Inactive';
-                    powerBtn.innerHTML = '<i class="fas fa-power-off mr-2"></i> Activate';
-                    powerBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                    powerBtn.classList.add('bg-gray-800', 'hover:bg-gray-700');
-                    powerBtn.disabled = false;
-                }
-            }
+    }
+
+    // Update bot status UI
+    function updateStatus(status) {
+        // Store current status on the button for easier logic
+        powerBtn.dataset.status = status;
+
+        // Reset all classes
+        const allStatusClasses = ['status-active', 'status-inactive', 'status-starting', 'status-stopping', 'status-crashed'];
+        botStatusIndicator.classList.remove(...allStatusClasses);
+        controlStatusIndicator.classList.remove(...allStatusClasses);
+        powerBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'bg-gray-800', 'hover:bg-gray-700', 'bg-yellow-600');
+
+        powerBtn.disabled = false; // Enable by default
+
+        switch (status) {
+            case 'active':
+                botStatusIndicator.classList.add('status-active');
+                controlStatusIndicator.classList.add('status-active');
+                botStatusText.textContent = 'Active';
+                controlStatusText.textContent = 'Active';
+                powerBtn.innerHTML = '<i class="fas fa-power-off mr-2"></i> Deactivate';
+                powerBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                break;
+            case 'starting':
+                botStatusIndicator.classList.add('status-starting');
+                controlStatusIndicator.classList.add('status-starting');
+                botStatusText.textContent = 'Starting';
+                controlStatusText.textContent = 'Starting';
+                powerBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Starting...';
+                powerBtn.disabled = true;
+                break;
+            case 'stopping':
+                botStatusIndicator.classList.add('status-stopping'); // You can style this class
+                controlStatusIndicator.classList.add('status-stopping');
+                botStatusText.textContent = 'Stopping';
+                controlStatusText.textContent = 'Stopping';
+                powerBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Stopping...';
+                powerBtn.disabled = true;
+                break;
+            case 'crashed':
+                botStatusIndicator.classList.add('status-crashed'); // Style this too
+                controlStatusIndicator.classList.add('status-crashed');
+                botStatusText.textContent = 'Crashed';
+                controlStatusText.textContent = 'Crashed';
+                powerBtn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i> Restart';
+                powerBtn.classList.add('bg-yellow-600', 'hover:bg-yellow-700');
+                break;
+            default: // 'inactive'
+                botStatusIndicator.classList.add('status-inactive');
+                controlStatusIndicator.classList.add('status-inactive');
+                botStatusText.textContent = 'Inactive';
+                controlStatusText.textContent = 'Inactive';
+                powerBtn.innerHTML = '<i class="fas fa-power-off mr-2"></i> Activate';
+                powerBtn.classList.add('bg-gray-800', 'hover:bg-gray-700');
+                break;
+        }
+    }
             
             // Set up log stream connection
             function setupLogStream() {

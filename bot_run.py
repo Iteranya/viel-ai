@@ -21,8 +21,10 @@ class Viel(discord.Client):
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
         self.db = Database()
-        self.queue = asyncio.Queue() # Add the queue instance
-        self.auto_response_counts = {} # Add the counter dictionary
+        self.config = get_bot_config(self.db)
+        self.queue = asyncio.Queue()
+        # This is now a single, global counter, not a dictionary.
+        self.auto_reply_count = 0
 
     async def setup_hook(self):
         """This is called when the bot is preparing to connect."""
@@ -97,8 +99,7 @@ class Viel(discord.Client):
     def run(self, *args, **kwargs):
         """Starts the bot after fetching the token from the database."""
         try:
-            config = get_bot_config(self.db)
-            token = config.discord_key
+            token = self.config.discord_key
             if not token:
                 raise ValueError("Discord key is not set in the database.")
             
