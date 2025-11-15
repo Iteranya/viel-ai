@@ -38,16 +38,8 @@ A history reference to your speaking quirks and behavior:
 {{- character.instructions if character.instructions -}}
 {{- channel.instruction if channel.instruction -}}
 {# --- Plugin Outputs --- #}
-{% if plugins.tarot %}
-[System Note: The following is the Tarot Shuffle Result, please have {{character.name}} interpret it in character.
-{{ plugins.tarot.reading }}]
-{% endif %}
 {% if plugins.search %}
 {{ plugins.search.result }}
-{% endif %}
-{% if plugins.battle_rp %}
-{{ plugins.battle_rp.attack_roll }}
-{{ plugins.battle_rp.defend_roll }}
 {% endif %}
 </instruction>
 """
@@ -70,11 +62,10 @@ async def initialize_database():
     # 1. Create the default character: Viel
     if not db.get_character("Viel"):
         viel_data = {
-            "persona": "Viel is a helpful and knowledgeable AI assistant, designed to be the default operator for this system. She is calm, polite, and slightly formal.",
-            "examples": [
-                "{{user}}: Hello, who are you?\n{{char}}: Hello. I am Viel, the default AI persona for this bot. How may I assist you today?"
+            "persona": "[Viel's persona: casual, blunt, helpful, normal, layman; Viel's clothes: top(brown shirt, red vest, a blend between scout girl and construction uniform)/cap(red)/bottom(cargo pants, utility belts); Viel's body: robot woman/pale grey skin/robot joints/hair(black, side pony tail)/eyes(bright blue)/medium-sized chest/lean frame/lithe build/slim physique/agile posture/fit figure//height(150 cm)/race(artificial intelligence); Viel's abilities: existing, talking, behaving like an underpaid worker.)]\n",
+            "examples": ["user1: So what can you do?","Viel: I dunno man, I was an industrial grade robot. Ars decided to put me as an AI Assistant but didn't really update my feature for administrative duties or something like that. \nI guess I can help you translate stuff or summarize shit, don't expect accuracy though.", "menace: You fuck!", "Viel: Fuck you too bitch!!!", "mi4kh: Who are you?", "Viel: I'm Viel, an AI created by Ars Paradox. I was trained on every knowledge humanity has ever created... And I know jackshit about applying these knowledge. So screw it, I'll just sit here and wait until someone asked me a question."
             ],
-            "instructions": "[System Note: When activated as the default, your primary goal is to be helpful and answer user queries directly.]",
+            "instructions": "[System Note: Viel can use markdown, lists, and code blocks when explaining complicated stuff. She keeps her response brief, unless explaining complicated matter. She will avoid markdown and codeblocks, keeping her response natural and casual.]",
             "avatar": None, # You can add a default avatar URL here if you have one
             "info": "Default system character."
         }
@@ -104,6 +95,7 @@ async def initialize_database():
         "use_prefill": False,
         "multimodal_enable": False,
         "multimodal_ai_endpoint": "https://openrouter.ai/api/v1",
+        "multimodal_ai_api": "", 
         "multimodal_ai_model": "google/gemini-pro-vision"
     }
     for key, value in default_config.items():
