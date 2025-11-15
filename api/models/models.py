@@ -75,6 +75,23 @@ class Character(BaseModel):
     data: CharacterData  # The 'data' column is a validated JSON object
     triggers: List[str] = Field(default_factory=list)
 
+class CharacterListItem(BaseModel):
+    """A lightweight model for listing characters in the UI."""
+    name: str
+    avatar: str
+    info: str
+
+class CharacterCreate(BaseModel):
+    """Model for creating a new character directly."""
+    name: str
+    data: CharacterData
+    triggers: List[str] = Field(default=[], description="...")
+
+class CharacterUpdate(BaseModel):
+    """Model for updating an existing character's data and triggers."""
+    data: CharacterData
+    triggers: List[str]
+
 
 # ------------------------------------------------------
 # Presets (maps to the 'presets' table)

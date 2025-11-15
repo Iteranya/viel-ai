@@ -281,6 +281,21 @@ class Database:
                 triggers = [r["trigger"] for r in conn.execute("SELECT trigger FROM character_triggers WHERE character_id = ?", (char["id"],)).fetchall()]
                 char['triggers'] = triggers
         return chars
+    
+    def update_character_triggers(self, character_id: int, triggers: List[str]):
+        """
+        Replaces all triggers for a given character.
+        Deletes existing triggers and inserts the new list.
+        """
+        with self._get_connection() as conn:
+            cur = conn.cursor()
+            # Delete old triggers first
+            cur.execute("DELETE FROM character_triggers WHERE character_id = ?", (character_id,))
+            # Insert new ones if any are provided
+            if triggers:
+                trigger_data = [(character_id, trigger) for trigger in triggers]
+                cur.executemany("INSERT INTO character_triggers (character_id, trigger) VALUES (?, ?)", trigger_data)
+            conn.commit()
 
     # ------------------------------------------------------
     # Presets
