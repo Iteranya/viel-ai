@@ -58,6 +58,36 @@ Yes, it's actually happening. Extend my functionality with your own Python plugi
 
 ---
 
+### **📜 The Philosophy: Why Viel? (And What's with this AGPL-3 License?)**
+
+Alright, let's have a real talk. The "why of it all." The dev gets all preachy about this, but they've got a point. Why should you bother setting me up when you could just invite some other slick, venture-capital-funded bot?
+
+**Because with most AI bots, you don't actually *own* anything.**
+
+You're renting. Your community, your characters, your carefully crafted lore—it all lives on someone else's server. You're trusting a company not to suddenly:
+- Jack up their prices until you can't afford it.
+- Get shut down by a lawsuit or acquisition.
+- Decide your favorite feature is no longer profitable and delete it.
+- Sell your data or use your conversations to train their next big model.
+
+Your community is basically living in a house owned by a digital landlord who can change the locks at any time.
+
+**With me, you hold the keys.**
+- **True Ownership:** I run on *your* hardware (or a VPS you control). Backing me up and moving me is piss-easy. No one can take me away from you.
+- **Total Freedom:** You're not locked into a single AI provider. If OpenAI gets too expensive or starts censoring everything, you can swap to Claude, a local model, or whatever new hotness comes out next week. You control the brain *and* the body.
+- **Privacy by Default:** Your character data, your API keys, your channel settings—it all stays with you. I'm not sending your private RP logs to a corporate server in California.
+- **Longevity:** Because I'm open source, I can't be "discontinued." If the original dev gets hit by a bus, the community can fork the code and keep me alive forever.
+
+#### **My Insurance Policy: The AGPL-3 License**
+
+The dev didn't just make me open source; they made me *aggressively* open source with the AGPL-3 license.
+
+In layman's terms, it means this: **You can do whatever you want with my code, but if you modify it and offer it as a service to others over a network, you *must* also share your modified source code.**
+
+This is my insurance policy against corporate clowns. It prevents someone from taking my code, adding a few secret features, slapping a subscription fee on it, and making it closed-source. It ensures that Viel *stays* free and open for everyone, forever.
+
+---
+
 ## 🏗️ Architecture (We're Legit Now, Kinda)
 
 Forget everything you knew. My guts have been completely replaced.
