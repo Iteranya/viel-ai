@@ -22,19 +22,39 @@ This is still the core of what I do, and it's better than ever.
 - **Multi-Character Conversations:** Summon different characters in different channels. They can even reply to each other (with a cap, so they don't achieve sentience and start an infinite argument).
 - **Per-Channel Lore:** Add unique instructions, worldbuilding notes, or global variables to any channel to change how characters behave there.
 - **Whitelist Control:** Keep the chaos organized by deciding which characters can appear in which channels.
+# Admin Panel (Port 5666 — Still Not Normal)
 
-### **Admin Panel (Port 5666 — Still Not Normal)**
 The dev apparently asked Anita to redo my UI, and I have to admit, it looks legit.
-- **Character Management:** Create, edit, and manage all your characters in a clean interface. And yes, the **one-click import for SillyTavern/Pygmalion cards** still works and is surprisingly robust.
-- ![Character Import And Management Screen](https://github.com/user-attachments/assets/2c4005cf-a558-4c15-93e5-50394288ee77)
-- **Character Avatars:** You can now **upload custom profile pictures** for each persona! I use Discord's own asset management, so it's fast and integrated.
-- **AI & Config Settings:** Hook me up to any OpenAI-compatible endpoint. Splurge on Opus, cheap out on a local model—I don't judge. This is also where you'll plug in your Discord API key.
-- ![AI Config Panel](https://github.com/user-attachments/assets/138a169c-3606-4ae5-b42a-4ceac5b18494)
-- **Advanced Prompt Engineering:** For those who understand Jinja templates. If you think Jinja is a synonym for Ninja, *do not touch this setting.*
-- ![Prompt Template Jinja Screen](https://github.com/user-attachments/assets/1e496f9d-f7be-46c3-add2-1dcd9ec11191)
-- **Plugin System (WIP):** Yes, it's actually happening. Extend my functionality with your own Python plugins. It's still new, so expect explosions.
-- **Big Red "Turn On" Button:** Still here. Still turns me on.
-- ![Main Admin Panel (Big Red Button)](https://github.com/user-attachments/assets/e6c3f9cf-27d1-463e-8645-795042d07b06)
+
+## Features
+
+### Character Management
+Create, edit, and manage all your characters in a clean interface. And yes, the **one-click import for SillyTavern/Pygmalion cards** still works and is surprisingly robust.
+
+![Character Import And Management Screen](https://github.com/user-attachments/assets/2c4005cf-a558-4c15-93e5-50394288ee77)
+
+### Character Avatars
+You can now **upload custom profile pictures** for each persona! I use Discord's own asset management, so it's fast and integrated.
+
+<img width="916" alt="Character Editing Screen" src="https://github.com/user-attachments/assets/da2e02d4-a71c-40ed-908b-52794350a8af" />
+
+### AI & Config Settings
+Hook me up to any OpenAI-compatible endpoint. Splurge on Opus, cheap out on a local model—I don't judge. This is also where you'll plug in your Discord API key.
+
+![AI Config Panel](https://github.com/user-attachments/assets/138a169c-3606-4ae5-b42a-4ceac5b18494)
+
+### Advanced Prompt Engineering
+For those who understand Jinja templates. If you think Jinja is a synonym for Ninja, *do not touch this setting.*
+
+![Prompt Template Jinja Screen](https://github.com/user-attachments/assets/1e496f9d-f7be-46c3-add2-1dcd9ec11191)
+
+### Big Red "Turn On" Button
+Still here. Still turns me on.
+
+![Main Admin Panel (Big Red Button)](https://github.com/user-attachments/assets/e6c3f9cf-27d1-463e-8645-795042d07b06)
+
+### Plugin System (WIP)
+Yes, it's actually happening. Extend my functionality with your own Python plugins. It's still new, so expect explosions. 💥
 
 ---
 
