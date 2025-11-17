@@ -1,178 +1,130 @@
-import os
-import json
+from __future__ import annotations
+from typing import Optional, List, Dict, Any
 
-class AICharacter:
-    def __init__(self, bot_name:str):
-        self.bot_name = bot_name
-        self.char_dict:dict = self.replace_placeholders(self.get_card(bot_name),bot_name,"User")
-        self.name:str = self.get_name()
-        self.persona:str = self.get_persona()
-        self.examples:list = self.get_examples()
-        self.instructions:str = self.get_instructions()
-        self.avatar:str = self.get_avatar()
-        self.info:str = self.get_info()
+# Assuming your database class is in a file that can be imported
+# from api.db.database import Database
+# For standalone testing, we'll include a placeholder.
+from api.db.database import Database  # Adjust this import path to match your project structure
 
-    def getDictFromJson(self,json_path):
-        with open(json_path, 'r') as f:
-            try:
-                # Load JSON data
-                data = json.load(f)
-                return data
 
-            except json.JSONDecodeError as e:
-                print(f"Error parsing {json_path}: {e}")
+class ActiveCharacter:
+    """
+    Represents the character that has been triggered by a message.
+    It is initialized by searching a message for trigger words and loading
+    the corresponding character data from the database.
+    """
+
+    def __init__(self, character_data: Dict[str, Any], db: Database):
+        """
+        Initializes an ActiveCharacter instance from a dictionary of character data.
+        This constructor should typically be called by the `from_message` classmethod.
+        """
+        self.db = db
+        
+        # Unpack data from the database record
+        self.id: int = character_data['id']
+        self.name: str = character_data['name']
+        self.triggers: List[str] = character_data.get('triggers', [])
+        
+        # Unpack the nested 'data' dictionary
+        data = character_data.get('data', {})
+        self.persona: str = data.get('persona', '')
+        self.examples: List[str] = data.get('examples', [])
+        self.instructions: str = data.get('instructions', '')
+        self.avatar: Optional[str] = data.get('avatar', None)
+        self.info: Optional[str] = data.get('info', None)
+
+    @classmethod
+    def from_message(cls, text: str, db: Database) -> Optional[ActiveCharacter]:
+        """
+        Returns the character whose name or trigger appears earliest in the text.
+        """
+        all_characters = db.list_characters()
+        text_lower = text.lower()
+
+        earliest_match = None  # (index, character_data)
+
+        for char_data in all_characters:
+            name = char_data.get("name", "").lower()
+            triggers = [t.lower() for t in char_data.get("triggers", [])]
+
+            # Add the name into the trigger pool
+            extended_triggers = triggers + [name]
+
+            for trigger in extended_triggers:
+                if not trigger:
+                    continue
+
+                idx = text_lower.find(trigger)
+                if idx != -1:
+                    # If it's the first match OR earlier than our current best, keep it
+                    if earliest_match is None or idx < earliest_match[0]:
+                        earliest_match = (idx, char_data)
+
+        if earliest_match:
+            return cls(character_data=earliest_match[1], db=db)
+
         return None
-    
-    def saveDictToJson(self):
-        data = self.char_dict
-        json_path = f"../characters/{self.bot_name}.json"
-        try:
-            with open(json_path, 'w') as f:
-                # Save the dictionary as JSON
-                json.dump(data, f, indent=4)
-                print(f"Successfully saved data to {json_path}")
-        except TypeError as e:
-            print(f"Error saving data to {json_path}: {e}")
-        except IOError as e:
-            print(f"I/O error occurred while writing to {json_path}: {e}")
 
-    def get_card(self,bot_name: str)->dict:
-        directory = "res/characters"
-        for filename in os.listdir(directory):
-            if filename.endswith(".json"):
-                filepath = os.path.join(directory, filename)
-                try:
-                    # Open and load JSON file
-                    with open(filepath, 'r', encoding='utf-8') as file:
-                        data = json.load(file)
 
-                    # Check if 'name' field matches target_name
-                    if "data" in data and str(data["data"]["name"]).lower() == str(bot_name).lower():
-                        return data["data"]
-                    elif "name" in data and str(data["name"]).lower() == str(bot_name).lower():
-                        return data
-                    
-                except json.JSONDecodeError:
-                    print(f"Error decoding JSON in file: {filepath}")
-                except Exception as e:
-                    print(f"Error processing file {filepath}: {e}")
 
-    def replace_placeholders(self,data: dict, bot_name: str, user_name: str) -> dict:
+    def save(self):
+        """Saves the current state of the character's data back to the database."""
+        data_to_save = {
+            "persona": self.persona,
+            "examples": self.examples,
+            "instructions": self.instructions,
+            "avatar": self.avatar,
+            "info": self.info
+        }
+        self.db.update_character(name=self.name, data=data_to_save)
+        print(f"Successfully saved character '{self.name}' to the database.")
 
-        # Convert dict to JSON string
-        json_str = json.dumps(data)
+    def get_character_prompt(self, user_name: str = "User") -> str:
+        """
+        Generates the final character prompt for the LLM, replacing placeholders.
+        """
+        # Replace placeholders in the persona and examples
+        persona_processed = self.persona.replace('{{char}}', self.name).replace('{{user}}', user_name)
         
-        # Replace placeholders in the string
-        replaced_str = json_str.replace('{{char}}', bot_name).replace('{{user}}', user_name)
-        
-        # Parse back to dictionary
-        return json.loads(replaced_str)
+        examples_processed = []
+        for example in self.examples:
+            processed_line = example.replace('{{char}}', self.name).replace('{{user}}', user_name)
+            if not processed_line.startswith("[System"):
+                processed_line = f"[Reply] {processed_line} [End]"
+            examples_processed.append(processed_line)
 
-    async def get_character_prompt(self) -> str | None:
-        # Your name is <name>.
-        character: str = "You are " + self.name + ", you embody their character, persona, goals, personality, and bias which is described in detail below:"
+        # Build the prompt string
+        character_desc = f"You are {self.name}, you embody their character, persona, goals, personality, and bias which is described in detail below:"
+        persona_prompt = f"Your persona: {persona_processed}"
+        examples_prompt = "A history reference to your speaking quirks and behavior:\n" + '\n'.join(examples_processed)
 
-        # Your name is <name>. You are a <persona>.
-        character = character + "Your persona: " + self.persona + ". "
+        return f"{character_desc}\n{persona_prompt}\n{examples_prompt}\n{self.instructions}"
 
-        # Instructions on what the bot should do. This is where an instruction model will get its stuff.
-
-        examples = self.examples  # put example responses here
-
-        for example in examples:
-            if example.startswith("[System"):
-                pass
-            else:
-                example = f"[Reply] {example} [End]"
-
-        # Example messages!
-        character_prompt = character + " A history reference to your speaking quirks and behavior: " + \
-        "\n" + '\n'.join(examples) + "\n"
-
-        return character_prompt
-
-    def get_name(self) -> str:
-        """Getter for character name."""
-        name = self.char_dict.get("name","")
-        if name == "":
-            data:dict = self.char_dict.get("data",None)
-            if data!=None:
-                name = data.get("name","")
-        return name
-
-    def get_persona(self) -> str:
-        """Getter for character persona."""
-        persona = self.char_dict.get("persona",None)
-        if persona ==None:
-            data:dict = self.char_dict.get("data",None)
-            if data != None:
-                persona = data.get("description","")
-            else:
-                persona = self.char_dict.get("description","")
-        return persona
-
-    def get_examples(self) -> list:
-        """Getter for character examples."""
-        examples = self.char_dict.get("examples","")
-        return examples
-
-    def get_instructions(self) -> str:
-        """Getter for character instructions."""
-        instruction = self.char_dict.get("instructions","")
-        return instruction
-
-    def get_avatar(self) -> str:
-        """Getter for character avatar."""
-        avatar = self.char_dict.get("image","")
-        if avatar == "":
-                data:dict = self.char_dict.get("data",None)
-                if data != None:
-                    avatar = data.get("avatar","")
-                else:
-                    avatar = self.char_dict.get("avatar","")
-        return avatar
-
-    def get_info(self) -> str:
-        """Getter for character info."""
-        info = self.char_dict.get("info","")
-        return info
-
-    # Setters
-    def set_name(self, name: str):
-        """Setter for character name."""
-        self.name = name
-        self.char_dict["name"] = name
+    # --- Setters ---
+    # Each setter now modifies the instance attribute and persists the change to the database.
 
     def set_persona(self, persona: str):
         """Setter for character persona."""
         self.persona = persona
-        self.char_dict["persona"] = persona
+        self.save()
 
     def set_examples(self, examples: list):
         """Setter for character examples."""
         self.examples = examples
-        self.char_dict["examples"] = examples
+        self.save()
 
     def set_instructions(self, instructions: str):
         """Setter for character instructions."""
         self.instructions = instructions
-        self.char_dict["instructions"] = instructions
+        self.save()
 
     def set_avatar(self, avatar: str):
         """Setter for character avatar."""
         self.avatar = avatar
-        self.char_dict["image"] = avatar
+        self.save()
 
     def set_info(self, info: str):
         """Setter for character info."""
         self.info = info
-        self.char_dict["info"] = info
-    
-
-    
-
-
-   
-    
-
-
+        self.save()

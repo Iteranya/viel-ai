@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viel AI - Servers & Channels</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1; --primary-dark: #4f46e5; --dark: #1e293b;
+            --darker: #0f172a; --light: #f8fafc;
+        }
+        body { background-color: var(--darker); color: var(--light); font-family: 'Inter', sans-serif; }
+        .nav-link:hover { background-color: rgba(99, 102, 241, 0.1); }
+        .nav-link.active { border-bottom: 2px solid var(--primary); }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); }
+        .list-item.active { background-color: var(--primary); }
+    </style>
+</head>
+<body class="bg-darker text-light">
+    <div id="toast-container" class="toast z-50"></div>
+    
+    <!-- Navbar -->
+    <nav class="bg-darker border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="/" class="flex items-center space-x-3 text-white">
+                            <img class="h-8 w-auto" src="https://cdn.discordapp.com/attachments/1439240977356161137/1439267698755239956/Viel.jpg?ex=6919e5ff&is=6918947f&hm=8fc964ad0a8b7bf35c8955d4c1bc2d2d91c398023bf5856f350c6366b2fb44f4&" alt="Viel AI Logo">
+                            <span class="font-bold text-xl hidden sm:inline">Viel AI</span>
+                        </a>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-baseline space-x-4">
+                            <a href="/" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white"><i class="fas fa-home mr-2"></i> Dashboard</a>
+                            <a href="/servers" class="nav-link active px-3 py-2 rounded-md text-sm font-medium text-white"><i class="fas fa-server mr-2"></i> Servers</a>
+                            <a href="/characters" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white"><i class="fas fa-robot mr-2"></i> Characters</a>
+                            <a href="/ai-config" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white">
+                                    <i class="fas fa-cog mr-2"></i> AI Config
+                                </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-6">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-3xl font-bold text-white mb-6">Server & Channel Management</h1>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Server List -->
+                <div class="lg:col-span-1">
+                    <div class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold text-white">Servers</h2>
+                            <button id="add-server-btn" class="bg-primary hover:bg-primary-dark text-white px-3 py-1 rounded-lg text-sm">
+                                <i class="fas fa-plus mr-1"></i> Add
+                            </button>
+                        </div>
+                        <ul id="server-list" class="space-y-2 max-h-[60vh] overflow-y-auto">
+                            <li class="text-gray-400">Loading servers...</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Channel List -->
+                <div class="lg:col-span-1">
+                    <div id="channel-panel" class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 id="channel-list-title" class="text-xl font-semibold text-white">Channels</h2>
+                            <button id="add-channel-btn" class="bg-primary hover:bg-primary-dark text-white px-3 py-1 rounded-lg text-sm">
+                                <i class="fas fa-plus mr-1"></i> Add
+                            </button>
+                        </div>
+                        <ul id="channel-list" class="space-y-2 max-h-[60vh] overflow-y-auto">
+                            <!-- JS will populate this -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Channel Config Form -->
+                <div class="lg:col-span-2">
+                    <div id="config-panel" class="bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-800 hidden">
+                        <h2 id="form-title" class="text-xl font-semibold text-white mb-6">Channel Configuration</h2>
+                        <form id="channel-form" class="space-y-4">
+                            <!-- Fields will be here -->
+                            <div>
+                                <label for="name" class="block mb-2 text-sm font-medium text-gray-300">Channel Name</label>
+                                <input type="text" id="name" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5">
+                            </div>
+                            <div>
+                                <label for="instruction" class="block mb-2 text-sm font-medium text-gray-300">Instruction</label>
+                                <textarea id="instruction" rows="3" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5"></textarea>
+                            </div>
+                            <div>
+                                <label for="global_note" class="block mb-2 text-sm font-medium text-gray-300">Global Note (Lore)</label>
+                                <textarea id="global_note" rows="3" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5"></textarea>
+                            </div>
+                            <div>
+                                <label for="whitelist" class="block mb-2 text-sm font-medium text-gray-300">Character Whitelist (comma-separated)</label>
+                                <textarea id="whitelist" rows="2" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5" placeholder="Leave empty to allow all"></textarea>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label for="is_system_channel" class="text-sm font-medium text-gray-300">System Channel</label>
+                                    <p class="text-xs text-gray-500">Used for bot uploads and system tasks.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="is_system_channel" type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            <div class="flex justify-end pt-4">
+                                <button type="submit" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- "Add Channel" Modal -->
+    <div id="add-channel-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        <div class="bg-gray-900 rounded-lg shadow-xl p-8 border border-gray-800 max-w-lg text-center">
+            <h3 class="text-2xl font-bold text-white mb-4"><i class="fab fa-discord text-primary mr-2"></i> Register a New Channel / Server</h3>
+            <p class="text-gray-400 mb-6">
+                To add a new server / channel for the bot to use, please go to your Discord server and use the following slash command in the desired channel:
+            </p>
+            <div class="bg-gray-800 text-white p-3 rounded-lg font-mono text-left">
+                /aktiva register_channel
+            </div>
+            <p class="text-gray-500 text-sm mt-4">
+                This ensures the bot has the correct permissions and context for the channel.
+            </p>
+            <button id="close-modal-btn" class="mt-8 bg-primary hover:bg-primary-dark text-white font-bold py-2 px-6 rounded-lg">
+                Got it!
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const API_BASE = '/api/servers';
+            let currentServer = null;
+            let currentChannel = null;
+
+            // DOM Elements
+            const serverList = document.getElementById('server-list');
+            const channelPanel = document.getElementById('channel-panel');
+            const channelListTitle = document.getElementById('channel-list-title');
+            const channelList = document.getElementById('channel-list');
+            const configPanel = document.getElementById('config-panel');
+            const form = document.getElementById('channel-form');
+            const formTitle = document.getElementById('form-title');
+            const addChannelBtn = document.getElementById('add-channel-btn');
+            const addServerBtn = document.getElementById('add-server-btn');
+            const addChannelModal = document.getElementById('add-channel-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const toastContainer = document.getElementById('toast-container');
+            
+            // Form fields
+            const nameInput = document.getElementById('name');
+            const instructionInput = document.getElementById('instruction');
+            const globalNoteInput = document.getElementById('global_note');
+            const whitelistInput = document.getElementById('whitelist');
+            const isSystemChannelInput = document.getElementById('is_system_channel');
+
+            async function fetchServers() {
+                try {
+                    const response = await fetch(API_BASE);
+                    const servers = await response.json();
+                    serverList.innerHTML = '';
+                    servers.forEach(server => {
+                        const li = document.createElement('li');
+                        li.className = 'list-item px-4 py-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700';
+                        li.textContent = server.server_name;
+                        li.dataset.serverId = server.server_id;
+                        li.addEventListener('click', () => {
+                            document.querySelectorAll('#server-list .list-item').forEach(el => el.classList.remove('active'));
+                            li.classList.add('active');
+                            fetchChannels(server.server_id, server.server_name);
+                        });
+                        serverList.appendChild(li);
+                    });
+                } catch (error) { showToast('Failed to load servers.', 'error'); }
+            }
+
+            async function fetchChannels(serverId, serverName) {
+                currentServer = { id: serverId, name: serverName };
+                configPanel.classList.add('hidden'); // Hide form when switching servers
+                channelListTitle.textContent = serverName;
+                channelPanel.classList.remove('hidden');
+                
+                try {
+                    const response = await fetch(`${API_BASE}/${serverId}/channels`);
+                    const channels = await response.json();
+                    channelList.innerHTML = '';
+                    if (channels.length === 0) {
+                        channelList.innerHTML = `<li class="text-gray-500">No channels registered.</li>`;
+                    }
+                    channels.forEach(channel => {
+                        const li = document.createElement('li');
+                        li.className = 'list-item px-4 py-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700';
+                        li.textContent = channel.data.name;
+                        li.dataset.channelId = channel.channel_id;
+                        li.addEventListener('click', () => {
+                             document.querySelectorAll('#channel-list .list-item').forEach(el => el.classList.remove('active'));
+                            li.classList.add('active');
+                            loadChannelForEdit(channel)
+                        });
+                        channelList.appendChild(li);
+                    });
+                } catch (error) { showToast('Failed to load channels.', 'error'); }
+            }
+
+            function loadChannelForEdit(channel) {
+                currentChannel = channel;
+                configPanel.classList.remove('hidden');
+                formTitle.textContent = `Editing #${channel.data.name}`;
+
+                nameInput.value = channel.data.name || '';
+                instructionInput.value = channel.data.instruction || '';
+                globalNoteInput.value = channel.data.global || '';
+                whitelistInput.value = (channel.data.whitelist || []).join(', ');
+                isSystemChannelInput.checked = channel.data.is_system_channel || false;
+            }
+
+            async function handleFormSubmit(event) {
+                event.preventDefault();
+                if (!currentChannel || !currentServer) return;
+
+                const updatedData = {
+                    name: nameInput.value,
+                    instruction: instructionInput.value,
+                    global: globalNoteInput.value, // Make sure key is 'global'
+                    whitelist: whitelistInput.value.split(',').map(s => s.trim()).filter(Boolean),
+                    is_system_channel: isSystemChannelInput.checked
+                };
+                
+                try {
+                    const response = await fetch(`${API_BASE}/${currentServer.id}/channels/${currentChannel.channel_id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedData)
+                    });
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to save.');
+                    }
+                    showToast(`Channel #${updatedData.name} saved successfully!`);
+                    await fetchChannels(currentServer.id, currentServer.name); // Refresh list
+                } catch (error) { showToast(`Error: ${error.message}`, 'error'); }
+            }
+            
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+                toast.className = `toast ${bgColor} text-white py-2 px-4 rounded-lg shadow-lg animate-pulse`;
+                toast.textContent = message;
+                toastContainer.appendChild(toast);
+                setTimeout(() => { toast.remove(); }, 3000);
+            }
+
+            // Modal listeners
+            addChannelBtn.addEventListener('click', () => addChannelModal.classList.remove('hidden'));
+            addServerBtn.addEventListener('click', () => addChannelModal.classList.remove('hidden'));
+            closeModalBtn.addEventListener('click', () => addChannelModal.classList.add('hidden'));
+
+            // Form listener
+            form.addEventListener('submit', handleFormSubmit);
+
+            // Initial Load
+            fetchServers();
+        });
+    </script>
+</body>
+</html>

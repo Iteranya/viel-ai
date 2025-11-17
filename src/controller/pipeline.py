@@ -1,135 +1,96 @@
 import asyncio
-from src.controller.config import queue_to_process_everything
+import traceback
 import discord
 import os
-import sys
-import traceback
-from src.models.aicharacter import AICharacter
-from src.models.dimension import Dimension
+import uuid  # For creating unique temporary filenames
+
+# Adjust import paths to match your project structure
+from api.db.database import Database
+from src.controller.messenger import DiscordMessenger
+from src.models.aicharacter import ActiveCharacter
+from src.models.dimension import ActiveChannel
 from src.models.prompts import PromptEngineer
 from src.models.queue import QueueItem
 from src.utils.llm_new import generate_response
-from src.controller.discordo import send
-from src.utils.bot_thonk import extract_all_functions,create_script_environment
+from api.models.models import BotConfig
 
-def format_traceback(error: Exception, *, _print: bool = False) -> str:
-    # https://github.com/InterStella0/stella_bot/blob/896c94e847829575d4699c0dd9d9b925d01c4b44/utils/useful.py#L132~L140
-    if _print:
-        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-    etype = type(error)
-    trace = error.__traceback__
-    lines = traceback.format_exception(etype, error, trace)
-    return "".join(lines)
 
-# GOD Refactoring this gonna be a bitch and a half...
+async def think(viel, db: Database, queue: asyncio.Queue) -> None:
+    """The main thinking loop of the bot."""
+    # Load the bot's configuration once at the start of the loop
+    bot_config = BotConfig(**db.list_configs())
 
-params = {
-    "model": "turbo",
-    "seed": 123,
-    "width": 720,
-    "height": 1280,
-    "nologo": "true",
-    "private": "true",
-    "enhance": "false",
-    "safe": "false",
-    "referrer": "ImageGenTest"
-}
-async def think() -> None:
+    messenger = DiscordMessenger(viel)
 
     while True:
-        research_result = ""
-        content = await queue_to_process_everything.get()
         try:
-            delete_file("temp.jpg") # Hacky Solution, I know
-        except Exception as e:
-            print("All Clean, Moving on")
-        message:discord.Message = content["message"]
-        bot:AICharacter = content["bot"]
-        dimension:Dimension = content["dimension"]
-        default:bool = content["default"]
+            # Get the next message to process from the queue
+            message: discord.Message = await queue.get()
+            print("Got message~")
 
-        try:
+            # 1. Get the channel configuration
+            channel = ActiveChannel.from_id(str(message.channel.id), db)
+            if not channel:
+                # If the channel isn't registered, we can't do anything.
+                print(f"Ignoring message in unregistered channel: {message.channel.id}")
+                queue.task_done()
+                continue
+
+            # 2. Determine the active character
+            message_content_with_context = message.content
+            
+            character = ActiveCharacter.from_message(message_content_with_context, db)
+            
+            # If no trigger found, check if the bot was mentioned.
+            # `message.guild.me` is the ClientUser object for the current server
+            if not character and message.guild and message.guild.me in message.mentions:
+                 # Load the default character from the config
+                default_char_name = bot_config.default_character
+                if default_char_name:
+                    char_data = db.get_character(default_char_name)
+                    if char_data:
+                        character = ActiveCharacter(char_data, db)
+                        print(f"No trigger found. Activated default character '{default_char_name}' due to mention.")
+
+            # If still no character, there's nothing to do.
+            if not character:
+                print("What the fuck?")
+                queue.task_done()
+                continue
+
+            # 4. Generate the prompt
+            # Add a thinking reaction to the message
             await message.add_reaction('✨')
-        except Exception as e:
-            print("Hi!")
+            prompter = PromptEngineer(character, message, channel)
+            prompt = await prompter.create_prompt()
 
-        message_content = str(message.content)
+            # 5. Create a task item and generate the AI response
+            queue_item = QueueItem(
+                prompt=prompt,
+                bot=character.name,
+                user=message.author.display_name,
+                stop=prompter.stopping_strings,
+                message=message
+            )
+            
+            print(f"Processing chat completion for character '{character.name}'...")
+            queue_item = await generate_response(queue_item, db)
 
-        try:
-            if message_content.startswith("//"):
-                pass
-            # elif default==True:
-            #     await send_llm_message(bot,message,dimension, plugin="thonk")
-            else:
-                await send_llm_message(bot,message,dimension, plugin="") # Prepping up to make plugins easier to handle, maybe
+            if not queue_item.result:
+                queue_item.result = "//[OOC: Something went wrong and the AI failed to generate a response.]"
+            
+            # 6. Send the response back to Discord
+            await messenger.send_message(character, message, queue_item)
+
+            await message.remove_reaction('✨', viel.user)
+
         except Exception as e:
-            print(f"Something went wrong: {format_traceback(e)}")
+            print(f"An error occurred in the think loop: {e}\n{traceback.format_exc()}")
+            # Add a failure reaction if something goes wrong
             try:
                 await message.add_reaction('❌')
-            except Exception as e:
-                print("Hi!")
-        queue_to_process_everything.task_done()
-
-async def send_llm_message(bot: AICharacter,message:discord.message.Message,dimension:Dimension, plugin = None):
-    # print("The following is the content of message: \n\n" +str(message.author.display_name))
-    dm=False
-    # Can we add a 1 second delay here?
-    await asyncio.sleep(1)
-    prompter = PromptEngineer(bot,message,dimension)
-    if isinstance(message.channel,discord.channel.DMChannel):
-        dm = True
-    queueItem = None
-    if os.path.exists('temp.jpg'):
-        queueItem = QueueItem(
-            prompt=await prompter.create_text_prompt(),
-            bot = bot.name,
-            user = message.author.display_name,
-            stop=prompter.stopping_string,
-            prefill=prompter.prefill,
-            dm=dm,
-            message=prompter.message,
-            images=["temp.jpg"]
-            )
-    else:
-        queueItem = QueueItem(
-            prompt=await prompter.create_text_prompt(),
-            bot = bot.name,
-            user = message.author.display_name,
-            stop=prompter.stopping_string,
-            prefill=prompter.prefill,
-            dm=dm,
-            message=prompter.message
-            )
-    print("Chat Completion Processing...")
-    if not queueItem.images:
-        queueItem = await generate_response(queueItem)
-    else:
-        queueItem.result = f"[System Note: Attached is the generated image by {queueItem.bot}]"
-    if not queueItem.result:
-        queueItem.result = "//Something Went Wrong, AI Failed to Generate"
-    if "create_reply()" in queueItem.result:
-        print(queueItem.result)
-        script_to_run = extract_all_functions(queueItem.result)
-        print("Final Function: "+ str(script_to_run))
-        script = create_script_environment(script_to_run)
-        final = await script()
-        queueItem.result = final
-        print("Final script result: "+final)
-    
-    await send(bot,message,queueItem)
-    try:
-        delete_file(queueItem.images[0]) # Hacky Solution, I know
-    except Exception as e:
-        print("All Clean, Moving on")
-    return
-
-def delete_file(file_path):
-    try:
-        os.remove(file_path)
-        print(f"File {file_path} deleted successfully")
-    except FileNotFoundError:
-        print(f"File {file_path} not found")
-    except PermissionError:
-        print(f"Permission denied to delete {file_path}")
-    except Exception as e:
-        print(f"Error occurred while deleting file: {e}")
+            except (discord.HTTPException, UnboundLocalError):
+                pass # Message might have been deleted or was never assigned
+        finally:
+            # Signal that this task from the queue is complete
+            queue.task_done()

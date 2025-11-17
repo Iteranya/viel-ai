@@ -14,3 +14,5 @@ temp.jpg
 *.jpg
 *.webp
 *.jsonl
+*.db
+*.log

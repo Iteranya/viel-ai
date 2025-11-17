@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viel AI - AI Configuration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1; --primary-dark: #4f46e5; --dark: #1e293b;
+            --darker: #0f172a; --light: #f8fafc;
+        }
+        body { background-color: var(--darker); color: var(--light); font-family: 'Inter', sans-serif; }
+        .nav-link:hover { background-color: rgba(99, 102, 241, 0.1); }
+        .nav-link.active { border-bottom: 2px solid var(--primary); }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); }
+        /* Style for disabled inputs */
+        input:disabled, textarea:disabled { background-color: #334155 !important; cursor: not-allowed; opacity: 0.5; }
+    </style>
+</head>
+<body class="bg-darker text-light">
+    <div id="toast-container" class="toast z-50"></div>
+    
+    <!-- Navbar (Unchanged) -->
+    <nav class="bg-darker border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="/" class="flex items-center space-x-3 text-white">
+                            <img class="h-8 w-auto" src="https://cdn.discordapp.com/attachments/1439240977356161137/1439267698755239956/Viel.jpg?ex=6919e5ff&is=6918947f&hm=8fc964ad0a8b7bf35c8955d4c1bc2d2d91c398023bf5856f350c6366b2fb44f4&" alt="Viel AI Logo">
+                            <span class="font-bold text-xl hidden sm:inline">Viel AI</span>
+                        </a>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-baseline space-x-4">
+                            <a href="/" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white"><i class="fas fa-home mr-2"></i> Dashboard</a>
+                            <a href="/servers" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white"><i class="fas fa-server mr-2"></i> Servers</a>
+                            <a href="/characters" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white"><i class="fas fa-robot mr-2"></i> Characters</a>
+                            <a href="/ai-config" class="nav-link active px-3 py-2 rounded-md text-sm font-medium text-white"><i class="fas fa-cog mr-2"></i> AI Config</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-6">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold text-white mb-2">AI Configuration</h1>
+            <p class="text-gray-400 mb-8">Manage the core settings for the AI and bot integration.</p>
+
+            <div class="bg-gray-900 rounded-lg shadow-lg p-8 border border-gray-800 space-y-8">
+                <!-- Main Config Form -->
+                <form id="config-form" class="space-y-6">
+                    
+                    <!-- Core AI Settings -->
+                    <fieldset class="border border-gray-700 rounded-lg p-4">
+                        <legend class="text-lg font-semibold text-primary px-2">Core AI Settings</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <label for="default_character" class="block mb-2 text-sm font-medium text-gray-300">Default Character Name</label>
+                                <input type="text" id="default_character" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5" required>
+                            </div>
+                            <div>
+                                <label for="base_llm" class="block mb-2 text-sm font-medium text-gray-300">Base LLM Model</label>
+                                <input type="text" id="base_llm" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5" required placeholder="e.g., gryphe/mythomax-l2-13b">
+                            </div>
+                            <div>
+                                <label for="ai_endpoint" class="block mb-2 text-sm font-medium text-gray-300">AI Endpoint URL</label>
+                                <input type="text" id="ai_endpoint" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5" required>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="temperature" class="block mb-2 text-sm font-medium text-gray-300">Temperature</label>
+                                    <input type="number" id="temperature" step="0.1" min="0" max="2" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5">
+                                </div>
+                                <div>
+                                    <label for="auto_cap" class="block mb-2 text-sm font-medium text-gray-300">Auto Response Cap</label>
+                                    <input type="number" id="auto_cap" step="1" min="0" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5">
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Keys & Integration -->
+                    <fieldset class="border border-gray-700 rounded-lg p-4">
+                        <legend class="text-lg font-semibold text-primary px-2">Keys & Integration</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <label for="ai_key" class="block mb-2 text-sm font-medium text-gray-300">AI API Key</label>
+                                <input type="password" id="ai_key" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5" placeholder="Leave blank to keep existing key">
+                            </div>
+                             <div>
+                                <label for="discord_key" class="block mb-2 text-sm font-medium text-gray-300">Discord Bot Token</label>
+                                <input type="password" id="discord_key" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5" placeholder="Leave blank to keep existing key">
+                            </div>
+                        </div>
+                    </fieldset>
+                    
+                    <!-- Advanced Features -->
+                    <fieldset class="border border-gray-700 rounded-lg p-4">
+                        <legend class="text-lg font-semibold text-primary px-2">Advanced Features</legend>
+                        <div class="space-y-4 mt-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label for="use_prefill" class="font-medium text-gray-300">Use AI Prefill</label>
+                                    <p class="text-xs text-gray-500">Guides the AI to start its response correctly. May not work with all models.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="use_prefill" type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            <div class="border-t border-gray-700 my-4"></div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label for="multimodal_enable" class="font-medium text-gray-300">Enable Multimodal (Vision)</label>
+                                    <p class="text-xs text-gray-500">Allows the bot to describe images attached to messages.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="multimodal_enable" type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            <div id="multimodal-options" class="pl-6 pt-4 space-y-4 border-l-2 border-gray-700">
+                                <div>
+                                    <label for="multimodal_ai_model" class="block mb-2 text-sm font-medium text-gray-300">Multimodal Model</label>
+                                    <input type="text" id="multimodal_ai_model" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5" placeholder="e.g., google/gemini-pro-vision">
+                                </div>
+                                <div>
+                                    <label for="multimodal_ai_endpoint" class="block mb-2 text-sm font-medium text-gray-300">Multimodal Endpoint URL</label>
+                                    <input type="text" id="multimodal_ai_endpoint" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5">
+                                </div>
+                                <!-- NEWLY ADDED FIELD -->
+                                <div>
+                                    <label for="multimodal_ai_api" class="block mb-2 text-sm font-medium text-gray-300">Multimodal API Key</label>
+                                    <input type="password" id="multimodal_ai_api" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5" placeholder="Leave blank to keep existing key">
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Main Save Button -->
+                    <div class="flex justify-end pt-4">
+                        <button type="submit" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-6 rounded-lg transition duration-300">
+                            Save Config
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Prompt Template Editor -->
+                <fieldset class="border border-gray-700 rounded-lg p-4">
+                    <legend class="text-lg font-semibold text-primary px-2">Prompt Template Editor (Default)</legend>
+                    <div class="mt-4">
+                        <label for="prompt_template" class="block mb-2 text-sm font-medium text-gray-300">Prompt Template</label>
+                        <p class="text-xs text-gray-500 mb-3">This defines the structure of the data sent to the AI. Use placeholders like `{{char}}`, `{{user}}`, etc.</p>
+                        <textarea id="prompt_template" rows="12" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg w-full p-2.5 font-mono" placeholder="Loading prompt template..."></textarea>
+                    </div>
+                    <div class="flex justify-end pt-4">
+                        <button id="save-prompt-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300">
+                            Save Prompt
+                        </button>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const CONFIG_API_BASE = '/api/config';
+            const PRESET_API_BASE = '/api/presets';
+            
+            // --- DOM Elements ---
+            const form = document.getElementById('config-form');
+            const toastContainer = document.getElementById('toast-container');
+            const multimodalToggle = document.getElementById('multimodal_enable');
+            const multimodalOptions = document.getElementById('multimodal-options');
+            const multimodalInputs = multimodalOptions.querySelectorAll('input');
+
+            // Prompt Editor Elements
+            const promptTemplateInput = document.getElementById('prompt_template');
+            const savePromptBtn = document.getElementById('save-prompt-btn');
+            let currentPresetDescription = null; 
+
+            // Map keys to element IDs for easy access
+            // UPDATED: Added 'multimodal_ai_api'
+            const fieldIds = [
+                'default_character', 'ai_endpoint', 'base_llm', 'temperature', 'auto_cap',
+                'ai_key', 'discord_key', 'use_prefill', 'multimodal_enable',
+                'multimodal_ai_model', 'multimodal_ai_endpoint', 'multimodal_ai_api'
+            ];
+            const elements = Object.fromEntries(fieldIds.map(id => [id, document.getElementById(id)]));
+
+            // --- Config Functions ---
+            async function loadConfig() {
+                try {
+                    const response = await fetch(CONFIG_API_BASE);
+                    if (!response.ok) throw new Error('Failed to fetch config.');
+                    const config = await response.json();
+
+                    for (const key in config) {
+                        if (elements[key]) {
+                            if (elements[key].type === 'checkbox') {
+                                elements[key].checked = config[key];
+                            } else if (elements[key].type !== 'password') {
+                                elements[key].value = config[key];
+                            }
+                        }
+                    }
+                    toggleMultimodalOptions();
+                } catch (error) { showToast(error.message, 'error'); }
+            }
+
+            async function handleConfigSubmit(event) {
+                event.preventDefault();
+                const configData = {};
+                for (const key of fieldIds) {
+                    if (elements[key]) {
+                        if (elements[key].type === 'checkbox') {
+                            configData[key] = elements[key].checked;
+                        } else if (elements[key].type === 'number') {
+                            configData[key] = parseFloat(elements[key].value);
+                        } else {
+                            configData[key] = elements[key].value;
+                        }
+                    }
+                }
+                
+                try {
+                    const response = await fetch(CONFIG_API_BASE, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(configData)
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to save config.');
+                    }
+
+                    showToast('Configuration saved successfully!');
+                    // UPDATED: Clear the new key field as well
+                    elements['ai_key'].value = '';
+                    elements['discord_key'].value = '';
+                    elements['multimodal_ai_api'].value = '';
+
+
+                } catch (error) { showToast(error.message, 'error'); }
+            }
+            
+            function toggleMultimodalOptions() {
+                const isEnabled = multimodalToggle.checked;
+                multimodalOptions.style.opacity = isEnabled ? '1' : '0.5';
+                multimodalInputs.forEach(input => { input.disabled = !isEnabled; });
+            }
+
+            // --- Prompt Preset Functions ---
+            async function loadPrompt() {
+                try {
+                    const response = await fetch(`${PRESET_API_BASE}/Default`);
+                    if (!response.ok) throw new Error('Failed to load default prompt template.');
+                    const preset = await response.json();
+                    
+                    promptTemplateInput.value = preset.prompt_template || '';
+                    currentPresetDescription = preset.description;
+                } catch (error) {
+                    showToast(error.message, 'error');
+                    promptTemplateInput.disabled = true;
+                    promptTemplateInput.value = "Error: Could not load the 'Default' prompt preset.";
+                }
+            }
+            
+            async function savePrompt() {
+                const presetData = {
+                    name: 'Default',
+                    description: currentPresetDescription,
+                    prompt_template: promptTemplateInput.value
+                };
+
+                try {
+                    const response = await fetch(`${PRESET_API_BASE}/Default`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(presetData)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to save prompt.');
+                    }
+                    showToast('Default prompt template saved successfully!');
+                } catch (error) {
+                    showToast(error.message, 'error');
+                }
+            }
+            
+            // --- Utility Functions ---
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+                toast.className = `toast ${bgColor} text-white py-2 px-4 rounded-lg shadow-lg animate-pulse`;
+                toast.textContent = message;
+                toastContainer.appendChild(toast);
+                setTimeout(() => { toast.remove(); }, 3000);
+            }
+
+            // --- Event Listeners ---
+            form.addEventListener('submit', handleConfigSubmit);
+            multimodalToggle.addEventListener('change', toggleMultimodalOptions);
+            savePromptBtn.addEventListener('click', savePrompt);
+
+            // --- Initial Load ---
+            loadConfig();
+            loadPrompt();
+        });
+    </script>
+</body>
+</html>
