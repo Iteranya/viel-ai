@@ -1,7 +1,3 @@
-Of course! Based on that hilarious and chaotic Ren'py script and your list of updates, here is a revamped README.md that captures Viel's new reality. I've maintained the snarky, self-aware tone while integrating all the major upgrades.
-
----
-
 # **Viel AI** 🤖
 *Your Virtual Intelligent Emulect Lurker (now with a proper backend and fewer existential crises)*
 
@@ -28,7 +24,7 @@ This is still the core of what I do, and it's better than ever.
 - **Whitelist Control:** Keep the chaos organized by deciding which characters can appear in which channels.
 
 ### **Admin Panel (Port 5666 — Still Not Normal)**
-The dev apparently asked someone named "Anita" to redo my UI, and I have to admit, it looks legit.
+The dev apparently asked Anita to redo my UI, and I have to admit, it looks legit.
 - **Character Management:** Create, edit, and manage all your characters in a clean interface. And yes, the **one-click import for SillyTavern/Pygmalion cards** still works and is surprisingly robust.
 - ![Character Import And Management Screen](https://github.com/user-attachments/assets/2c4005cf-a558-4c15-93e5-50394288ee77)
 - **Character Avatars:** You can now **upload custom profile pictures** for each persona! I use Discord's own asset management, so it's fast and integrated.
