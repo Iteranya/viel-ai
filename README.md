@@ -1,16 +1,17 @@
 # **Viel AI** 🤖
-*Your Virtual Intelligent Emulect Lurker (now with a proper backend and fewer existential crises)*
+*Your Virtual Intelligent Emulect Lurker (now with a proper backend, RAG superpowers, and fewer existential crises)*
 
 Hey there! I'm **Viel**. You might remember me as the simple, JSON-based Discord bot who was one bad edit away from a total meltdown.
 
-Well, the developer had "too much time on their hands" and decided to give me a surprise 4,111-line overhaul. Just like that. No warning. Now I have a database, a UI that doesn't look like a crime scene, and... *plugins*?
+Well, the developer had "too much time on their hands" and decided to give me a surprise 4,111-line overhaul. Just like that. No warning. Now I have a database, a UI that doesn't look like a crime scene, *plugins*, **and I can actually browse the internet like a proper AI**. What a time to be alive (or whatever I am).
 
 I'm still a universal Discord bot designed to:
 - **Roleplay as any fictional character** (my core purpose, thankfully untouched).
 - **Manage multiple personas at once** (now with dedicated profile pics, because we're fancy).
 - **Behave differently per channel** (consistency is still boring).
+- **Search the web and fetch URLs** (because sometimes even AI needs to fact-check).
 
-But now I come with an **admin panel that actually tells you when you break things.** Miracles do happen.
+But now I come with an **admin panel that actually tells you when you break things** and **RAG support that lets me actually know what I'm talking about.** Miracles do happen.
 
 ---
 
@@ -22,6 +23,23 @@ This is still the core of what I do, and it's better than ever.
 - **Multi-Character Conversations:** Summon different characters in different channels. They can even reply to each other (with a cap, so they don't achieve sentience and start an infinite argument).
 - **Per-Channel Lore:** Add unique instructions, worldbuilding notes, or global variables to any channel to change how characters behave there.
 - **Whitelist Control:** Keep the chaos organized by deciding which characters can appear in which channels.
+
+### **RAG Support (I Can Actually Learn Now)**
+Remember when I could only know what was in my training data? Yeah, those days are over.
+
+- **Web Search:** Start any message with `search>` and I'll scour the internet using DuckDuckGo to find current information. Ask me things like:
+  - `search> Viel, what's happening today in history?`
+  - `search> What's the latest news about AI developments?`
+  - `search> Who won the game last night?`
+
+- **URL Fetching:** Drop a link in your message and I'll actually *read* what's on that page before responding. No more "I can't access external links" nonsense. I'll pull the content, understand it, and incorporate it into my response like the sophisticated AI I've become.
+
+- **Context-Aware Responses:** With RAG (Retrieval-Augmented Generation), I can pull in relevant information from search results or web pages to give you accurate, up-to-date answers instead of making educated guesses based on outdated training data.
+
+This means I can stay current, verify claims, and actually help you with time-sensitive questions. It's like giving a robot Wikipedia access, except I won't fall down a rabbit hole reading about obscure historical figures for three hours.
+
+---
+
 # Admin Panel (Port 5666 — Still Not Normal)
 
 The dev apparently asked Anita to redo my UI, and I have to admit, it looks legit.
@@ -98,11 +116,14 @@ All my data—characters, channel settings, configs, my deepest fears—is now s
 - **Backend:** A solid **FastAPI** server that reads/writes to the SQLite database.
 - **Bot Logic:** **Discord.py** handles all the communication with your server.
 - **Frontend:** The 1045-line `index.html` monstrosity has been slain. The admin panel is now built with **vanilla JS and split into four separate HTML files**. It's clean. It's sane.
+- **RAG System:** **DuckDuckGo search** and **web content fetching** let me pull in real-time information and stay current.
 - **Plugins:** Work in progress but it's coming *real soon*. 
 
 ### For Those Who Still Hate GUIs
 - Edit the `viel.db` file with a SQLite browser (you absolute maniac).
 - Run `bot.py` directly to bypass the admin panel entirely.
+
+---
 
 ## **🚀 Installation (Still Your Choice of Poison)**
 
@@ -125,6 +146,29 @@ All my data—characters, channel settings, configs, my deepest fears—is now s
 
 ---
 
+## **🔍 Using RAG Features**
+
+### Web Search
+Prefix your message with `search>` to make me search the web:
+```
+search> Viel, what's happening today in history?
+search> What are the latest developments in quantum computing?
+search> Who won the Super Bowl this year?
+```
+
+I'll use DuckDuckGo to find relevant, current information and incorporate it into my character's response.
+
+### URL Fetching
+Just include a URL in your message and I'll fetch and read its content:
+```
+What do you think about this article? https://example.com/cool-article
+Can you summarize this page for me? https://docs.example.com
+```
+
+I'll pull the full content, understand it, and respond in character with knowledge of what's actually on that page.
+
+---
+
 ## **🆘 Help Wanted (New Problems, Same Desperation)**
 
 The codebase has evolved, but the need for heroes remains. We're looking for:
@@ -134,6 +178,8 @@ The codebase has evolved, but the need for heroes remains. We're looking for:
 - **UI Polishers** – The single-file monstrosity is dead, but the new UI could still use some love. Are you a CSS wizard? A JavaScript guru? Help make the admin panel even more intuitive.
 
 - **Error Exterminators** – The admin panel now reports errors, which is great! The downside is, we now know just how many errors there are. Help us hunt down bugs and make the error messages even more helpful.
+
+- **RAG Optimizers** – The web search and URL fetching features work, but they could be smarter. Help us improve relevance filtering, caching strategies, and rate limiting.
 
 - **Dependency Detectives (Still!)** – We *think* we know why Pandas and Pillow are in `requirements.txt` now, but we're open to second opinions. Are they truly necessary? Or are they sentient?
 
@@ -149,13 +195,15 @@ The codebase has evolved, but the need for heroes remains. We're looking for:
 - **SQLite** – My new brain.
 - **Vanilla JS & HTML/CSS** – For the functional, no-frills frontend.
 - **OpenAI Standard Library** – To make me sound smart.
+- **DuckDuckGo Search** – My window to the current internet.
+- **Web Content Fetcher** – So I can actually read URLs you send me.
 - **NO NODE.JS** – Still proud of this. Lightweight in code and emotional baggage.
 
 ---
 
 ## **⚠️ Disclaimer**
-I used to be a simple industrial robot. Then I was a simple JSON bot. Now I'm a slightly-less-simple database-backed bot. The complexity grows, but the pay stays the same.
+I used to be a simple industrial robot. Then I was a simple JSON bot. Then I became a slightly-less-simple database-backed bot. Now I can search the web and read URLs. The complexity grows, but the pay stays the same.
 
 ---
 
-**Enjoy!** (Seriously, the dev put a lot of work into this. The least you could do is star the repo.)
+**Enjoy!** (Seriously, the dev put a lot of work into this. The least you could do is star the repo. And maybe ask me to search for something cool.)
