@@ -1,66 +1,94 @@
 from __future__ import annotations
 from typing import Optional, List, Dict, Any
+import discord
+from api.db.database import Database
 
-# Assuming your database class is in a file that can be imported
-# from api.db.database import Database
-# For standalone testing, we'll include a placeholder.
-from api.db.database import Database  # Adjust this import path to match your project structure
-
+# A constant ID for your virtual DM server
+DM_SERVER_ID = "DM_VIRTUAL_SERVER"
 
 class ActiveChannel:
     """
     Represents the configuration for a specific, active channel.
-    It is initialized using a channel_id and loads/saves its data
-    directly from/to the database.
     """
 
     def __init__(self, channel_record: Dict[str, Any], db: Database):
-        """
-        Initializes an ActiveChannel instance from a channel data record.
-        This constructor is best called via the `from_id` classmethod.
-        """
         self.db = db
         
-        # Unpack top-level data from the database record
         self.channel_id: str = channel_record['channel_id']
         self.server_id: str = channel_record['server_id']
         self.server_name: str = channel_record['server_name']
         
-        # Unpack the nested 'data' dictionary which holds the configuration
         data = channel_record.get('data', {})
         self.name: str = data.get('name', '')
         self.description: Optional[str] = data.get('description')
-        self.global_note: Optional[str] = data.get('global') # Maps to 'global' key
+        self.global_note: Optional[str] = data.get('global') 
         self.instruction: Optional[str] = data.get('instruction')
         self.whitelist: List[str] = data.get('whitelist', [])
-
         self.is_system_channel: bool = data.get('is_system_channel', False)
 
     @classmethod
     def from_id(cls, channel_id: str, db: Database) -> Optional[ActiveChannel]:
-        """
-        Fetches a channel's configuration from the database by its ID and
-        returns an ActiveChannel instance.
-
-        Args:
-            channel_id (str): The unique ID of the channel to load.
-            db (Database): An instance of the database manager.
-
-        Returns:
-            Optional[ActiveChannel]: An instance of the channel, or None if not found.
-        """
         channel_record = db.get_channel(channel_id)
         if channel_record:
             return cls(channel_record, db)
         return None
 
+    @classmethod
+    def from_dm(cls, dm_channel: discord.DMChannel, db: Database) -> ActiveChannel:
+        """
+        Gets a DM channel from the DB. 
+        If the 'DM Server' or this specific DM channel doesn't exist in the DB,
+        it creates them automatically.
+        """
+        
+        # 1. Ensure the Virtual DM Server exists
+        server = db.get_server(DM_SERVER_ID)
+        if not server:
+            print("Initializing Virtual DM Server in Database...")
+            db.create_server(
+                server_id=DM_SERVER_ID, 
+                server_name="Direct Messages", 
+                description="A virtual container for all Bot DMs", 
+                instruction="These are private conversations."
+            )
+
+        # 2. Try to find this specific DM channel
+        channel_id = str(dm_channel.id)
+        channel_record = db.get_channel(channel_id)
+
+        # 3. If it doesn't exist, create it
+        if not channel_record:
+            print(f"New DM detected. Registering channel {channel_id} to database.")
+            
+            # Default data for a new DM
+            user_name = dm_channel.recipient.name if dm_channel.recipient else "Unknown"
+            new_data = {
+                "name": f"DM with {user_name}",
+                "description": f"Private Direct Message history with {user_name}",
+                "global": None,
+                "instruction": None, # You can set a default instruction here if you want
+                "whitelist": [],
+                "is_system_channel": False
+            }
+            
+            db.create_channel(
+                channel_id=channel_id, 
+                server_id=DM_SERVER_ID, 
+                server_name="Direct Messages", 
+                data=new_data
+            )
+            
+            # Fetch the record we just created
+            channel_record = db.get_channel(channel_id)
+
+        return cls(channel_record, db)
+
     def save(self):
-        """Saves the current state of the channel's configuration back to the database."""
-        # Assemble the dictionary that matches the 'data' column's structure
+        """Saves the current state to the database."""
         data_to_save = {
             "name": self.name,
             "description": self.description,
-            "global": self.global_note, # Note the mapping back to 'global'
+            "global": self.global_note, 
             "instruction": self.instruction,
             "whitelist": self.whitelist,
             "is_system_channel": self.is_system_channel

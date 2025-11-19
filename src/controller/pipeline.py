@@ -16,60 +16,59 @@ from api.models.models import BotConfig
 
 
 async def think(viel, db: Database, queue: asyncio.Queue) -> None:
-    """The main thinking loop of the bot."""
-    # Load the bot's configuration once at the start of the loop
     bot_config = BotConfig(**db.list_configs())
-
     messenger = DiscordMessenger(viel)
 
     while True:
-        # Wait for a message from the queue
         message: discord.Message = await queue.get()
         
         try:
-            print("Got message~")
-
-            # 1. Get the channel configuration
-            channel = ActiveChannel.from_id(str(message.channel.id), db)
+            # --- 1. Check Permission & Load Channel ---
+            is_dm = isinstance(message.channel, discord.DMChannel)
             
-            # Handle DMs explicitly if ActiveChannel doesn't support them, 
-            # or ensure your ActiveChannel.from_id returns a dummy object for DMs.
-            if not channel and isinstance(message.channel, discord.DMChannel):
-                # Logic to handle DMs if necessary, otherwise it falls to 'not channel' below
-                pass 
+            if is_dm:
+                # Check Whitelist
+                allowed_users = bot_config.dm_list or []
+                if message.author.name not in allowed_users:
+                    
+                    print(f"Denied DM access to {message.author.name}, not in allowed_users {allowed_users}")
+                    await message.channel.send("🚫 You do not have permission to talk to this bot in DM.")
+                    continue 
+                
+                # Load (or Auto-Create) the DM Channel from DB
+                # We pass 'db' now so it can save/load!
+                channel = ActiveChannel.from_dm(message.channel, db)
+            
+            else:
+                # Regular Server Channel
+                channel = ActiveChannel.from_id(str(message.channel.id), db)
 
             if not channel:
-                # If the channel isn't registered, we can't do anything.
+                # This happens for unregistered server channels
                 print(f"Ignoring message in unregistered channel: {message.channel.id}")
-                # FIX: Do NOT call queue.task_done() here. 
-                # The 'continue' will trigger the 'finally' block which handles it.
                 continue
 
-            # 2. Determine the active character
+            # --- 2. Determine Active Character ---
             message_content_with_context = message.content
             character = ActiveCharacter.from_message(message_content_with_context, db)
             
-            # 3. Handle Mentions (Fallout to default character)
-            if not character and message.guild and message.guild.me in message.mentions:
+            # Handle Mentions OR DM default fallback
+            if not character and (is_dm or (message.guild and message.guild.me in message.mentions)):
                 default_char_name = bot_config.default_character
                 if default_char_name:
                     char_data = db.get_character(default_char_name)
                     if char_data:
                         character = ActiveCharacter(char_data, db)
-                        print(f"No trigger found. Activated default '{default_char_name}' via mention.")
 
-            # If still no character, there's nothing to do.
             if not character:
-                print("What the fuck?? How is this even possible??? HOW DO YOU GET HERE!?!?!?")
-                # FIX: Do NOT call queue.task_done() here.
                 continue
 
-            # 4. Generate the prompt
+            # --- 3. Generate Response ---
             await message.add_reaction('✨')
+            
             prompter = PromptEngineer(character, message, channel)
             prompt = await prompter.create_prompt()
 
-            # 5. Create a task item and generate the AI response
             queue_item = QueueItem(
                 prompt=prompt,
                 bot=character.name,
@@ -78,29 +77,25 @@ async def think(viel, db: Database, queue: asyncio.Queue) -> None:
                 message=message
             )
             
-            print(f"Processing chat completion for character '{character.name}'...")
+            print(f"Processing chat for {character.name} in {channel.name}...")
             queue_item = await generate_response(queue_item, db)
 
             if not queue_item.result:
                 queue_item.result = "//[OOC: The AI failed to generate a response.]"
             
-            # 6. Send the response back to Discord
             await messenger.send_message(character, message, queue_item)
 
-            # Cleanup reaction
             try:
                 await message.remove_reaction('✨', viel.user)
             except Exception:
-                pass # Ignore if message deleted or permissions missing
+                pass
 
         except Exception as e:
-            print(f"An error occurred in the think loop: {e}\n{traceback.format_exc()}")
+            print(f"Error: {e}\n{traceback.format_exc()}")
             try:
                 await message.add_reaction('❌')
-            except (discord.HTTPException, UnboundLocalError, AttributeError):
-                pass 
+            except:
+                pass
         
         finally:
-            # This executes every time the loop cycles, 
-            # INCLUDING when you hit 'continue' inside the try block.
             queue.task_done()

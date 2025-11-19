@@ -19,7 +19,7 @@ class BotConfig(BaseModel):
     multimodal_ai_endpoint: Optional[str] = None
     multimodal_ai_api: Optional[str] = None # Key, I meant key, this is a fuckin' key
     multimodal_ai_model: Optional[str] = None
-
+    dm_list : Optional[List[str]] = None # List of discord username that the bot is allowed to DM to
 
 # ------------------------------------------------------
 # Servers (maps to the 'servers' table)
