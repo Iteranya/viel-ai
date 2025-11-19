@@ -95,8 +95,6 @@ async def bot_behavior(message: discord.Message, bot) -> None:
     # --- MODIFICATION: Updated bot-to-bot logic ---
     # D. Activated by another bot's message (bot-to-bot interaction)
     if message.webhook_id:
-        if message.author.display_name == bot.user.display_name:
-            return
         # Fetch the GLOBAL cap from the bot's loaded configuration
         cap = bot.config.auto_cap
         

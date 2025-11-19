@@ -11,7 +11,7 @@ class BotConfig(BaseModel):
     ai_endpoint: str
     base_llm: str
     temperature: float = 0.7
-    auto_cap: int = 2000
+    auto_cap: int = 2
     ai_key: str = Field("", description="Can be empty if not needed by the endpoint")
     discord_key: str = Field("", description="Can be empty for testing, but required to run the bot")
     use_prefill: bool = False
@@ -20,6 +20,7 @@ class BotConfig(BaseModel):
     multimodal_ai_api: Optional[str] = None # Key, I meant key, this is a fuckin' key
     multimodal_ai_model: Optional[str] = None
     dm_list : Optional[List[str]] = None # List of discord username that the bot is allowed to DM to
+    concurrency : Optional[int] = 1
 
 # ------------------------------------------------------
 # Servers (maps to the 'servers' table)
