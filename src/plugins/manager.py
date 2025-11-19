@@ -27,6 +27,6 @@ class PluginManager:
             if any(trigger in message_content_lower for trigger in plugin.triggers):
                 # Use the first trigger's name (without symbols) as the key
                 plugin_key = plugin.triggers[0].strip("<>").replace(">", "")
-                plugin_outputs[plugin_key] = await plugin.execute(message, character, channel)
+                plugin_outputs[plugin_key] = await plugin.execute(message, character, channel,db)
 
         return plugin_outputs
