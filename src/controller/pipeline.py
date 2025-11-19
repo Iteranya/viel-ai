@@ -23,43 +23,48 @@ async def think(viel, db: Database, queue: asyncio.Queue) -> None:
     messenger = DiscordMessenger(viel)
 
     while True:
+        # Wait for a message from the queue
+        message: discord.Message = await queue.get()
+        
         try:
-            # Get the next message to process from the queue
-            message: discord.Message = await queue.get()
             print("Got message~")
 
             # 1. Get the channel configuration
             channel = ActiveChannel.from_id(str(message.channel.id), db)
+            
+            # Handle DMs explicitly if ActiveChannel doesn't support them, 
+            # or ensure your ActiveChannel.from_id returns a dummy object for DMs.
+            if not channel and isinstance(message.channel, discord.DMChannel):
+                # Logic to handle DMs if necessary, otherwise it falls to 'not channel' below
+                pass 
+
             if not channel:
                 # If the channel isn't registered, we can't do anything.
                 print(f"Ignoring message in unregistered channel: {message.channel.id}")
-                queue.task_done()
+                # FIX: Do NOT call queue.task_done() here. 
+                # The 'continue' will trigger the 'finally' block which handles it.
                 continue
 
             # 2. Determine the active character
             message_content_with_context = message.content
-            
             character = ActiveCharacter.from_message(message_content_with_context, db)
             
-            # If no trigger found, check if the bot was mentioned.
-            # `message.guild.me` is the ClientUser object for the current server
+            # 3. Handle Mentions (Fallout to default character)
             if not character and message.guild and message.guild.me in message.mentions:
-                 # Load the default character from the config
                 default_char_name = bot_config.default_character
                 if default_char_name:
                     char_data = db.get_character(default_char_name)
                     if char_data:
                         character = ActiveCharacter(char_data, db)
-                        print(f"No trigger found. Activated default character '{default_char_name}' due to mention.")
+                        print(f"No trigger found. Activated default '{default_char_name}' via mention.")
 
             # If still no character, there's nothing to do.
             if not character:
-                print("What the fuck?")
-                queue.task_done()
+                print("What the fuck?? How is this even possible??? HOW DO YOU GET HERE!?!?!?")
+                # FIX: Do NOT call queue.task_done() here.
                 continue
 
             # 4. Generate the prompt
-            # Add a thinking reaction to the message
             await message.add_reaction('✨')
             prompter = PromptEngineer(character, message, channel)
             prompt = await prompter.create_prompt()
@@ -77,20 +82,25 @@ async def think(viel, db: Database, queue: asyncio.Queue) -> None:
             queue_item = await generate_response(queue_item, db)
 
             if not queue_item.result:
-                queue_item.result = "//[OOC: Something went wrong and the AI failed to generate a response.]"
+                queue_item.result = "//[OOC: The AI failed to generate a response.]"
             
             # 6. Send the response back to Discord
             await messenger.send_message(character, message, queue_item)
 
-            await message.remove_reaction('✨', viel.user)
+            # Cleanup reaction
+            try:
+                await message.remove_reaction('✨', viel.user)
+            except Exception:
+                pass # Ignore if message deleted or permissions missing
 
         except Exception as e:
             print(f"An error occurred in the think loop: {e}\n{traceback.format_exc()}")
-            # Add a failure reaction if something goes wrong
             try:
                 await message.add_reaction('❌')
-            except (discord.HTTPException, UnboundLocalError):
-                pass # Message might have been deleted or was never assigned
+            except (discord.HTTPException, UnboundLocalError, AttributeError):
+                pass 
+        
         finally:
-            # Signal that this task from the queue is complete
+            # This executes every time the loop cycles, 
+            # INCLUDING when you hit 'continue' inside the try block.
             queue.task_done()
