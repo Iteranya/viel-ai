@@ -16,11 +16,12 @@ from api.models.models import BotConfig
 
 
 async def think(viel, db: Database, queue: asyncio.Queue) -> None:
-    bot_config = BotConfig(**db.list_configs())
+    
     messenger = DiscordMessenger(viel)
 
     while True:
         message: discord.Message = await queue.get()
+        bot_config = BotConfig(**db.list_configs())
         
         try:
             # --- 1. Check Permission & Load Channel ---
