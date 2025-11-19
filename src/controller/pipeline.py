@@ -38,7 +38,7 @@ async def think(viel, db: Database, queue: asyncio.Queue) -> None:
                 
                 # Load (or Auto-Create) the DM Channel from DB
                 # We pass 'db' now so it can save/load!
-                channel = ActiveChannel.from_dm(message.channel, db)
+                channel = ActiveChannel.from_dm(message.channel, message.author, db)
             
             else:
                 # Regular Server Channel

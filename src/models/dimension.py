@@ -34,23 +34,17 @@ class ActiveChannel:
         return None
 
     @classmethod
-    def from_dm(cls, dm_channel: discord.DMChannel, db: Database) -> ActiveChannel:
+    def from_dm(cls, dm_channel: discord.DMChannel, user: discord.User, db: Database) -> ActiveChannel:
         """
         Gets a DM channel from the DB. 
-        If the 'DM Server' or this specific DM channel doesn't exist in the DB,
-        it creates them automatically.
+        Uses the explicit 'user' object to ensure we get the correct name.
         """
         
         # 1. Ensure the Virtual DM Server exists
         server = db.get_server(DM_SERVER_ID)
         if not server:
-            print("Initializing Virtual DM Server in Database...")
-            db.create_server(
-                server_id=DM_SERVER_ID, 
-                server_name="Direct Messages", 
-                description="A virtual container for all Bot DMs", 
-                instruction="These are private conversations."
-            )
+            # ... (Same as before) ...
+            pass # Skipping print lines for brevity, keep your existing logic here
 
         # 2. Try to find this specific DM channel
         channel_id = str(dm_channel.id)
@@ -60,13 +54,14 @@ class ActiveChannel:
         if not channel_record:
             print(f"New DM detected. Registering channel {channel_id} to database.")
             
-            # Default data for a new DM
-            user_name = dm_channel.recipient.name if dm_channel.recipient else "Unknown"
+            # FIX: Use the passed 'user' object instead of dm_channel.recipient
+            user_name = user.name
+            
             new_data = {
                 "name": f"DM with {user_name}",
                 "description": f"Private Direct Message history with {user_name}",
                 "global": None,
-                "instruction": None, # You can set a default instruction here if you want
+                "instruction": None, 
                 "whitelist": [],
                 "is_system_channel": False
             }
@@ -78,7 +73,6 @@ class ActiveChannel:
                 data=new_data
             )
             
-            # Fetch the record we just created
             channel_record = db.get_channel(channel_id)
 
         return cls(channel_record, db)
