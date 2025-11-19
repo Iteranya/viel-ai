@@ -14,7 +14,7 @@ class PluginManager:
             SearchPlugin(),
         ]
 
-    async def scan_and_execute(self, message: discord.Message, character, channel) -> Dict[str, Any]:
+    async def scan_and_execute(self, message: discord.Message, character, channel,db) -> Dict[str, Any]:
         """
         Scans the message for plugin triggers and executes them.
         Returns a dictionary of all plugin results.

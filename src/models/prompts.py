@@ -146,7 +146,7 @@ class PromptEngineer:
         }
 
         # 2. Execute plugins based on the message content
-        plugin_outputs = await self.plugin_manager.scan_and_execute(self.message, self.bot, self.channel)
+        plugin_outputs = await self.plugin_manager.scan_and_execute(self.message, self.bot, self.channel,self.db)
         
         # 3. Merge plugin outputs into the main context
         final_context = {**base_context, "plugins": plugin_outputs}

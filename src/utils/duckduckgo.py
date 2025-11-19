@@ -7,9 +7,10 @@ import discord
 from functools import partial
 from src.utils.llm_new import generate_blank
 from src.utils.web_eval import fetch_body
+from api.db.database import Database
 
 class Bebek:
-    def __init__(self, query: str, inline=True):
+    def __init__(self, query: str, db:Database,inline=True):
         self.query = self.extract_between_quotes(query)
         self.ddgs = DDGS()
 
@@ -89,7 +90,7 @@ class Bebek:
         match = re.search(r"\((.*?)\)", input_string)
         return match.group(1) if match else input_string
 
-async def research(search):
+async def research(search, db):
     # Generate search queries using LLM
     search_queries = await generate_blank(
         system=(
@@ -99,6 +100,7 @@ async def research(search):
             "the search term between parenthesis."
         ),
         user=f"The query is {search}, based on this query, write down 3 sentence/search term to look up. Use the given example as format.",
+        db = db
     )
    
     # Extract search terms using regex
@@ -115,7 +117,7 @@ async def research(search):
         if i > 0:
             await asyncio.sleep(1.5)  # Wait 1.5 seconds between searches
             
-        bebek = Bebek(query)
+        bebek = Bebek(query,db)
         try:
             print(f"Searching for: '{query}'...")
             
@@ -152,12 +154,13 @@ async def research(search):
     final = "\n".join(formatted_results) if formatted_results else "No results found."
     return f"Web Search Result:\n{final}"
 
-async def image_research(prompt: str, images_per_query: int = 50, safesearch: str = 'off') -> List[str]:
+async def image_research(prompt: str, db,images_per_query: int = 50, safesearch: str = 'off') -> List[str]:
     try:
         # Generate a single image search query using LLM
         image_query = await generate_blank(
             system="Your task is to generate ONE search query from a specific prompt. For example, if the prompt is: \"Fetch me images of fish\" you will write: (fish) and nothing else. Use parentheses around the term.",
-            user=f"The prompt is: {prompt}. Based on this prompt, write down ONE image search term to look up. Follow the format."
+            user=f"The prompt is: {prompt}. Based on this prompt, write down ONE image search term to look up. Follow the format.",
+            db = db
         )
 
         # Extract the search term from parentheses
@@ -166,7 +169,7 @@ async def image_research(prompt: str, images_per_query: int = 50, safesearch: st
 
         print(f"Searching images for: '{query}'...")
 
-        bebek = Bebek(query)
+        bebek = Bebek(query,db)
         image_results = await bebek.get_image_link(
             safesearch=safesearch,
             max_results=images_per_query,
