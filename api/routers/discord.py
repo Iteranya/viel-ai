@@ -70,7 +70,6 @@ async def activate_bot():
         raise HTTPException(status_code=400, detail="Bot is already active or starting.")
     
     logging.info("Bot activation requested via API.")
-    # --- CHANGE THIS ---
     bot_state.bot_thread = threading.Thread(target=_run_bot_in_thread, daemon=True)
     bot_state.bot_thread.start()
     return {"success": True, "message": "Bot activation initiated."}

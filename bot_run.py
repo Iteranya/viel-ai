@@ -9,6 +9,7 @@ from api.models.models import BotConfig
 from src.models.dimension import ActiveChannel
 import src.controller.observer as observer
 import src.controller.pipeline as pipeline
+from src.plugins.manager import PluginManager
 
 # --- Helper to load config from DB ---
 def get_bot_config(db: Database) -> BotConfig:
@@ -23,7 +24,7 @@ class Viel(discord.Client):
         self.db = Database()
         self.config = get_bot_config(self.db)
         self.queue = asyncio.Queue()
-        # This is now a single, global counter, not a dictionary.
+        self.plugin_manager = PluginManager(plugin_package_path="src.plugins")
         self.auto_reply_count = 0
 
     async def setup_hook(self):
@@ -51,7 +52,7 @@ class Viel(discord.Client):
         # Sync commands globally. For development, you might sync to a specific guild.
         await self.tree.sync()
 
-        self.think_task = asyncio.create_task(pipeline.think(self, self.db, self.queue))
+        self.think_task = asyncio.create_task(pipeline.think(self, self.db, self.queue, self.plugin_manager))
 
     async def on_ready(self):
         print(f"Discord Bot is logged in as {self.user} (ID: {self.user.id})")

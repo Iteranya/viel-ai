@@ -8,13 +8,14 @@ from src.models.aicharacter import ActiveCharacter
 from src.models.dimension import ActiveChannel
 from src.models.prompts import PromptEngineer
 from src.models.queue import QueueItem
+from src.plugins.manager import PluginManager
 from src.utils.llm_new import generate_response
 from api.models.models import BotConfig
 from api.db.database import Database
 
 # --- NEW WORKER FUNCTION ---
 # This contains the logic that used to be inside the while loop
-async def process_message(viel, db: Database, message: discord.Message, messenger: DiscordMessenger, queue: asyncio.Queue):
+async def process_message(viel, db: Database, message: discord.Message, messenger: DiscordMessenger, queue: asyncio.Queue, plugin_manager:PluginManager):
     try:
         bot_config = BotConfig(**db.list_configs())
 
@@ -56,7 +57,7 @@ async def process_message(viel, db: Database, message: discord.Message, messenge
         # --- 3. Generate Response ---
         await message.add_reaction('✨')
         
-        prompter = PromptEngineer(character, message, channel)
+        prompter = PromptEngineer(character, message, channel,plugin_manager)
         prompt = await prompter.create_prompt()
 
         queue_item = QueueItem(
@@ -98,7 +99,7 @@ async def process_message(viel, db: Database, message: discord.Message, messenge
         queue.task_done()
 
 # --- UPDATED MANAGER FUNCTION ---
-async def think(viel, db: Database, queue: asyncio.Queue) -> None:
+async def think(viel, db: Database, queue: asyncio.Queue, plugin_manager:PluginManager) -> None:
     messenger = DiscordMessenger(viel)
     
     # Keep track of running tasks
@@ -135,7 +136,7 @@ async def think(viel, db: Database, queue: asyncio.Queue) -> None:
         # 5. Spawn Worker
         # Instead of processing here, we create a background task
         task = asyncio.create_task(
-            process_message(viel, db, message, messenger, queue)
+            process_message(viel, db, message, messenger, queue,plugin_manager)
         )
         
         # Add to set to prevent Python garbage collection from killing it early

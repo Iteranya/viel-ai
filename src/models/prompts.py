@@ -51,7 +51,7 @@ A history reference to your speaking quirks and behavior:
 
 
 class PromptEngineer:
-    def __init__(self, bot: ActiveCharacter, message: discord.Message, channel: ActiveChannel):
+    def __init__(self, bot: ActiveCharacter, message: discord.Message, channel: ActiveChannel,plugin_manager:PluginManager):
         self.bot = bot
         self.user_name = str(message.author.display_name)
         self.message = message
@@ -60,7 +60,7 @@ class PromptEngineer:
         # Get the database instance from one of the active models
         self.db: Database = bot.db
         
-        self.plugin_manager = PluginManager()
+        self.plugin_manager = plugin_manager 
         self.jinja_env = Environment(trim_blocks=True, lstrip_blocks=True) # Recommended settings for prompt templates
 
         self.stopping_strings = ["[System", "(System", self.user_name + ":", "[End", "</", "<|end of sentence|>"]
@@ -146,16 +146,17 @@ class PromptEngineer:
         }
 
         # 2. Execute plugins based on the message content
-        plugin_outputs = await self.plugin_manager.scan_and_execute(self.message, self.bot, self.channel,self.db)
+        plugin_outputs = await self.plugin_manager.scan_and_execute(
+            self.message, self.bot, self.channel, self.db
+        )
         
-        # 3. Merge plugin outputs into the main context
         final_context = {**base_context, "plugins": plugin_outputs}
 
-        # 4. Get the prompt template from the database (or create the default)
+        # --- STEP 5: Final Render ---
         prompt_template_str = self.get_template_from_preset()
-        
-        # 5. Render the final prompt using Jinja2
         template = self.jinja_env.from_string(prompt_template_str)
         final_prompt = template.render(final_context)
         #print(f"=====================\nFINAL PROMPT\n=======================\n{final_prompt}")
+        
         return final_prompt
+       

@@ -1,34 +1,81 @@
-# plugins/manager.py
-import discord
+# src/plugins/manager.py
+import pkgutil
+import importlib
+import inspect
+import sys
+import os
 from typing import Dict, Any, List
 
-from src.plugins.base import BasePlugin
-from src.plugins.dice import DiceRollPlugin
-from src.plugins.tarot import TarotPlugin
-from src.plugins.search import SearchPlugin
+# Update this import to match your structure
+from src.plugins.base import BasePlugin 
 
 class PluginManager:
-    def __init__(self):
-        # Register all available plugins here
-        self.plugins: List[BasePlugin] = [
-            TarotPlugin(),
-            SearchPlugin(),
-            DiceRollPlugin()
-        ]
+    def __init__(self, plugin_package_path: str = "src.plugins"):
+        self.plugin_package = plugin_package_path
+        self.plugins: List[BasePlugin] = []
+        self.reload_plugins()
 
-    async def scan_and_execute(self, message: discord.Message, character, channel,db) -> Dict[str, Any]:
+    def reload_plugins(self):
         """
-        Scans the message for plugin triggers and executes them.
-        Returns a dictionary of all plugin results.
+        Dynamically discovers and loads plugins from the plugins directory.
+        Force reloads modules to pick up code changes.
         """
+        self.plugins = []
+        found_plugins = []
+
+        # 1. Resolve the directory of the package
+        try:
+            package = importlib.import_module(self.plugin_package)
+            package_path = package.__path__
+        except ImportError:
+            print(f"Could not import package {self.plugin_package}")
+            return
+
+        # 2. Iterate over all files in the plugins folder
+        for _, name, _ in pkgutil.iter_modules(package_path):
+            try:
+                full_module_name = f"{self.plugin_package}.{name}"
+                
+                # Import the module
+                module = importlib.import_module(full_module_name)
+                
+                # --- THE FIX IS HERE ---
+                # Force Python to re-read the file from disk
+                importlib.reload(module) 
+                # -----------------------
+
+                # 3. Inspect the module for classes
+                for member_name, member_obj in inspect.getmembers(module):
+                    if (
+                        inspect.isclass(member_obj) 
+                        and issubclass(member_obj, BasePlugin) 
+                        and member_obj is not BasePlugin
+                    ):
+                        # Instantiate the class and add to list
+                        plugin_instance = member_obj()
+                        self.plugins.append(plugin_instance)
+                        found_plugins.append(member_name)
+            except Exception as e:
+                print(f"Failed to load plugin module {name}: {e}")
+
+        print(f"Loaded plugins: {', '.join(found_plugins)}")
+
+    async def scan_and_execute(self, message, character, channel, db) -> Dict[str, Any]:
         plugin_outputs = {}
         message_content_lower = message.content.lower()
 
         for plugin in self.plugins:
-            # Check if any of the plugin's triggers are in the message
+            # Safe check for triggers
+            if not plugin.triggers:
+                continue
+                
             if any(trigger in message_content_lower for trigger in plugin.triggers):
-                # Use the first trigger's name (without symbols) as the key
-                plugin_key = plugin.triggers[0].strip("<>").replace(">", "")
-                plugin_outputs[plugin_key] = await plugin.execute(message, character, channel,db)
+                plugin_key = plugin.__class__.__name__
+                try:
+                    result = await plugin.execute(message, character, channel, db)
+                    plugin_outputs[plugin_key] = result
+                except Exception as e:
+                    print(f"Error in plugin {plugin_key}: {e}")
+                    plugin_outputs[plugin_key] = {"error": str(e)}
 
         return plugin_outputs

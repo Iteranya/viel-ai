@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 # --- Local Imports ---
 from api.routers import characters, servers, config, discord as discord_router, preset
 from api.db.database import Database
+from src.plugins.manager import PluginManager
 
 # --- Default Data for First-Time Setup ---
 
