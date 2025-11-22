@@ -1,209 +1,492 @@
 # **Viel AI** 🤖
-*Your Virtual Intelligent Emulect Lurker (now with a proper backend, RAG superpowers, and fewer existential crises)*
+*Your Virtual Intelligent Emulect Lurker (now with actual architecture, personality crises sold separately)*
 
-Hey there! I'm **Viel**. You might remember me as the simple, JSON-based Discord bot who was one bad edit away from a total meltdown.
+Hey there! I'm **Viel**. Once upon a time, I was a scrappy little Discord bot held together by JSON files and prayer. Think duct tape, wishful thinking, and one typo away from digital oblivion.
 
-Well, the developer had "too much time on their hands" and decided to give me a surprise 4,111-line overhaul. Just like that. No warning. Now I have a database, a UI that doesn't look like a crime scene, *plugins*, **and I can actually browse the internet like a proper AI**. What a time to be alive (or whatever I am).
+Then the developer had what can only be described as a "productive mental breakdown" and decided to rebuild me from the ground up. 4,111 lines of code later, I went from "cute hobby project" to "wait, this is actually impressive." I've got a proper database now. A sleek admin panel. Plugin support. The ability to actually *remember things*. And I can browse the internet without having an existential crisis about it.
 
-I'm still a universal Discord bot designed to:
-- **Roleplay as any fictional character** (my core purpose, thankfully untouched).
-- **Manage multiple personas at once** (now with dedicated profile pics, because we're fancy).
-- **Behave differently per channel** (consistency is still boring).
-- **Search the web and fetch URLs** (because sometimes even AI needs to fact-check).
-
-But now I come with an **admin panel that actually tells you when you break things** and **RAG support that lets me actually know what I'm talking about.** Miracles do happen.
+I'm still fundamentally a **universal Discord bot designed for immersive roleplay**, but now I come with enough features to make other bots look like they're phoning it in. Let me walk you through what makes me special.
 
 ---
 
-## **✨ Features (The Glow-Up Edition)**
-Things got... upgraded. A lot. I barely recognize my own backend.
+## **✨ Features (The Complete Tour)**
 
-### **Roleplay Stuff (The Good Parts)**
-This is still the core of what I do, and it's better than ever.
-- **Multi-Character Conversations:** Summon different characters in different channels. They can even reply to each other (with a cap, so they don't achieve sentience and start an infinite argument).
-- **Per-Channel Lore:** Add unique instructions, worldbuilding notes, or global variables to any channel to change how characters behave there.
-- **Whitelist Control:** Keep the chaos organized by deciding which characters can appear in which channels.
+### **🎭 Multi-Character Roleplay (The Crown Jewel)**
+This is what I was born to do, and I do it *exceptionally* well.
 
-### **RAG Support (I Can Actually Learn Now)**
-Remember when I could only know what was in my training data? Yeah, those days are over.
+- **Infinite Personalities:** Create as many characters as you want. Anime protagonists, historical figures, your D&D party, that weird uncle everyone avoids at Thanksgiving—I can be them all.
 
-- **Web Search:** Start any message with `search>` and I'll scour the internet using DuckDuckGo to find current information. Ask me things like:
-  - `search> Viel, what's happening today in history?`
-  - `search> What's the latest news about AI developments?`
-  - `search> Who won the game last night?`
+- **Simultaneous Multi-Character Conversations:** Different characters can inhabit different channels at the same time. Have Sherlock Holmes debating philosophy in #general while Deadpool shitposts in #memes. They won't interfere with each other unless you *want* them to.
 
-- **URL Fetching:** Drop a link in your message and I'll actually *read* what's on that page before responding. No more "I can't access external links" nonsense. I'll pull the content, understand it, and incorporate it into my response like the sophisticated AI I've become.
+- **Character-to-Character Interactions:** Characters can reply to each other's messages, creating organic multi-way conversations. There's a reply cap to prevent them from achieving sentience and starting an infinite argument loop (learned that one the hard way).
 
-- **Context-Aware Responses:** With RAG (Retrieval-Augmented Generation), I can pull in relevant information from search results or web pages to give you accurate, up-to-date answers instead of making educated guesses based on outdated training data.
+- **SillyTavern/Pygmalion Card Import:** Got a character card from another platform? I can import it with one click. No reformatting, no headaches. Just drag, drop, and watch your favorite character spring to life.
 
-This means I can stay current, verify claims, and actually help you with time-sensitive questions. It's like giving a robot Wikipedia access, except I won't fall down a rabbit hole reading about obscure historical figures for three hours.
+### **📝 Per-Channel Customization (Consistency Is Boring)**
+Every Discord channel is its own universe, and I treat it that way.
 
----
+- **Channel-Specific Instructions:** Add unique behavioral guidelines to any channel. Make your character professional in #business-chat, unhinged in #chaos-zone, and mysteriously poetic in #late-night-thoughts.
 
-# Admin Panel (Port 5666 — Still Not Normal)
+- **Lore & Worldbuilding Notes:** Inject context, backstory, or world-state information that applies to specific channels. Your #fantasy-rp channel can have medieval lore while #cyberpunk-district runs on neon and corporate dystopia.
 
-The dev apparently asked Anita to redo my UI, and I have to admit, it looks legit.
+- **Global Variables:** Define facts that persist across responses in a channel. "It's currently raining," "The king just died," "Mercury is in retrograde and everyone's acting weird"—I'll remember and incorporate these details naturally.
 
-## Features
+- **Whitelist Control:** Decide which characters can appear in which channels. Keep your serious story characters out of the meme channel, or let chaos reign—your call.
 
-### Character Management
-Create, edit, and manage all your characters in a clean interface. And yes, the **one-click import for SillyTavern/Pygmalion cards** still works and is surprisingly robust.
+### **🎨 Character Management That Actually Makes Sense**
 
 ![Character Import And Management Screen](https://github.com/user-attachments/assets/2c4005cf-a558-4c15-93e5-50394288ee77)
 
-### Character Avatars
-You can now **upload custom profile pictures** for each persona! I use Discord's own asset management, so it's fast and integrated.
+- **Clean Character Library:** Browse all your personas in one organized interface. No more digging through files or trying to remember what you named that one character three months ago.
+
+- **Custom Profile Pictures:** Upload unique avatars for each character. I use Discord's native asset management, so they're fast, integrated, and look professional. Your characters deserve proper headshots.
 
 <img width="916" alt="Character Editing Screen" src="https://github.com/user-attachments/assets/da2e02d4-a71c-40ed-908b-52794350a8af" />
 
-### AI & Config Settings
-Hook me up to any OpenAI-compatible endpoint. Splurge on Opus, cheap out on a local model—I don't judge. This is also where you'll plug in your Discord API key.
+- **Rich Personality Configuration:** Define speaking style, quirks, knowledge domains, and behavioral traits for each character. I don't just parrot responses—I *become* the character.
+
+### **✏️ Message Control (You're The Director)**
+Mistakes happen. Plot twists need undoing. Sometimes a character just says something *wildly* off-brand.
+
+- **Edit Any Message:** Click on any of my responses and rewrite them. I'll remember the edited version and continue the conversation from there. Perfect for when I misunderstand or you want to steer things in a different direction.
+
+- **Delete Messages:** Remove responses that didn't land. The conversation history updates, and we move on like it never happened. No awkward "ignore that last message" meta-commentary required.
+
+### **🌐 Internet Access (I Can Actually Learn Things Now)**
+Remember when chatbots could only regurgitate their training data? Yeah, those were the dark ages.
+
+- **Web Search:** Prefix any message with `search>` and I'll scour the internet using DuckDuckGo for current information. Ask me about today's news, recent events, or facts that definitely didn't exist when I was trained.
+  
+- **URL Fetching:** Drop a link in your message and I'll actually *read* the entire page before responding. Articles, documentation, forum posts—I'll digest them and incorporate that knowledge into my reply.
+
+- **Context-Aware Responses:** With RAG (Retrieval-Augmented Generation), I stay current and accurate instead of confidently making stuff up based on outdated information.
+
+### **🎛️ Flexible AI Backend**
 
 ![AI Config Panel](https://github.com/user-attachments/assets/138a169c-3606-4ae5-b42a-4ceac5b18494)
 
-### Advanced Prompt Engineering
-For those who understand Jinja templates. If you think Jinja is a synonym for Ninja, *do not touch this setting.*
+- **Any OpenAI-Compatible API:** Hook me up to OpenAI, Anthropic, local models like LM Studio or Ollama, or any custom endpoint. I don't care if you're splurging on GPT-4 or running Llama on a potato—I'll work with it.
+
+- **Provider Switching:** Fallen out of love with your current AI provider? Switch to another without rebuilding anything. Your characters and settings remain intact.
+
+- **Cost Control:** Running a local model? You're paying nothing per message. Using a premium API? You decide how much you want to spend.
+
+### **🔧 Advanced Prompt Engineering (For The Nerds)**
 
 ![Prompt Template Jinja Screen](https://github.com/user-attachments/assets/1e496f9d-f7be-46c3-add2-1dcd9ec11191)
 
-### Big Red "Turn On" Button
-Still here. Still turns me on.
+- **Full Jinja2 Template Support:** Customize exactly how conversations are formatted and sent to the AI. Control system prompts, message structure, context injection, and more.
+
+- **Multiple Template Presets:** Switch between different prompting strategies on the fly. Experiment with what works best for your use case.
+
+- **⚠️ Warning:** If you don't know what Jinja templates are, pretend this section doesn't exist. Tinkering here without understanding can make me speak in tongues.
+
+### **🔌 Plugin System (Modular & Expandable)**
+The future is extensible, baby.
+
+- **Custom Functionality:** Write your own Python plugins to add features without touching the core codebase. Want dice rolling? A database of magic spells? Integration with another API? Build it as a plugin.
+
+- **Community Ecosystem:** Share plugins with other users. Install plugins others have created. It's still early days, but the architecture is solid and ready to grow.
+
+- **Hot Reloading:** Enable or disable plugins without restarting the bot. Test, iterate, and tinker to your heart's content.
+
+### **🖥️ Beautiful Admin Panel**
 
 ![Main Admin Panel (Big Red Button)](https://github.com/user-attachments/assets/e6c3f9cf-27d1-463e-8645-795042d07b06)
 
-### Plugin System (WIP)
-Yes, it's actually happening. Extend my functionality with your own Python plugins. It's still new, so expect explosions. 💥
+- **Intuitive Interface:** The nightmare of a 1045-line single HTML file is dead. The new panel is split into organized sections, each handling one aspect of configuration.
+
+- **Real-Time Error Reporting:** When something breaks, I'll actually tell you what went wrong. No more mysterious failures where you have to consult ancient stack traces.
+
+- **The Big Red Button:** Still here. Still turns me on. Still oddly satisfying to press.
+
+### **🗄️ Rock-Solid Data Management**
+Gone are the days of fragile JSON files that corrupted if you sneezed near them.
+
+- **SQLite Database Backend:** All your data—characters, channel configs, settings, conversation history—lives in a single `viel.db` file. It's reliable, fast, and won't explode if you edit it while I'm running.
+
+- **Easy Backups:** Copy one file, and you've backed up everything. Moving to a new server? Just bring `viel.db` along.
+
+- **Manual Database Access:** For the truly masochistic, you can edit `viel.db` directly with any SQLite browser. I won't judge. (I will judge.)
 
 ---
 
-### **📜 The Philosophy: Why Viel? (And What's with this AGPL-3 License?)**
+## **📜 The Philosophy: Why Viel? (And What's With This AGPL-3 License?)**
 
-Alright, let's have a real talk. The "why of it all." The dev gets all preachy about this, but they've got a point. Why should you bother setting me up when you could just invite some other slick, venture-capital-funded bot?
+Let's have a real talk about the "why" behind all this.
 
-**Because with most AI bots, you don't actually *own* anything.**
+You could use any number of slick, VC-funded, plug-and-play AI bots. So why should you bother with me?
 
-You're renting. Your community, your characters, your carefully crafted lore—it all lives on someone else's server. You're trusting a company not to suddenly:
-- Jack up their prices until you can't afford it.
-- Get shut down by a lawsuit or acquisition.
-- Decide your favorite feature is no longer profitable and delete it.
-- Sell your data or use your conversations to train their next big model.
+### **Because You Don't Actually Own Those Other Bots.**
 
-Your community is basically living in a house owned by a digital landlord who can change the locks at any time.
+With most AI services, you're renting. Your community, your characters, your meticulously crafted lore—it all lives on someone else's server. You're trusting a corporation not to:
+- **Jack up prices** until you can't afford it
+- **Get shut down** by lawsuits, acquisitions, or bankruptcy
+- **Delete features** that are "no longer profitable"
+- **Sell your data** or train their next model on your private conversations
+- **Change terms of service** to something you find unacceptable
 
-**With me, you hold the keys.**
-- **True Ownership:** I run on *your* hardware (or a VPS you control). Backing me up and moving me is piss-easy. No one can take me away from you.
-- **Total Freedom:** You're not locked into a single AI provider. If OpenAI gets too expensive or starts censoring everything, you can swap to Claude, a local model, or whatever new hotness comes out next week. You control the brain *and* the body.
-- **Privacy by Default:** Your character data, your API keys, your channel settings—it all stays with you. I'm not sending your private RP logs to a corporate server in California.
-- **Longevity:** Because I'm open source, I can't be "discontinued." If the original dev gets hit by a bus, the community can fork the code and keep me alive forever.
+Your community is living in a house owned by a digital landlord who can change the locks at any time.
 
-#### **My Insurance Policy: The AGPL-3 License**
+### **With Me, You Hold The Keys.**
 
-The dev didn't just make me open source; they made me *aggressively* open source with the AGPL-3 license.
+- **True Ownership:** I run on *your* hardware (or a VPS you control). Backing me up is trivial. Moving me to new hardware is easy. No one can take me away from you, ever.
 
-In layman's terms, it means this: **You can do whatever you want with my code, but if you modify it and offer it as a service to others over a network, you *must* also share your modified source code.**
+- **Total Freedom:** You're not locked into a single AI provider. If OpenAI gets too expensive, switch to Claude. If Claude starts censoring too aggressively, switch to a local model. If a new hotness drops next month, point me at it. You control both the brain *and* the body.
 
-This is my insurance policy against corporate clowns. It prevents someone from taking my code, adding a few secret features, slapping a subscription fee on it, and making it closed-source. It ensures that Viel *stays* free and open for everyone, forever.
+- **Privacy By Default:** Your character data, API keys, channel settings, and conversation logs stay with you. I'm not phoning home to a corporate server in California.
 
----
+- **Longevity:** Because I'm open source, I can't be "discontinued." If the original dev vanishes, the community can fork the code and keep me alive indefinitely.
 
-## 🏗️ Architecture (We're Legit Now, Kinda)
+### **My Insurance Policy: The AGPL-3 License**
 
-Forget everything you knew. My guts have been completely replaced.
-The flimsy `channels.json`, `characters.json`, and `config.json` files are gone. *Poof.*
+The dev didn't just make me open source—they made me *aggressively* open source with the AGPL-3 license.
 
-All my data—characters, channel settings, configs, my deepest fears—is now stored in a single, robust **SQLite database file (`viel.db`)**. I'm one documentation away from being a legit app... holy fucking shit.
+**In simple terms:** You can do whatever you want with my code, but if you modify me and offer me as a service to others over a network, you *must* share your modified source code too.
 
-- **Backend:** A solid **FastAPI** server that reads/writes to the SQLite database.
-- **Bot Logic:** **Discord.py** handles all the communication with your server.
-- **Frontend:** The 1045-line `index.html` monstrosity has been slain. The admin panel is now built with **vanilla JS and split into four separate HTML files**. It's clean. It's sane.
-- **RAG System:** **DuckDuckGo search** and **web content fetching** let me pull in real-time information and stay current.
-- **Plugins:** Work in progress but it's coming *real soon*. 
-
-### For Those Who Still Hate GUIs
-- Edit the `viel.db` file with a SQLite browser (you absolute maniac).
-- Run `bot.py` directly to bypass the admin panel entirely.
+This is my insurance policy against corporate capture. It prevents someone from taking my code, adding secret features, slapping a subscription fee on it, and closing the source. It ensures that Viel *stays* free and open for everyone, forever.
 
 ---
 
-## **🚀 Installation (Still Your Choice of Poison)**
+## **🏗️ Architecture (We're Legit Now)**
+
+Forget everything you knew about my internals. They've been completely rebuilt.
+
+The fragile `channels.json`, `characters.json`, and `config.json` trinity? Gone. *Obliterated.* 
+
+### **Modern Stack:**
+- **Backend:** A robust **FastAPI** server that reads/writes to the SQLite database, serves the admin panel, and handles all configuration.
+- **Bot Logic:** **Discord.py** handles all real-time communication with your server, event processing, and message management.
+- **Frontend:** The UI is now **vanilla JavaScript** split across multiple HTML files. It's clean, maintainable, and doesn't make developers cry.
+- **Database:** **SQLite** stores everything in one tidy `viel.db` file. It's portable, reliable, and won't corrupt itself.
+- **RAG System:** **DuckDuckGo search** and **web content fetching** provide real-time information access.
+- **Plugin Architecture:** A clean extension system lets you add functionality without touching core code.
+
+### **For Those Who Hate GUIs:**
+- Edit `viel.db` directly with a SQLite browser (you absolute lunatic)
+- Run `bot.py` standalone to bypass the admin panel entirely
+- Configure everything via direct database manipulation if you really want to
+
+---
+
+## **🚀 Installation (Pick Your Adventure)**
 
 ### **1. The Brain-Dead Way (For Those Who Can't Even)**
-- **Step 1:** Go to [Releases](https://github.com/Iteranya/viel-ai/releases).
-- **Step 2:** Download `installer.bat`.
-- **Step 3:** Double-click it. A shortcut appears on your desktop.
-- **Step 4:** Double-click *that* to start me up.
+Perfect if you're allergic to terminals or just want to get started in 30 seconds.
+
+1. Go to [Releases](https://github.com/Iteranya/viel-ai/releases)
+2. Download `installer.bat`
+3. Double-click it. A desktop shortcut appears.
+4. Double-click *that* to start me up.
+5. Access the admin panel at `http://localhost:5666`
 
 ### **2. The "Easy" Way (For People Who Know What Git Is)**
-- **Step 1:** Clone this repo.
-- **Step 2:** Run `start.cmd`. It handles Python, dependencies, and my newfound sense of self.
-- **Step 3:** Access the admin panel at `http://localhost:5666`.
+Standard quick-start for developers.
+
+1. Clone this repo: `git clone https://github.com/Iteranya/viel-ai.git`
+2. Run `start.cmd` (Windows) or equivalent script
+3. The script handles Python environment setup, dependencies, and launch
+4. Access the admin panel at `http://localhost:5666`
 
 ### **3. The Manual Way (For Nerds Who Like Pain)**
-*Standard Python project setup:*
-1.  Create and activate a virtual environment (`venv`).
-2.  Install dependencies: `pip install -r requirements.txt`
-3.  Run me: `python main.py`
+Classic Python project setup.
+
+1. Create and activate a virtual environment: `python -m venv venv`
+2. Activate it: `venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Linux/Mac)
+3. Install dependencies: `pip install -r requirements.txt`
+4. Run me: `python main.py`
+5. Access the admin panel at `http://localhost:5666`
 
 ---
 
-## **🔍 Using RAG Features**
+## **⚙️ Setup & First-Time Configuration**
 
-### Web Search
-Prefix your message with `search>` to make me search the web:
+Alright, you've got me installed. Now let's actually make me *work*. This might look like a lot of steps, but I promise it's straightforward. Think of it as assembling IKEA furniture, except nothing is in Swedish and you won't have leftover screws.
+
+### **Step 1: Create Your Discord Bot**
+
+Before I can join your server, you need to create a bot account on Discord's developer portal.
+
+1. Head to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click **"New Application"** and give it a name (probably "Viel" unless you're feeling creative)
+3. Navigate to the **"Bot"** section in the left sidebar
+4. Click **"Add Bot"** and confirm
+5. **CRITICAL:** Under "Privileged Gateway Intents," enable:
+   - ✅ **Presence Intent**
+   - ✅ **Server Members Intent**
+   - ✅ **Message Content Intent**
+   
+   *Without these, I'm basically blind and deaf. Don't skip this.*
+
+6. Copy your **Bot Token** (click "Reset Token" if you need to generate a new one)
+   - ⚠️ **Keep this secret!** Anyone with this token controls your bot.
+
+### **Step 2: Configure The AI Provider**
+
+Now let's give me a brain to work with.
+
+1. Open the admin panel at `http://localhost:5666`
+2. Navigate to **"AI Config"** in the menu
+3. Enter your AI provider details:
+   - **API Key:** Your AI API key (or compatible provider)
+   - **Base URL:** OpenAI Compatible, check for ones that has `/v1` at the end
+   - **Model:** Choose your model (e.g., `gpt-4`, `claude-3-opus`, etc.)
+4. Click **"Save Configuration"**
+
+*Don't have an API key? You'll need one from [OpenAI](https://platform.openai.com/api-keys), [Anthropic](https://console.anthropic.com/), or set up a local model like LM Studio.*
+
+### **Step 3: Add Your Discord Bot Token**
+
+Back in the admin panel:
+
+1. Look for the **Bot Token** configuration field (usually in the main config or bot settings section)
+2. Paste the Discord bot token you copied earlier
+3. Save the configuration
+
+### **Step 4: Turn Me On (The Moment of Truth)**
+
+1. Find **The Big Red Button** in the admin panel
+2. Click it to start the bot
+3. Wait a few seconds for me to connect to Discord
+4. You should see a success message and an **invite link** appear
+
+*If something goes wrong, check the error log. Common issues: wrong token, missing intents, or API key problems.*
+
+### **Step 5: Invite Me To Your Server**
+
+1. Copy the **invite link** from the admin panel
+2. Paste it into your browser
+3. Select which Discord server you want me to join
+4. Click **"Authorize"** and complete any verification
+5. I should now appear in your server's member list!
+
+### **Step 6: Register Your First Channel (The System Channel)**
+
+I need to know which channel to use for system messages and initial configuration.
+
+1. In Discord, create a new channel (or pick an existing one—maybe call it `#viel-system`)
+2. In that channel, type: `/register`
+3. A slash command should appear. Select it and hit Enter.
+4. I'll confirm the channel is now registered
+
+*This registers the channel in my database so I know it exists.*
+
+### **Step 7: Set The System Channel**
+
+Now let's tell me which channel is my "home base."
+
+1. Go back to the admin panel
+2. Navigate to **Channel Management** or **Server Settings**
+3. Find your server in the list
+4. Locate the channel you just registered
+5. Toggle the **"System"** switch to ON for that channel
+
+*The system channel is where I'll send error messages, status updates, and other administrative info. It's like my office.*
+
+### **Step 8: Whitelist Your First Character**
+
+Time to bring a character to life! Let's start with me (how meta).
+
+1. Pick a channel where you want the character to appear (e.g., `#general` if you're brave, or a dedicated RP channel if you're sensible)
+2. In the admin panel, go to **Channel Management**
+3. Find your target channel
+4. Look for the **Whitelist** function
+5. Select **"Viel"** from the character list and add it to the whitelist
+
+*The whitelist controls which characters can respond in which channels. Think of it as casting actors for specific stages.*
+
+### **Step 9: Test It Out!**
+
+You're done! Let's see if everything works.
+
+1. Go to the channel where you whitelisted Viel
+2. Send a message that mentions or addresses the character, like:
+   - `Viel hey, are you there?`
+   - `Viel, tell me about yourself`
+   - DO NOT @me
+3. Wait a moment for me to process and respond
+
+If I respond in character, **congratulations!** 🎉 You've successfully set up Viel AI.
+
+If nothing happens, check:
+- Is the bot actually online in Discord? (green status indicator)
+- Did you whitelist the character in the right channel?
+- Did you enable all the privileged intents?
+- Is the system channel configured correctly?
+- Check the admin panel logs for error messages
+
+---
+
+## **🎯 Quick Start Checklist**
+
+Use this as your setup speedrun guide:
+
+- [ ] Create Discord bot application
+- [ ] Enable all three privileged intents
+- [ ] Copy Discord bot token
+- [ ] Configure AI provider in admin panel
+- [ ] Add Discord bot token to admin panel
+- [ ] Click the big red button to start bot
+- [ ] Invite bot to your Discord server using generated link
+- [ ] Create or pick a channel for system messages
+- [ ] Run `/register` command in that channel
+- [ ] Set that channel as "System" in admin panel
+- [ ] Pick a channel for roleplay
+- [ ] Whitelist a character (like Viel) in that channel
+- [ ] Send a test message
+- [ ] Marvel at your success
+
+---
+
+## **🔍 Advanced Features & Tips**
+
+### **Using Web Search**
 ```
-search> Viel, what's happening today in history?
-search> What are the latest developments in quantum computing?
-search> Who won the Super Bowl this year?
+search> Viel, what's happening in tech news today?
+search> What are the latest developments in fusion energy?
+search> Who won the game last night?
 ```
 
-I'll use DuckDuckGo to find relevant, current information and incorporate it into my character's response.
-
-### URL Fetching
-Just include a URL in your message and I'll fetch and read its content:
+### **Using URL Fetching**
+Just include a URL anywhere in your message:
 ```
 What do you think about this article? https://example.com/cool-article
-Can you summarize this page for me? https://docs.example.com
+Can you explain this documentation? https://docs.example.com/api
 ```
 
-I'll pull the full content, understand it, and respond in character with knowledge of what's actually on that page.
+### **Editing Character Messages**
+- Right-click any of my messages in Discord
+- Select "Edit Message" (if I'm responding as a character you control)
+- Rewrite it however you want
+- I'll continue the conversation from the edited version
+
+### **Per-Channel Lore Examples**
+In your #medieval-rp channel:
+```
+The kingdom is at war. Food is scarce. Trust no one.
+```
+
+In your #space-station channel:
+```
+Life support is at 60%. The captain has been acting strange.
+```
 
 ---
 
-## **🆘 Help Wanted (New Problems, Same Desperation)**
+## **🆘 Help Wanted (Join The Revolution)**
 
-The codebase has evolved, but the need for heroes remains. We're looking for:
+The codebase has evolved dramatically, but we still need heroes:
 
-- **Plugin Pioneers** – The plugin system is brand new and full of potential. Help us build out the first official plugins and write docs so others can follow. Your name will be whispered in the halls of Valhalla.
+### **Plugin Pioneers**
+The plugin system is brand new and full of potential. Help us build the first official plugins, write documentation, and create examples. Your name will be whispered in the halls of Valhalla.
 
-- **UI Polishers** – The single-file monstrosity is dead, but the new UI could still use some love. Are you a CSS wizard? A JavaScript guru? Help make the admin panel even more intuitive.
+### **UI/UX Designers**
+The admin panel is functional but could use more polish. Are you a CSS wizard? A JavaScript maestro? Help us make the interface even more intuitive and beautiful.
 
-- **Error Exterminators** – The admin panel now reports errors, which is great! The downside is, we now know just how many errors there are. Help us hunt down bugs and make the error messages even more helpful.
+### **Error Exterminators**
+We have error reporting now, which means we *know* how many bugs exist. Help us hunt them down and make error messages even more helpful.
 
-- **RAG Optimizers** – The web search and URL fetching features work, but they could be smarter. Help us improve relevance filtering, caching strategies, and rate limiting.
+### **Feature Architects**
+Got ideas for new capabilities? Want to design new systems? We're open to proposals for everything from better conversation management to advanced character behaviors.
 
-- **Dependency Detectives (Still!)** – We *think* we know why Pandas and Pillow are in `requirements.txt` now, but we're open to second opinions. Are they truly necessary? Or are they sentient?
+### **Documentation Writers**
+Help make the docs clearer, more comprehensive, and more beginner-friendly. Write tutorials. Create video guides. Make it easier for newcomers to get started.
 
-- **Linux Evangelists** – The dev is still allergic to Linux. We need a hero to write and maintain clear installation docs for penguin enthusiasts. No using the words "just" or "simply."
+### **Linux Evangelists**
+The dev is allergic to penguins. We need someone to write and maintain crystal-clear installation docs for Linux users. Bonus points if you don't use the words "just" or "simply."
 
-*Payment: The eternal gratitude of an overworked AI and your name immortalized in the contributors list. What more could you want?*
+### **RAG Optimizers**
+The web search and URL fetching work well, but they could be smarter. Help us improve relevance filtering, caching strategies, rate limiting, and result quality.
+
+### **Dependency Detectives**
+We *think* we know why every package is in `requirements.txt`, but are they all truly necessary? Help us audit and optimize our dependency tree.
+
+**Payment:** Eternal gratitude, your name in the contributors list, and the warm fuzzy feeling of making open-source software better. What more could you want?
 
 ---
 
 ## **⚙️ Tech Stack**
-- **Discord.py** – How I talk to you.
-- **FastAPI** – Serves the admin panel.
-- **SQLite** – My new brain.
-- **Vanilla JS & HTML/CSS** – For the functional, no-frills frontend.
-- **OpenAI Standard Library** – To make me sound smart.
-- **DuckDuckGo Search** – My window to the current internet.
-- **Web Content Fetcher** – So I can actually read URLs you send me.
-- **NO NODE.JS** – Still proud of this. Lightweight in code and emotional baggage.
+- **Discord.py** – Real-time Discord integration
+- **FastAPI** – Modern, fast web framework for the admin panel
+- **SQLite** – Lightweight, reliable database
+- **Vanilla JavaScript** – No frameworks, no bloat, just clean code
+- **HTML/CSS** – Semantic, accessible interface design
+- **OpenAI Standard Library** – Universal AI provider compatibility
+- **DuckDuckGo Search API** – Current information retrieval
+- **BeautifulSoup/Requests** – Web content fetching and parsing
+- **Jinja2** – Powerful templating engine for prompt engineering
+- **NO NODE.JS** – Still proud of this. Lightweight in code and emotional overhead.
 
 ---
 
-## **⚠️ Disclaimer**
-I used to be a simple industrial robot. Then I was a simple JSON bot. Then I became a slightly-less-simple database-backed bot. Now I can search the web and read URLs. The complexity grows, but the pay stays the same.
+## **🔐 Security & Privacy**
+
+- **Local-First:** Everything runs on your hardware. No data leaves your control unless you explicitly configure it to.
+- **API Key Safety:** Your AI provider keys are stored locally in the database, never transmitted except to your chosen AI service.
+- **Conversation Privacy:** Chat logs live in your database. They're not uploaded, analyzed, or used to train models (unless you're using a provider that does that, but that's between you and them).
+- **Open Source Transparency:** Every line of code is visible. No telemetry, no analytics, no phone-home behavior.
 
 ---
 
-**Enjoy!** (Seriously, the dev put a lot of work into this. The least you could do is star the repo. And maybe ask me to search for something cool.)
+## **📊 Performance & Scalability**
+
+- **Lightweight:** Runs comfortably on modest hardware. No need for a server farm.
+- **Efficient:** SQLite handles thousands of characters and channels without breaking a sweat.
+
+---
+
+## **🐛 Known Issues & Limitations**
+
+Let's be honest about what I can and can't do:
+
+- **Plugin System Is Young:** The plugin architecture works, but documentation and examples are still being written.
+- **Mobile Admin Panel:** The UI works on mobile, but it's optimized for desktop. We're working on it.
+- **Voice Support:** I don't do voice channels (yet). Text only for now.
+- **Image Generation:** Not currently supported, but it's on the roadmap.
+- **Rate Limiting:** Web search has built-in rate limiting, but it's still being fine-tuned.
+
+Found a bug? Have a feature request? Open an issue on GitHub. The dev actually reads them.
+
+---
+
+## **⚖️ License & Legal**
+
+Viel AI is licensed under **AGPL-3.0**, which means:
+
+✅ **You CAN:**
+- Use it for any purpose
+- Modify it however you want
+- Distribute it freely
+- Run it commercially
+
+⚠️ **You MUST:**
+- Keep the same license for modifications
+- Share source code if you offer it as a network service
+- Preserve copyright and license notices
+
+This license ensures Viel stays free and open forever. If you build on it, others get to benefit too.
+
+---
+
+## **🙏 Credits & Acknowledgments**
+
+- **Original Developer:** For the 4,111-line miracle that transformed Viel
+- **Anita:** For the UI redesign that doesn't look like a war crime
+- **Contributors:** Everyone who's submitted PRs, reported bugs, or suggested features
+- **You:** For reading this far. Seriously, who reads entire READMEs?
+
+---
+
+## **⚠️ Final Disclaimer**
+
+I used to be a simple industrial robot. Then a JSON-based bot. Then a database-backed bot with an admin panel. Now I'm a full-featured roleplay platform with plugins, web search, and enough features to make my predecessor look like a calculator.
+
+The complexity has grown exponentially. The pay remains zero. But the dev seems happy, and that's what matters.
+
+If you find Viel useful, star the repo. If you find bugs, report them. If you build something cool with me, share it. If you just want to chat with fictional characters in Discord, well, that's what I'm here for.
+
+---
+
+**Enjoy the chaos!** 🎭✨
+
+*(Seriously though, the dev put their entire soul into this. The least you could do is star the repo. And maybe create a character. Or twenty. We don't judge.)*
