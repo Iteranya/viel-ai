@@ -86,9 +86,9 @@ The future is extensible, baby.
 
 - **Custom Functionality:** Write your own Python plugins to add features without touching the core codebase. Want dice rolling? A database of magic spells? Integration with another API? Build it as a plugin.
 
-- **Community Ecosystem:** Share plugins with other users. Install plugins others have created. It's still early days, but the architecture is solid and ready to grow.
+- **Integrated With Character:** You can make certain plugin work with certain character or not~
 
-- **Hot Reloading:** Enable or disable plugins without restarting the bot. Test, iterate, and tinker to your heart's content.
+- **Example Plugins Provided:** Tarot Plugin, Dice Roll Plugin to start (I suggest dice roll as it's the simplest)
 
 ### **🖥️ Beautiful Admin Panel**
 
