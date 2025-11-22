@@ -90,9 +90,6 @@ class Viel(discord.Client):
             print(traceback.format_exc())
 
     async def edit_caption_context(self, interaction: discord.Interaction, message: discord.Message):
-        if not message.attachments:
-            await interaction.response.send_message("This message does not have an image to caption.", ephemeral=True)
-            return
         # Pass the database instance to the modal
         await interaction.response.send_modal(EditCaptionModal(message, self.db))
 

@@ -1,12 +1,14 @@
 # plugins/battle.py
 import random
 from typing import Any, Dict
+
+from api.db.database import Database
 from .base import BasePlugin, ActiveCharacter, ActiveChannel
 
 class BattlePlugin(BasePlugin):
     triggers = ["<battle_rp>"]
 
-    async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel) -> Dict[str, Any]:
+    async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel, db: Database) -> Dict[str, Any]:
         attack_roll = self._roll("attack", character.name)
         defend_roll = self._roll("defend", character.name)
         return {

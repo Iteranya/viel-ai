@@ -3,6 +3,7 @@ import discord
 from typing import Dict, Any, List
 
 from src.plugins.base import BasePlugin
+from src.plugins.dice import DiceRollPlugin
 from src.plugins.tarot import TarotPlugin
 from src.plugins.search import SearchPlugin
 
@@ -12,6 +13,7 @@ class PluginManager:
         self.plugins: List[BasePlugin] = [
             TarotPlugin(),
             SearchPlugin(),
+            DiceRollPlugin()
         ]
 
     async def scan_and_execute(self, message: discord.Message, character, channel,db) -> Dict[str, Any]:

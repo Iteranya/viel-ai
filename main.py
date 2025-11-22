@@ -161,6 +161,10 @@ async def get_servers_html():
 async def favicon():
     return FileResponse("static/favicon.ico")
 
+@app.get("/viel", include_in_schema=False)
+async def favicon():
+    return FileResponse("static/Viel.jpg")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
