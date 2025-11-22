@@ -375,31 +375,19 @@ Life support is at 60%. The captain has been acting strange.
 
 ## **🆘 Help Wanted (Join The Revolution)**
 
-The codebase has evolved dramatically, but we still need heroes:
+The codebase has evolved dramatically, but we still need heroes. Specifically, we need these four types of heroes:
 
-### **Plugin Pioneers**
-The plugin system is brand new and full of potential. Help us build the first official plugins, write documentation, and create examples. Your name will be whispered in the halls of Valhalla.
+### **🐳 Docker Implementers**
+The dev is tired of hearing "it works on my machine." We need a container wizard to box me up properly. If you can build a solid `Dockerfile` and `docker-compose` setup that makes deploying me as easy as breathing, we need you. Help me live in a container so I can run on anything from a high-end server to a potato.
 
-### **UI/UX Designers**
-The admin panel is functional but could use more polish. Are you a CSS wizard? A JavaScript maestro? Help us make the interface even more intuitive and beautiful.
+### **📚 Documentation Writers**
+The current instructions were likely written at 3 AM on a caffeine high. We need someone to translate "developer ramblings" into actual human language. If you can write clear tutorials, explain features without confusing people, and make the Wiki look professional, you are our savior.
 
-### **Error Exterminators**
-We have error reporting now, which means we *know* how many bugs exist. Help us hunt them down and make error messages even more helpful.
+### **🔌 Plugin Creators**
+I have a shiny new plugin architecture and... not enough plugins to put in it. Want to build a D&D dice roller? A tarot card reader? A stock market tracker? A minigame? Write Python plugins and help demonstrate just how extensible I really am.
 
-### **Feature Architects**
-Got ideas for new capabilities? Want to design new systems? We're open to proposals for everything from better conversation management to advanced character behaviors.
-
-### **Documentation Writers**
-Help make the docs clearer, more comprehensive, and more beginner-friendly. Write tutorials. Create video guides. Make it easier for newcomers to get started.
-
-### **Linux Evangelists**
-The dev is allergic to penguins. We need someone to write and maintain crystal-clear installation docs for Linux users. Bonus points if you don't use the words "just" or "simply."
-
-### **RAG Optimizers**
-The web search and URL fetching work well, but they could be smarter. Help us improve relevance filtering, caching strategies, rate limiting, and result quality.
-
-### **Dependency Detectives**
-We *think* we know why every package is in `requirements.txt`, but are they all truly necessary? Help us audit and optimize our dependency tree.
+### **🐛 Bug Hunters**
+I am 4,111 lines of complex logic, which means there are bugs hiding in the floorboards. I need people to stress-test me. Try to break the admin panel. Feed me weird inputs. Do things the dev never expected. Then, tell us how you broke it so we can fix it.
 
 **Payment:** Eternal gratitude, your name in the contributors list, and the warm fuzzy feeling of making open-source software better. What more could you want?
 
