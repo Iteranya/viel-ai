@@ -33,17 +33,14 @@ A history reference to your speaking quirks and behavior:
 {{- character.instructions if character.instructions -}}
 {{- channel.instruction if channel.instruction -}}
 
-{# --- Plugin Outputs --- #}
-{% if plugins.tarot %}
-[System Note: The following is the Tarot Shuffle Result, please have {{character.name}} interpret it in character.
-{{ plugins.tarot.reading }}]
-{% endif %}
-{% if plugins.search %}
-{{ plugins.search.result }}
-{% endif %}
-{% if plugins.battle_rp %}
-{{ plugins.battle_rp.attack_roll }}
-{{ plugins.battle_rp.defend_roll }}
+{# --- Dynamic Plugin Outputs --- #}
+{% if plugins %}
+{% for plugin_name, output_data in plugins.items() %}
+    {# Loop through specific keys returned by the plugin (e.g. 'result', 'roll', 'reading') #}
+    {% for key, value in output_data.items() %}
+{{ value }}
+    {% endfor %}
+{% endfor %}
 {% endif %}
 </instruction>
 """
