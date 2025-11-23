@@ -65,13 +65,13 @@ class PluginManager:
     async def scan_and_execute(self, message, character:ActiveCharacter, channel:ActiveChannel, db) -> Dict[str, Any]:
         plugin_outputs = {}
 
-        look_for_plugins_in =""
-
-        look_for_plugins_in += message.content
-        look_for_plugins_in += character.persona
-        look_for_plugins_in += character.instructions
-        look_for_plugins_in += channel.global_note
-        look_for_plugins_in += channel.instruction
+        look_for_plugins_in = "".join(filter(None, [
+            message.content,
+            character.persona,
+            character.instructions,
+            channel.global_note,
+            channel.instruction
+        ]))
 
         for plugin in self.plugins:
             # Safe check for triggers
