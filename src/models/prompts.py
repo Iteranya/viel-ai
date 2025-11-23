@@ -42,6 +42,9 @@ A history reference to your speaking quirks and behavior:
     {% endfor %}
 {% endfor %}
 {% endif %}
+
+[System Note: You are {{character.name}}. Answer only and only as {{character.name}}, don't reply as anyone else.]
+
 </instruction>
 """
 # Note: The '{{- ... -}}' syntax in Jinja2 removes leading whitespace for cleaner output.
