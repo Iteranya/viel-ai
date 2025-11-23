@@ -7,6 +7,8 @@ import os
 from typing import Dict, Any, List
 
 # Update this import to match your structure
+from src.models.aicharacter import ActiveCharacter
+from src.models.dimension import ActiveChannel
 from src.plugins.base import BasePlugin 
 
 class PluginManager:
@@ -60,16 +62,23 @@ class PluginManager:
 
         print(f"Loaded plugins: {', '.join(found_plugins)}")
 
-    async def scan_and_execute(self, message, character, channel, db) -> Dict[str, Any]:
+    async def scan_and_execute(self, message, character:ActiveCharacter, channel:ActiveChannel, db) -> Dict[str, Any]:
         plugin_outputs = {}
-        message_content_lower = message.content.lower()
+
+        look_for_plugins_in =""
+
+        look_for_plugins_in += message.content
+        look_for_plugins_in += character.persona
+        look_for_plugins_in += character.instructions
+        look_for_plugins_in += channel.global_note
+        look_for_plugins_in += channel.instruction
 
         for plugin in self.plugins:
             # Safe check for triggers
             if not plugin.triggers:
                 continue
                 
-            if any(trigger in message_content_lower for trigger in plugin.triggers):
+            if any(trigger in look_for_plugins_in for trigger in plugin.triggers):
                 plugin_key = plugin.__class__.__name__
                 try:
                     result = await plugin.execute(message, character, channel, db)
