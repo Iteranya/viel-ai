@@ -16,3 +16,4 @@ temp.jpg
 *.jsonl
 *.db
 *.log
+!Viel.jpg
