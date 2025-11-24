@@ -90,7 +90,7 @@ async def initialize_database():
         "ai_endpoint": "https://openrouter.ai/api/v1", # A sensible default
         "base_llm": "gryphe/mythomax-l2-13b", # A sensible default
         "temperature": 0.7,
-        "auto_cap": 2000,
+        "auto_cap": 1,
         "ai_key": "", # User must provide this
         "discord_key": "", # User must provide this
         "use_prefill": False,
