@@ -2,7 +2,7 @@
 from typing import Any, Dict
 
 from api.db.database import Database
-from .base import BasePlugin, ActiveCharacter, ActiveChannel
+from src.plugins.base import BasePlugin, ActiveCharacter, ActiveChannel
 from src.utils.tarot import generate_tarot_reading # Assuming this exists
 
 class TarotPlugin(BasePlugin):

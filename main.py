@@ -38,10 +38,19 @@ A history reference to your speaking quirks and behavior:
 <instruction>
 {{- character.instructions if character.instructions -}}
 {{- channel.instruction if channel.instruction -}}
-{# --- Plugin Outputs --- #}
-{% if plugins.search %}
-{{ plugins.search.result }}
+
+{# --- Dynamic Plugin Outputs --- #}
+{% if plugins %}
+{% for plugin_name, output_data in plugins.items() %}
+    {# Loop through specific keys returned by the plugin (e.g. 'result', 'roll', 'reading') #}
+    {% for key, value in output_data.items() %}
+{{ value }}
+    {% endfor %}
+{% endfor %}
 {% endif %}
+
+[System Note: You are {{character.name}}. Answer only and only as {{character.name}}, don't reply as anyone else.]
+
 </instruction>
 """
 

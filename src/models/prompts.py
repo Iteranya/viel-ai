@@ -156,7 +156,7 @@ class PromptEngineer:
         prompt_template_str = self.get_template_from_preset()
         template = self.jinja_env.from_string(prompt_template_str)
         final_prompt = template.render(final_context)
-        #print(f"=====================\nFINAL PROMPT\n=======================\n{final_prompt}")
+        print(f"=====================\nFINAL PROMPT\n=======================\n{final_prompt}")
         
         return final_prompt
        

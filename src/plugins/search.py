@@ -1,8 +1,7 @@
-# plugins/search.py
 from typing import Any, Dict
 
 from api.db.database import Database
-from .base import BasePlugin, ActiveCharacter, ActiveChannel
+from src.plugins.base import BasePlugin, ActiveCharacter, ActiveChannel
 from src.utils.duckduckgo import research # Assuming this exists
 
 class SearchPlugin(BasePlugin):
