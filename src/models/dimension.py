@@ -41,10 +41,16 @@ class ActiveChannel:
         """
         
         # 1. Ensure the Virtual DM Server exists
+        # The Foreign Key constraint requires the server to exist BEFORE the channel is created.
         server = db.get_server(DM_SERVER_ID)
         if not server:
-            # ... (Same as before) ...
-            pass # Skipping print lines for brevity, keep your existing logic here
+            print(f"Virtual DM server not found. Creating server entry for '{DM_SERVER_ID}'...")
+            db.create_server(
+                server_id=DM_SERVER_ID, 
+                server_name="Direct Messages", 
+                description="Virtual server container for Direct Messages", 
+                instruction=""
+            )
 
         # 2. Try to find this specific DM channel
         channel_id = str(dm_channel.id)
@@ -54,7 +60,6 @@ class ActiveChannel:
         if not channel_record:
             print(f"New DM detected. Registering channel {channel_id} to database.")
             
-            # FIX: Use the passed 'user' object instead of dm_channel.recipient
             user_name = user.name
             
             new_data = {
