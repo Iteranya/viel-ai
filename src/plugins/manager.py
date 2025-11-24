@@ -4,6 +4,7 @@ import importlib
 import inspect
 import sys
 import os
+import traceback
 from typing import Dict, Any, List
 
 # Update this import to match your structure
@@ -19,48 +20,59 @@ class PluginManager:
 
     def reload_plugins(self):
         """
-        Dynamically discovers and loads plugins from the plugins directory.
-        Force reloads modules to pick up code changes.
+        Robust reloading that handles class identity mismatches.
         """
+        print(f"\n--- RELOADING PLUGINS ---")
         self.plugins = []
         found_plugins = []
 
-        # 1. Resolve the directory of the package
         try:
             package = importlib.import_module(self.plugin_package)
             package_path = package.__path__
         except ImportError:
-            print(f"Could not import package {self.plugin_package}")
+            print(f"Error: Could not import {self.plugin_package}")
             return
 
-        # 2. Iterate over all files in the plugins folder
         for _, name, _ in pkgutil.iter_modules(package_path):
             try:
                 full_module_name = f"{self.plugin_package}.{name}"
                 
-                # Import the module
-                module = importlib.import_module(full_module_name)
-                
-                # --- THE FIX IS HERE ---
-                # Force Python to re-read the file from disk
-                importlib.reload(module) 
-                # -----------------------
+                # 1. Import or Reload the module
+                if full_module_name in sys.modules:
+                    module = importlib.import_module(full_module_name)
+                    module = importlib.reload(module)
+                else:
+                    module = importlib.import_module(full_module_name)
 
-                # 3. Inspect the module for classes
+                # 2. Scan for Plugin Classes
                 for member_name, member_obj in inspect.getmembers(module):
-                    if (
-                        inspect.isclass(member_obj) 
-                        and issubclass(member_obj, BasePlugin) 
-                        and member_obj is not BasePlugin
-                    ):
-                        # Instantiate the class and add to list
-                        plugin_instance = member_obj()
-                        self.plugins.append(plugin_instance)
-                        found_plugins.append(member_name)
-            except Exception as e:
-                print(f"Failed to load plugin module {name}: {e}")
+                    if inspect.isclass(member_obj):
+                        # --- THE FIX: NAME-BASED CHECK ---
+                        # We check if 'BasePlugin' is in the inheritance tree (MRO) by name.
+                        # This ignores the "Version 1 vs Version 2" memory issue.
+                        base_names = [b.__name__ for b in inspect.getmro(member_obj)]
+                        
+                        if (
+                            "BasePlugin" in base_names 
+                            and member_name != "BasePlugin"
+                            and member_obj.__module__ == full_module_name # Ensure it's defined in THIS file
+                        ):
+                            try:
+                                print(f"  -> Loading {member_name} from {name}.py")
+                                plugin_instance = member_obj()
+                                self.plugins.append(plugin_instance)
+                                found_plugins.append(member_name)
+                            except Exception as e:
+                                print(f"!!!! Error initializing {member_name}: {e}")
+                                import traceback
+                                traceback.print_exc()
 
-        print(f"Loaded plugins: {', '.join(found_plugins)}")
+            except Exception as e:
+                print(f"!!!! Failed to load file {name}.py: {e}")
+                import traceback
+                traceback.print_exc()
+
+        print(f"--- Loaded: {', '.join(found_plugins)} ---\n")
 
     async def scan_and_execute(self, message, character:ActiveCharacter, channel:ActiveChannel, db) -> Dict[str, Any]:
         plugin_outputs = {}

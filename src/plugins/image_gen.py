@@ -17,7 +17,6 @@ class ImageGenPlugin(BasePlugin):
             "model": "flux-dev",
             "prompt": prompt,
             "n": 1,
-            "quality": "standard",
             "size": "1024x1024",
             "response_format": "url",
             "public": False
@@ -40,30 +39,29 @@ class ImageGenPlugin(BasePlugin):
                 return data["data"][0]["url"]
 
     async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel, db: Database) -> Dict[str, Any]:
-        prompt = (
-            message.content
-            .replace("image>", "")
-            .replace("img>", "")
-            .replace("generate_image>", "")
-            .strip()
-        )
-
-        # However you store API keys — adjust for your setup:
-        all_db_configs = db.list_configs()
-        # Pydantic will use default values for any keys not found in the DB
-        config = BotConfig(**all_db_configs)
-        token = config.ai_key
-        if not token:
-            return {"result": "[No AI Gen Token Provided]"}
-
         try:
+            prompt = (
+                message.content
+                .replace("image>", "")
+                .replace("img>", "")
+                .replace("generate_image>", "")
+                .strip()
+            )
+
+            # However you store API keys — adjust for your setup:
+            all_db_configs = db.list_configs()
+            # Pydantic will use default values for any keys not found in the DB
+            config = BotConfig(**all_db_configs)
+            token = config.ai_key
+            if not token:
+                return {"image": "[No AI Gen Token Provided]"}
             image_url = await self._generate_image(prompt, token)
         except Exception as e:
             print(e)
-            return {"result": f"[System Note: Image generation failed: {e}]"}
+            return {"image": f"[System Note: Image generation failed: {e}]"}
         
         return {
-            "result": (
+            "image": (
                 f"[System Note: Image generated for prompt '{prompt}':\n{image_url}]"
             )
         }
