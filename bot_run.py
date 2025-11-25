@@ -125,9 +125,21 @@ class EditMessageModal(discord.ui.Modal, title='Edit Message'):
         try:
             if self.original_message.webhook_id:
                 webhook = await interaction.client.fetch_webhook(self.original_message.webhook_id)
-                thread = self.original_message.channel if isinstance(self.original_message.channel, discord.Thread) else None
-                await webhook.edit_message(self.original_message.id, content=new_content, thread=thread)
-            else: # It's a DM or a message sent without a webhook
+                
+                # Check if the message is in a thread
+                if isinstance(self.original_message.channel, discord.Thread):
+                    await webhook.edit_message(
+                        self.original_message.id, 
+                        content=new_content, 
+                        thread=self.original_message.channel
+                    )
+                else:
+                    # Regular channel - don't pass thread parameter
+                    await webhook.edit_message(
+                        self.original_message.id, 
+                        content=new_content
+                    )
+            else:  # It's a DM or a message sent without a webhook
                 await self.original_message.edit(content=new_content)
             
             await interaction.response.send_message("Message edited successfully!", ephemeral=True)
