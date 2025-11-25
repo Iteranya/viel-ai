@@ -8,7 +8,7 @@ from src.plugins.base import BasePlugin, ActiveCharacter, ActiveChannel
 class DiceRollPlugin(BasePlugin):
     triggers = ["<dice_roll>"]
 
-    async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel, db: Database) -> Dict[str, Any]:
+    async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel, db: Database,messenger) -> Dict[str, Any]:
         roll = self._roll(character.name)
         return {
             "dice_roll": f"[System Note: Attack Roll: {roll}]"

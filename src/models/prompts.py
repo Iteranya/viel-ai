@@ -51,11 +51,12 @@ A history reference to your speaking quirks and behavior:
 
 
 class PromptEngineer:
-    def __init__(self, bot: ActiveCharacter, message: discord.Message, channel: ActiveChannel,plugin_manager:PluginManager):
+    def __init__(self, bot: ActiveCharacter, message: discord.Message, channel: ActiveChannel,plugin_manager:PluginManager, messenger):
         self.bot = bot
         self.user_name = str(message.author.display_name)
         self.message = message
         self.channel = channel
+        self.messenger = messenger
         
         # Get the database instance from one of the active models
         self.db: Database = bot.db
@@ -147,7 +148,7 @@ class PromptEngineer:
 
         # 2. Execute plugins based on the message content
         plugin_outputs = await self.plugin_manager.scan_and_execute(
-            self.message, self.bot, self.channel, self.db
+            self.message, self.bot, self.channel, self.db, self.messenger
         )
         
         final_context = {**base_context, "plugins": plugin_outputs}

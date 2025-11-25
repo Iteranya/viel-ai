@@ -72,7 +72,7 @@ async def _generate_and_send_for_character(
 
     print(f"Processing chat for {character.name} in {channel.name}...")
     
-    prompter = PromptEngineer(character, message, channel, plugin_manager)
+    prompter = PromptEngineer(character, message, channel, plugin_manager, messenger)
     prompt = await prompter.create_prompt()
 
     queue_item = QueueItem(

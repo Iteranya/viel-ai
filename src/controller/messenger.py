@@ -30,6 +30,38 @@ class DiscordMessenger:
             await self._send_dm_message(sanitized_item, character, message.author)
         else:
             await self._send_guild_message(sanitized_item, character, message)
+
+    async def send_system_message(self, character: ActiveCharacter, message: discord.Message, regular_message: str):
+            """
+            Sends a plain string message as the character. 
+            Routes to DM or Guild Webhook depending on context.
+            """
+            # 1. Sanitize mentions to prevent mass pings
+            clean_message = regular_message.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")
+
+            # 2. Route based on channel type
+            if isinstance(message.channel, discord.DMChannel):
+                # Send as DM
+                for chunk in self._chunk_message(clean_message):
+                    await message.author.send(chunk)
+            else:
+                # Send as Guild Webhook (looks like the character)
+                context = message.channel
+                chunks = self._chunk_message(clean_message)
+                
+                # Get the character's avatar/name context
+                webhook_context = await self._get_webhook_context(context, character)
+
+                for i, chunk in enumerate(chunks):
+                    if chunk.strip():
+                        # Reply to the trigger message on the first chunk
+                        reply_to = message if i == 0 else None
+                        await self._send_via_webhook(
+                            content=chunk, 
+                            context=context, 
+                            reply_to=reply_to, 
+                            **webhook_context
+                        )
             
     async def _send_guild_message(self, queue_item: QueueItem, character: ActiveCharacter, message: discord.Message):
         """Sends a message as the bot character within a server, using webhooks."""

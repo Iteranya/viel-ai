@@ -3,8 +3,8 @@ from typing import Any, Dict
 
 from api.db.database import Database
 from api.models.models import BotConfig
+from src.controller.messenger import DiscordMessenger
 from src.plugins.base import BasePlugin, ActiveCharacter, ActiveChannel
-
 
 class ImageGenPlugin(BasePlugin):
     triggers = ["image>"]
@@ -38,7 +38,7 @@ class ImageGenPlugin(BasePlugin):
                 # Expecting: { "data": [ { "url": "<image_url>" } ] }
                 return data["data"][0]["url"]
 
-    async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel, db: Database) -> Dict[str, Any]:
+    async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel, db: Database,messenger:DiscordMessenger) -> Dict[str, Any]:
         try:
             prompt = (
                 message.content
@@ -56,6 +56,7 @@ class ImageGenPlugin(BasePlugin):
             if not token:
                 return {"image": "[No AI Gen Token Provided]"}
             image_url = await self._generate_image(prompt, token)
+            messenger.send_system_message(character,message,image_url)
         except Exception as e:
             print(e)
             return {"image": f"[System Note: Image generation failed: {e}]"}

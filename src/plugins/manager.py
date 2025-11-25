@@ -74,7 +74,7 @@ class PluginManager:
 
         print(f"--- Loaded: {', '.join(found_plugins)} ---\n")
 
-    async def scan_and_execute(self, message, character:ActiveCharacter, channel:ActiveChannel, db) -> Dict[str, Any]:
+    async def scan_and_execute(self, message, character:ActiveCharacter, channel:ActiveChannel, db, messenger) -> Dict[str, Any]:
         plugin_outputs = {}
 
         look_for_plugins_in = "".join(filter(None, [
@@ -93,7 +93,7 @@ class PluginManager:
             if any(trigger in look_for_plugins_in for trigger in plugin.triggers):
                 plugin_key = plugin.__class__.__name__
                 try:
-                    result = await plugin.execute(message, character, channel, db)
+                    result = await plugin.execute(message, character, channel, db, messenger)
                     plugin_outputs[plugin_key] = result
                 except Exception as e:
                     print(f"Error in plugin {plugin_key}: {e}")

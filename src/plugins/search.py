@@ -7,7 +7,7 @@ from src.utils.duckduckgo import research # Assuming this exists
 class SearchPlugin(BasePlugin):
     triggers = ["search>"]
 
-    async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel, db:Database) -> Dict[str, Any]:
+    async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel, db:Database,messenger) -> Dict[str, Any]:
         search_query = message.content.replace("search>", "").strip()
         search_result = await research(search_query,db)
         return {"result": f"[System Note: The user requested a search. Here are the results for '{search_query}':\n{search_result}]"}

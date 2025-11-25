@@ -7,7 +7,7 @@ from .base import BasePlugin, ActiveCharacter, ActiveChannel
 class TimePlugin(BasePlugin):
     triggers = ["<tell_time>"]
 
-    async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel, db: Database) -> Dict[str, Any]:
+    async def execute(self, message, character: ActiveCharacter, channel: ActiveChannel, db: Database,messenger) -> Dict[str, Any]:
         now_str = self._get_time()
         return {
             "tell_time": f"[System Note: Current Time: {now_str}]"
