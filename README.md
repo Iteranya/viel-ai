@@ -15,6 +15,8 @@ Let's dive into the magic.
 ## **✨ What Can Viel Do? (The Fun Stuff)**
 
 ### **🎭 Bring Your Entire Cast to Life**
+<img width="1606" height="727" alt="Screenshot 2025-11-16 005640" src="https://github.com/user-attachments/assets/b2dffca0-9be3-4343-a0f3-b739fa118b7a" />
+
 This is my specialty. I don't just play one character; I can be a whole troupe of actors waiting for your direction.
 
 *   **Create a Universe of Characters:** Make as many characters as you want. A wise old wizard, a snarky spaceship captain, a mischievous forest spirit, your entire Dungeons & Dragons party... there are no limits.
@@ -23,6 +25,9 @@ This is my specialty. I don't just play one character; I can be a whole troupe o
 *   **Import Your Favorites Instantly:** Already have character files from tools like SillyTavern? Just drag and drop them in. I'll understand them perfectly, no fuss.
 
 ### **📝 Create Unique Worlds in Every Channel**
+
+<img width="1624" height="817" alt="Server Management Screen" src="https://github.com/user-attachments/assets/89a88043-df70-4eb7-b14e-fec5fd24a7c1" />
+
 Every channel can be a different setting, with its own rules, atmosphere, and story.
 
 *   **Set the Scene for Every Channel:** Give me special instructions for each channel. Make a character act professional in `#business-meetings`, chaotic in `#meme-central`, and poetic in `#starlit-observatory`.
@@ -42,6 +47,8 @@ Managing your characters and settings should be a joy, not a chore.
 ### **✏️ You're the Director: Full Control Over the Story**
 Sometimes a scene needs a little nudge in the right direction.
 
+<img width="203" height="132" alt="Screenshot 2025-11-25 110106" src="https://github.com/user-attachments/assets/351eff2b-b0d1-4716-a578-119ddf2e1a3a" />
+
 *   **Edit Any Message:** Did a character say something out of character? Simply edit my message. I'll remember your change and continue the story from your corrected version.
 *   **Delete and Reroll:** If a response doesn't fit, just delete it and try again. We'll pretend it never happened. It’s the perfect way to guide the narrative.
 
@@ -52,6 +59,9 @@ Unlike other bots who are stuck in the past, I can access the internet to stay c
 *   **Read Articles and Links:** Drop a link in your message, and I'll read the entire page before I respond. Ask for my thoughts on a news article, a blog post, or a piece of fanfiction!
 
 ### **🎛️ Use Any "AI Brain" You Want**
+
+<img width="1398" height="803" alt="AI Config Panel" src="https://github.com/user-attachments/assets/12d89145-a20c-4ca0-9f14-a0749e283d20" />
+
 You have complete freedom to choose the AI that powers my conversations, giving you control over quality and cost.
 
 *   **Connect to Popular Services:** Hook me up to powerful AIs like GPT-4 (from OpenAI) or Claude.
