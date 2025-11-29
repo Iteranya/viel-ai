@@ -34,9 +34,9 @@ async def bot_behavior(message: discord.Message, bot) -> None:
     if not channel:
         return # Channel is not registered, so we ignore it.
 
-    # Reset the auto-reply counter if a human speaks
-    if not message.webhook_id:
-        bot.auto_reply_count = 0
+    # # Reset the auto-reply counter if a human speaks
+    # if not message.webhook_id:
+    #     bot.auto_reply_count = 0
 
     # --- Determine if the bot should activate ---
 
@@ -88,11 +88,12 @@ async def bot_behavior(message: discord.Message, bot) -> None:
                     print(
                         f"User message contained trigger '{trigger}' for whitelisted character '{char['name']}'. Queuing message."
                     )
+                    
                     await bot.queue.put(message)
+                    bot.auto_reply_count = 0
                     return  # Stop after the first match
 
 
-    # --- MODIFICATION: Updated bot-to-bot logic ---
     # D. Activated by another bot's message (bot-to-bot interaction)
     if message.webhook_id:
         # Fetch the GLOBAL cap from the bot's loaded configuration
@@ -102,15 +103,35 @@ async def bot_behavior(message: discord.Message, bot) -> None:
         if bot.auto_reply_count >= cap:
             print(f"Global auto-reply cap of {cap} reached. Ignoring bot message from '{message.author.display_name}'.")
             return
+            
+        # --- FIXED LOGIC STARTS HERE ---
+        # Now, respect the channel's whitelist for bot-to-bot messages
+        if not channel.whitelist:
+            return # No whitelisted characters, nothing to do.
 
-        all_triggers = [char['triggers'] for char in bot.db.list_characters()]
-        flat_triggers = [trigger for sublist in all_triggers for trigger in sublist]
+        characters_to_check = []
+        for name in channel.whitelist:
+            char_data = bot.db.get_character(name)
+            if char_data:
+                characters_to_check.append(char_data)
+
         message_lower = message.content.lower()
 
-        # Check if another bot is being triggered
-        if any(trigger.lower() in message_lower for trigger in flat_triggers):
-            print(f"Bot '{message.author.display_name}' triggered another character. Queuing message.")
-            # Increment the GLOBAL counter
-            bot.auto_reply_count += 1
-            await bot.queue.put(message)
-            return
+        for char in characters_to_check:
+            # Grab triggers + the character's own name (same as user logic)
+            name_trigger = char.get("name", "").lower()
+            triggers = [t.lower() for t in char.get("triggers", [])]
+            extended_triggers = triggers + ([name_trigger] if name_trigger else [])
+
+            for trigger in extended_triggers:
+                if not trigger:
+                    continue
+                # Use the same precise regex check
+                if re.search(r'\b' + re.escape(trigger) + r'\b', message_lower):
+                    print(
+                        f"Bot '{message.author.display_name}' used trigger '{trigger}' for whitelisted character '{char['name']}'. Queuing message."
+                    )
+                    # Increment the GLOBAL counter for bot-to-bot talk
+                    bot.auto_reply_count += 1
+                    await bot.queue.put(message)
+                    return # Stop after the first match
