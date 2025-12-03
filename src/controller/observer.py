@@ -6,10 +6,6 @@ import discord
 from src.models.dimension import ActiveChannel
 from typing import TYPE_CHECKING
 
-# This block is FALSE at runtime, but TRUE for type checkers.
-# This breaks the circular import!
-if TYPE_CHECKING:
-    from bot_run import Viel # Your main MyBot/Viel class
 
 async def bot_behavior(message: discord.Message, bot) -> None:
     """
@@ -78,7 +74,10 @@ async def bot_behavior(message: discord.Message, bot) -> None:
             triggers = [t.lower() for t in char.get("triggers", [])]
 
             extended_triggers = triggers + ([name_trigger] if name_trigger else [])
-
+            print(triggers)
+            channel_name = channel.name.lower()
+            channel_name = "#" + channel_name
+            print(channel_name)
             for trigger in extended_triggers:
                 if not trigger:
                     continue
@@ -92,6 +91,18 @@ async def bot_behavior(message: discord.Message, bot) -> None:
                     await bot.queue.put(message)
                     bot.auto_reply_count = 0
                     return  # Stop after the first match
+                
+                # Function to permanently make character answer in a channel
+                elif re.search(re.escape(trigger), "#"+ channel_name):
+                    print(
+                        f"User message is inside '{channel.name}' for whitelisted character '{char['name']}'. Queuing message."
+                    )
+                    message.content = f"[Replying To {char['name']}]\n{message.content}"
+                    await bot.queue.put(message)
+                    bot.auto_reply_count = 0
+                    return
+                
+
 
 
     # D. Activated by another bot's message (bot-to-bot interaction)
