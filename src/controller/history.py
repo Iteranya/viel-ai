@@ -1,4 +1,5 @@
 import asyncio
+import random
 import re
 import discord
 import os
@@ -74,7 +75,7 @@ class _HistoryFormatter:
         message_id_str = str(message.id)
         # 1. Always check the database first for an existing caption
         caption = self.db.get_caption(message_id_str)
-        if caption:
+        if caption and "<ERROR>" not in caption:
             return caption
 
         # 2. If no caption exists, check if we are allowed to generate one
@@ -88,6 +89,7 @@ class _HistoryFormatter:
 
         temp_image_path = None
         try:
+            await asyncio.sleep(random.uniform(1, 5)) # Add pause to prevent rate limit
             # Create a unique temporary filename to avoid conflicts
             ext = image_attachment.filename.split('.')[-1]
             temp_image_path = f"temp_caption_{uuid.uuid4()}.{ext}"
