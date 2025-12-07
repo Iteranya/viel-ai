@@ -132,6 +132,54 @@ Once Viel is running, follow these steps to bring it into your Discord server.
 5.  **You're Done!**
     *   Go to the channel where you whitelisted your character and say hello! Try typing `Viel, tell me a story.` If the character responds, **congratulations!** You've successfully brought Viel to life.
 
+## **🐳 Alternative Installation: Docker (For the Tech-Savvy Adventurers)**
+
+Want to skip the Windows installer and feel like a proper server wizard? Docker's your ticket.
+
+### **The No-Build Route (Recommended)**
+
+We've already built everything and tucked it safely into GitHub Container Registry. You just pull and run.
+
+1. **Grab the compose file:**
+   ```bash
+   wget https://raw.githubusercontent.com/Iteranya/viel-ai/main/docker-compose.yml
+   ```
+   *(Or just copy it from our repo if you're doing this manually)*
+
+2. **Fire it up:**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Access the control panel:**
+   Open your browser to `http://localhost:5666` and start creating!
+
+That's it. Docker handles all the messy bits—dependencies, environment setup, the whole nine yards. It's like hiring a very competent, very quiet assistant who works in shipping containers.
+
+**📦 About Watchtower:** The docker-compose file includes Watchtower, which automatically updates Viel to the latest version whenever we release improvements. It's like having a tiny robot butler who keeps your software fresh. If you prefer manual control over updates (totally valid!), just remove the `watchtower` service from the compose file before running it.
+
+### **The "I Want to Build It Myself" Route**
+
+Feeling ambitious? Want to tinker under the hood? We respect that.
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Iteranya/viel-ai.git
+   cd viel-ai
+   ```
+
+2. **Build from the Dockerfile:**
+   ```bash
+   docker build -t viel-ai .
+   docker-compose up -d
+   ```
+
+Now you've got a custom-built Viel running in your own container. Perfect for those late-night "I wonder what happens if I change this..." moments.
+
+---
+
+**Pro tip:** Docker installations are fantastic for running Viel on a server 24/7, making your bot available even when your main computer is off. Your Discord community will think you're impossibly dedicated (we won't tell them it's just good infrastructure). 🎩✨
+
 ---
 
 ## **🆘 Join the Adventure: How You Can Help**

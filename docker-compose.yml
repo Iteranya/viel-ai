@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   viel:
     container_name: viel_ai
@@ -10,5 +9,14 @@ services:
     
     volumes:
       - ./bot.db:/app/bot.db
+    restart: unless-stopped
 
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=300  
+      - WATCHTOWER_CLEANUP=true  
     restart: unless-stopped
