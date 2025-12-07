@@ -8,7 +8,7 @@ on:
 # Automatic permissions for the GITHUB_TOKEN
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: iteranya/viel-ai
 
 jobs:
   build-and-push:
