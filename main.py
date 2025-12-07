@@ -175,7 +175,6 @@ async def favicon():
 async def favicon():
     return FileResponse("static/Viel.jpg")
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run FastAPI app with configurable options 🚀"
