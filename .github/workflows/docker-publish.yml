@@ -3,7 +3,7 @@ name: Build and Push to GHCR
 # Run this when you push to the main branch
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 # Automatic permissions for the GITHUB_TOKEN
 env:
