@@ -55,7 +55,8 @@ async def bot_behavior(message: discord.Message, bot) -> None:
         except discord.NotFound:
             pass # Replied-to message might have been deleted
 
-    # C. Activated by a user message containing a trigger word for a WHITELISTED character
+    
+# C. Activated by a user message containing a trigger word for a WHITELISTED character
     if not message.webhook_id:
         if not channel.whitelist:
             return  # Stop processing immediately.
@@ -68,42 +69,38 @@ async def bot_behavior(message: discord.Message, bot) -> None:
 
         message_lower = message.content.lower()
 
+        current_channel_ref = "#" + channel.name.lower()
+
         for char in characters_to_check:
             # Grab triggers + the character's own name
             name_trigger = char.get("name", "").lower()
             triggers = [t.lower() for t in char.get("triggers", [])]
 
             extended_triggers = triggers + ([name_trigger] if name_trigger else [])
-            print(triggers)
-            channel_name = channel.name.lower()
-            channel_name = "#" + channel_name
-            print(channel_name)
+
             for trigger in extended_triggers:
                 if not trigger:
                     continue
 
-                # Word-boundary regex check
+                # 1. Normal conversational trigger (word inside message)
                 if re.search(r'\b' + re.escape(trigger) + r'\b', message_lower):
                     print(
                         f"User message contained trigger '{trigger}' for whitelisted character '{char['name']}'. Queuing message."
                     )
-                    
                     await bot.queue.put(message)
                     bot.auto_reply_count = 0
-                    return  # Stop after the first match
+                    return 
                 
-                # Function to permanently make character answer in a channel
-                elif re.search(re.escape(trigger), "#"+ channel_name):
+                # 2. Perma-channel trigger (Exact Match)
+                # Matches ONLY if the trigger is exactly the channel name with hash (e.g., "#general")
+                elif trigger == current_channel_ref:
                     print(
-                        f"User message is inside '{channel.name}' for whitelisted character '{char['name']}'. Queuing message."
+                        f"Current channel '{current_channel_ref}' matches trigger for character '{char['name']}'. Queuing message."
                     )
                     message.content = f"[Replying To {char['name']}]\n{message.content}"
                     await bot.queue.put(message)
                     bot.auto_reply_count = 0
                     return
-                
-
-
 
     # D. Activated by another bot's message (bot-to-bot interaction)
     if message.webhook_id:
