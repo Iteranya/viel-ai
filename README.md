@@ -68,6 +68,21 @@ You have complete freedom to choose the AI that powers my conversations, giving 
 *   **Run a Free, Private AI:** If you're more tech-savvy, you can run a free AI model on your own computer using tools like LM Studio or Ollama. This means **zero cost per message**.
 *   **Switch Anytime:** If you don't like your current AI provider, you can swap to a new one in seconds without losing any of your characters or settings.
 
+    
+### **🧪 The Laboratory: Advanced Prompt Engineering**
+*(For those who like to tinker under the hood)*
+
+<img width="1040" height="592" alt="Prompt Template Jinja Screen" src="https://github.com/user-attachments/assets/8e69804b-a29d-4a34-8b81-1938972328a3" />
+
+If you want to go deeper than just writing a character bio, I’ve got a treat for you. The dashboard features a **built-in Prompt Engineering Studio** that puts you in direct control of the AI's instructions.
+
+*   **Jinja2 Templating:** We use the powerful Jinja2 engine (the same tech used in major Python frameworks). This allows you to inject logic, loops, and variables directly into your prompts.
+*   **Dynamic Behaviors:** Don't just tell the AI *who* to be; program *how* it reacts.
+    *   *Want a character to be brave during the day but cowardly at night?* Use an `{% if is_night %}` block in your prompt.
+    *   *Want the narrator to change tone based on the channel?* Script it with logic.
+*   **No Code Files Required:** You don't need to dig through Python scripts to change how the bot thinks. You can write, edit, and save your custom prompt templates right inside the user-friendly(ish) admin panel. It’s a sandbox for your maddest scientific experiments.
+
+
 ---
 
 ## **📜 The Viel Philosophy: You're in Charge**
@@ -187,6 +202,7 @@ We believe in keeping things simple, fast, and accessible. We intentionally avoi
 *   **⚡ FastAPI (Python):** A modern, high-performance web framework. It powers the brain of the bot and handles all the asynchronous magic required for Discord communication. It's fast, robust, and easy to read.
 *   **💾 SQLite:** A reliable, serverless database engine. Your entire world—every character, memory, and setting—lives in a single file on your disk. This makes backups instant and ensures you don't need to be a database administrator just to run a roleplay bot.
 *   **✨ Vanilla JS:** The control panel is built with pure HTML, CSS, and JavaScript. No compiling, no React/Vue/Angular complexity, and no "node_modules" black holes. If you know the basics of web design, you can hack the UI to look exactly how you want.
+*   **📝 Jinja2 Templating:** We use Jinja2 for our prompting engine. This gives power users total control within the admin panel to script dynamic system prompts. You can use logic, loops, and variables to fine-tune exactly how context and lore are fed to the AI.
 
 ---
 
