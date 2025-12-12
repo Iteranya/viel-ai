@@ -83,11 +83,20 @@ class Viel(discord.Client):
                 await message.delete()
             else:
                 webhook = await self.fetch_webhook(message.webhook_id)
-                await webhook.delete_message(message.id, thread=interaction.channel if isinstance(interaction.channel, discord.Thread) else None)
+                
+                # Setup keyword arguments
+                kwargs = {}
+                if isinstance(interaction.channel, discord.Thread):
+                    kwargs['thread'] = interaction.channel
+                
+                # Only pass 'thread' if it exists in kwargs
+                await webhook.delete_message(message.id, **kwargs)
             
             await interaction.response.send_message("Message deleted.", ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(f"Failed to delete message: {e}", ephemeral=True)
+            # It is good practice to import traceback if you use it
+            import traceback
             print(traceback.format_exc())
 
     async def edit_caption_context(self, interaction: discord.Interaction, message: discord.Message):
