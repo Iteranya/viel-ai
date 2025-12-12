@@ -176,9 +176,17 @@ Feeling ambitious? Want to tinker under the hood? We respect that.
 
 Now you've got a custom-built Viel running in your own container. Perfect for those late-night "I wonder what happens if I change this..." moments.
 
+**Pro tip:** Docker installations are fantastic for running Viel on a server 24/7, making your bot available even when your main computer is off. Your Discord community will think you're impossibly dedicated (we won't tell them it's just good infrastructure). 🎩✨
+
 ---
 
-**Pro tip:** Docker installations are fantastic for running Viel on a server 24/7, making your bot available even when your main computer is off. Your Discord community will think you're impossibly dedicated (we won't tell them it's just good infrastructure). 🎩✨
+## 🛠️ Under the Hood: The Tech Stack
+
+We believe in keeping things simple, fast, and accessible. We intentionally avoided complex build pipelines and heavy frameworks to make Viel easy to run on a toaster (okay, maybe a Raspberry Pi) and easy for anyone to modify.
+
+*   **⚡ FastAPI (Python):** A modern, high-performance web framework. It powers the brain of the bot and handles all the asynchronous magic required for Discord communication. It's fast, robust, and easy to read.
+*   **💾 SQLite:** A reliable, serverless database engine. Your entire world—every character, memory, and setting—lives in a single file on your disk. This makes backups instant and ensures you don't need to be a database administrator just to run a roleplay bot.
+*   **✨ Vanilla JS:** The control panel is built with pure HTML, CSS, and JavaScript. No compiling, no React/Vue/Angular complexity, and no "node_modules" black holes. If you know the basics of web design, you can hack the UI to look exactly how you want.
 
 ---
 
