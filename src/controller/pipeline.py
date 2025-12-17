@@ -24,7 +24,7 @@ def find_all_triggered_characters(message: discord.Message, channel: ActiveChann
     NOTE: We are NOT using ActiveCharacter.from_message() here because that method is
     designed to only find the single, earliest match. This function finds ALL matches.
     """
-    if not channel.whitelist or message.webhook_id:
+    if not channel.whitelist:
         return []
 
     triggered_characters = []
@@ -92,7 +92,7 @@ async def _generate_and_send_for_character(
     await messenger.send_message(character, message, queue_item)
 
 
-# --- CORRECT WORKER FUNCTION (KEEP THIS ONE) ---
+# --- CORRECT WORKER FUNCTION ---
 async def process_message(viel, db: Database, message: discord.Message, messenger: DiscordMessenger, queue: asyncio.Queue, plugin_manager:PluginManager):
     try:
         bot_config = BotConfig(**db.list_configs())
@@ -125,10 +125,12 @@ async def process_message(viel, db: Database, message: discord.Message, messenge
                     responding_characters.append(ActiveCharacter(char_data, db))
 
         if not responding_characters:
-            # If still no one to respond, we are done with this message.
+            # If still no one to respond, SOMETHING IS WRONG
+            print("Something Is Wrong, Observer Found But Pipeline Don't")
             try:
                 await message.remove_reaction('✨', viel.user)
-            except discord.NotFound: pass
+            except discord.NotFound: 
+                pass
             return
 
         # --- 3. Loop and Generate Response for Each Character ---
@@ -145,7 +147,8 @@ async def process_message(viel, db: Database, message: discord.Message, messenge
         # --- 4. Final Cleanup ---
         try:
             await message.remove_reaction('✨', viel.user)
-        except discord.NotFound: pass
+        except discord.NotFound: 
+            pass
 
     except Exception as e:
         print(f"Error processing message: {e}\n{traceback.format_exc()}")
