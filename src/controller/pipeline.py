@@ -20,9 +20,6 @@ def find_all_triggered_characters(message: discord.Message, channel: ActiveChann
     """
     Scans a message to find ALL whitelisted characters triggered by keywords.
     Instead of returning names, it returns a list of instantiated ActiveCharacter objects.
-    
-    NOTE: We are NOT using ActiveCharacter.from_message() here because that method is
-    designed to only find the single, earliest match. This function finds ALL matches.
     """
     if not channel.whitelist:
         return []
