@@ -64,7 +64,7 @@ class PromptEngineer:
         self.plugin_manager = plugin_manager 
         self.jinja_env = Environment(trim_blocks=True, lstrip_blocks=True) # Recommended settings for prompt templates
 
-        self.stopping_strings = ["[System", "(System", self.user_name + ":", "[End", "</", "<|end of sentence|>"]
+        self.stopping_strings = ["[System", "(System", self.user_name + ":", "[End"] # Note make this not hardcoded
 
     def get_template_from_preset(self) -> str:
         """
