@@ -1,6 +1,8 @@
+
 import traceback
 import re
 from openai import AsyncOpenAI
+from typing import AsyncGenerator
 
 # Adjust these import paths to match your project structure
 from src.models.queue import QueueItem
@@ -56,14 +58,21 @@ async def generate_response(task: QueueItem, db: Database):
             })
         # --- END PREFILL LOGIC ---
 
+        # For streaming, we need to create the completion with stream=True
         completion = await client.chat.completions.create(
             model=bot_config.base_llm,
             stop=task.stop,
             temperature=bot_config.temperature,
-            messages=messages  # Use the messages list, which may now include the prefill
+            messages=messages,
+            stream=True  # Enable streaming
         )
         
-        result = completion.choices[0].message.content if completion.choices else "//[OOC: AI returned no response.]"
+        # Collect the streamed response
+        result = ""
+        async for chunk in completion:
+            if chunk.choices and chunk.choices[0].delta.content:
+                result += chunk.choices[0].delta.content
+        
         result = result.replace("[Reply]", "").replace(f"{task.bot}:", "").strip()
         result = clean_thonk(result)
         task.result = result
@@ -104,9 +113,15 @@ async def generate_blank(system: str, user: str, db: Database) -> str:
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user}
-            ]
+            ],
+            stream=True  # Enable streaming
         )
-        result = completion.choices[0].message.content if completion.choices else "//[Error: No response]"
+        
+        result = ""
+        async for chunk in completion:
+            if chunk.choices and chunk.choices[0].delta.content:
+                result += chunk.choices[0].delta.content
+        
         return clean_thonk(result)
     except Exception as e:
         return f"//[OOC: Error in generate_blank: {e}]"
@@ -132,6 +147,7 @@ async def generate_in_character(character_name: str, system_addon: str, user: st
             base_url=bot_config.ai_endpoint,
             api_key=bot_config.ai_key,
         )
+        
         completion = await client.chat.completions.create(
             model=bot_config.base_llm,
             temperature=bot_config.temperature,
@@ -139,9 +155,15 @@ async def generate_in_character(character_name: str, system_addon: str, user: st
                 {"role": "system", "content": final_system_prompt},
                 {"role": "user", "content": user},
                 {"role": "assistant", "content": assistant}
-            ]
+            ],
+            stream=True  # Enable streaming
         )
-        result = completion.choices[0].message.content if completion.choices else "//[Error: No response]"
+        
+        result = ""
+        async for chunk in completion:
+            if chunk.choices and chunk.choices[0].delta.content:
+                result += chunk.choices[0].delta.content
+        
         return clean_thonk(result)
     except Exception as e:
         return f"//[OOC: Error in generate_in_character: {e}]"
@@ -153,11 +175,11 @@ def clean_string(s: str) -> str:
     return re.sub(r'^[^\s:]+:\s*', '', s) if re.match(r'^[^\s:]+:\s*', s) else s
 
 def clean_thonk(s: str) -> str:
-    """Recursively removes <think>...</think> blocks from the AI's output."""
-    match = re.search(r'</think>', s, re.IGNORECASE)
+    """Recursively removes <tool_call>...<tool_call> blocks from the AI's output."""
+    match = re.search(r'<tool_call>', s, re.IGNORECASE)
     if match:
         # Find the start tag that corresponds to this end tag
-        start_match = re.search(r'<think>', s[:match.start()], re.IGNORECASE)
+        start_match = re.search(r'<tool_call>', s[:match.start()], re.IGNORECASE)
         if start_match:
             # Remove the block and recurse on the rest of the string
             return clean_thonk(s[:start_match.start()] + s[match.end():])
