@@ -26,6 +26,7 @@ class Viel(discord.Client):
         self.queue = asyncio.Queue()
         self.plugin_manager = PluginManager(plugin_package_path="src.plugins")
         self.auto_reply_count = 0
+        self.invite_link = None  # Initialize invite_link attribute
 
     async def setup_hook(self):
         """This is called when the bot is preparing to connect."""
@@ -57,7 +58,8 @@ class Viel(discord.Client):
     async def on_ready(self):
         print(f"Discord Bot is logged in as {self.user} (ID: {self.user.id})")
         app_info = await self.application_info()
-        self.invite_link = f"https://discord.com/oauth2/authorize?client_id={app_info.id}&permissions=533113207808&scope=bot" # Set the attribute here
+        # Set the invite_link attribute here to prevent AttributeError
+        self.invite_link = f"https://discord.com/oauth2/authorize?client_id={app_info.id}&permissions=533113207808&scope=bot"
         invite_link = f"https://discord.com/oauth2/authorize?client_id={app_info.id}&permissions=533113207808&scope=bot"
         print(f"Bot Invite Link: {invite_link}")
         print("Discord Bot is up and running.")
@@ -118,6 +120,7 @@ class Viel(discord.Client):
         except Exception as e:
             print(f"Fatal error during bot startup: {e}")
             print("Please ensure your database is configured correctly via the API/frontend.")
+
 
 # --- Modals ---
 class EditMessageModal(discord.ui.Modal, title='Edit Message'):
@@ -180,6 +183,7 @@ class EditCaptionModal(discord.ui.Modal, title='Edit Image Caption'):
                 await interaction.response.send_message("Caption removed!", ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(f"An error occurred: {e}", ephemeral=True)
+
 
 # --- Slash Command Groups ---
 class CoreCommands(app_commands.Group):
