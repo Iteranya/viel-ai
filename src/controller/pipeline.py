@@ -1,3 +1,4 @@
+
 # src/controller/think.py
 
 import asyncio
@@ -52,7 +53,14 @@ def find_all_triggered_characters(message: discord.Message, channel: ActiveChann
     return triggered_characters
 
 
-async def _generate_and_send_for_character(
+def get_bot_config(db: Database) -> BotConfig:
+    """Fetches all config key-values from the DB and returns a BotConfig object."""
+    all_db_configs = db.list_configs()
+    # Pydantic validates and provides default values for any missing keys
+    return BotConfig(**all_db_configs)
+
+
+async def _generate_and_send_for_character_streaming(
     character: ActiveCharacter, # Now we pass the full object
     viel, db: Database, 
     message: discord.Message, 
@@ -61,7 +69,7 @@ async def _generate_and_send_for_character(
     plugin_manager: PluginManager
 ):
     """
-    Contains the core logic for generating and sending a message for ONE character.
+    Contains the core logic for generating and sending a message for ONE character with streaming.
     """
     # Avoid character talking to themselves
     if character.name.lower() == message.author.display_name.lower():
@@ -80,19 +88,92 @@ async def _generate_and_send_for_character(
         message=message
     )
     
-    queue_item = await generate_response(queue_item, db)
+    # For streaming, we'll handle this at the LLM level but provide progress updates
+    try:
+        # Send initial thinking message
+        response_message = await message.channel.send(f"**{character.name}** is thinking...")
+        
+        # Get the bot config
+        bot_config = get_bot_config(db)
+        
+        # Create the async OpenAI client
+        client = AsyncOpenAI(
+            base_url=bot_config.ai_endpoint,
+            api_key=bot_config.ai_key,
+        )
+        
+        # Prepare messages
+        system_prompt = prompt
+        user_message = clean_string(message.content)
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message}
+        ]
 
-    if not queue_item.result:
-        queue_item.result = "//[OOC: The AI failed to generate a response.]"
-
-    clean_up(queue_item)
-    await messenger.send_message(character, message, queue_item)
+        # Add prefill if needed
+        if bot_config.use_prefill:
+            prefill_content = f"[Reply] {character.name}:"
+            messages.append({"role": "assistant", "content": prefill_content})
+        
+        # Stream the response from OpenAI
+        completion = await client.chat.completions.create(
+            model=bot_config.base_llm,
+            stop=queue_item.stop,
+            temperature=bot_config.temperature,
+            messages=messages,
+            stream=True
+        )
+        
+        # Build response incrementally and update Discord as we get chunks
+        response_text = ""
+        update_count = 0
+        chunk_buffer = ""
+        
+        async for chunk in completion:
+            if chunk.choices and chunk.choices[0].delta.content:
+                chunk_buffer += chunk.choices[0].delta.content
+                update_count += 1
+                
+                # Update Discord every few chunks to show progress
+                # This prevents the UI from being overwhelmed with updates
+                if update_count % 2 == 0 or len(chunk_buffer) > 50:
+                    # Clean the text to remove artifacts
+                    clean_text = clean_thonk(response_text + chunk_buffer)
+                    
+                    # Only update if we actually have new content to show
+                    if response_message and not response_message.content.endswith(clean_text):
+                        try:
+                            await response_message.edit(content=f"**{character.name}:** {clean_text}")
+                            response_text += chunk_buffer
+                            chunk_buffer = ""
+                        except discord.HTTPException:
+                            # If editing fails, create a new message
+                            response_message = await message.channel.send(f"**{character.name}:** {clean_text}")
+                            response_text += chunk_buffer
+                            chunk_buffer = ""
+        
+        # Final cleanup and send the complete message
+        if response_text or chunk_buffer:
+            final_text = clean_thonk(response_text + chunk_buffer)
+            try:
+                await response_message.edit(content=f"**{character.name}:** {final_text}")
+            except discord.HTTPException:
+                await message.channel.send(f"**{character.name}:** {final_text}")
+        else:
+            await response_message.edit(content="**[OOC: No response generated]**")
+            
+    except Exception as e:
+        print(f"Error during streaming for {character.name}: {e}")
+        try:
+            await message.channel.send(f"**{character.name}:** Error: {e}")
+        except:
+            pass
 
 
 # --- CORRECT WORKER FUNCTION ---
 async def process_message(viel, db: Database, message: discord.Message, messenger: DiscordMessenger, queue: asyncio.Queue, plugin_manager:PluginManager):
     try:
-        bot_config = BotConfig(**db.list_configs())
+        bot_config = get_bot_config(db)
 
         # --- 1. Load Channel ---
         is_dm = isinstance(message.channel, discord.DMChannel)
@@ -133,7 +214,7 @@ async def process_message(viel, db: Database, message: discord.Message, messenge
         # --- 3. Loop and Generate Response for Each Character ---
         generation_tasks = []
         for character in responding_characters:
-            task = _generate_and_send_for_character(
+            task = _generate_and_send_for_character_streaming(
                 character, viel, db, message, channel, messenger, plugin_manager
             )
             generation_tasks.append(task)
@@ -172,7 +253,7 @@ async def think(viel, db: Database, queue: asyncio.Queue, plugin_manager:PluginM
 
         # 2. Get dynamic config
         try:
-            bot_config = BotConfig(**db.list_configs())
+            bot_config = get_bot_config(db)
             concurrency_limit = bot_config.concurrency
             if concurrency_limit < 1: 
                 concurrency_limit = 1
@@ -209,3 +290,22 @@ def clean_up(queue_item: QueueItem) -> QueueItem:
 
     queue_item.result = queue_item.result.strip()
     return queue_item
+
+# Import required for streaming
+from openai import AsyncOpenAI
+
+# --- Utility Functions (Unchanged) ---
+def clean_string(s: str) -> str:
+    """Removes a 'Username: ' prefix if it exists."""
+    return re.sub(r'^[^\s:]+:\s*', '', s) if re.match(r'^[^\s:]+:\s*', s) else s
+
+def clean_thonk(s: str) -> str:
+    """Recursively removes <tool_call>...<tool_call> blocks from the AI's output."""
+    match = re.search(r'<tool_call>', s, re.IGNORECASE)
+    if match:
+        # Find the start tag that corresponds to this end tag
+        start_match = re.search(r'<tool_call>', s[:match.start()], re.IGNORECASE)
+        if start_match:
+            # Remove the block and recurse on the rest of the string
+            return clean_thonk(s[:start_match.start()] + s[match.end():])
+    return s
