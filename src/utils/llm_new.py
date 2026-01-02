@@ -102,6 +102,7 @@ async def generate_blank(system: str, user: str, db: Database) -> str:
         completion = await client.chat.completions.create(
             model=bot_config.base_llm,
             temperature=bot_config.temperature,
+            max_tokens=8192,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user}
@@ -136,6 +137,7 @@ async def generate_in_character(character_name: str, system_addon: str, user: st
         completion = await client.chat.completions.create(
             model=bot_config.base_llm,
             temperature=bot_config.temperature,
+            max_tokens=8192,
             messages=[
                 {"role": "system", "content": final_system_prompt},
                 {"role": "user", "content": user},
