@@ -9,7 +9,7 @@ from api.models.models import BotConfig
 
 # --- Constants and DB Initialization ---
 # This business logic is preserved from your original file.
-PRESERVE_FIELDS: Set[str] = {'ai_key', 'discord_key'}
+PRESERVE_FIELDS: Set[str] = {'ai_key', 'discord_key','multimodal_ai_api'}
 REQUIRED_FIELDS: Set[str] = {'default_character', 'ai_endpoint', 'base_llm'}
 
 db = Database()
