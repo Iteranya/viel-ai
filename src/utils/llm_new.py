@@ -59,6 +59,7 @@ async def generate_response(task: QueueItem, db: Database):
         completion = await client.chat.completions.create(
             model=bot_config.base_llm,
             stop=task.stop,
+            max_tokens=8192,
             temperature=bot_config.temperature,
             messages=messages  # Use the messages list, which may now include the prefill
         )
