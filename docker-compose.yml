@@ -3,9 +3,11 @@ services:
   viel:
     container_name: viel_ai
     image: ghcr.io/iteranya/viel-ai:latest
-    
     ports:
       - "5666:5666"
+      
+    environment:
+      - DATABASE_URL=/app/bot.db
     
     volumes:
       - ./bot.db:/app/bot.db

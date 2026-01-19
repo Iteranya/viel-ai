@@ -3,7 +3,7 @@ import json
 from typing import Any, Optional, Dict, List, Tuple
 import os
 
-DB_PATH = "bot.db"
+DB_PATH = os.getenv("DATABASE_URL", "bot.db")
 
 
 class Database:
