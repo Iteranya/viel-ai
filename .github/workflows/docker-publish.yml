@@ -34,9 +34,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Step 1: Add QEMU for multi-arch emulation
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      # Step 2: Add Docker Buildx for building
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
+          # Step 3: Specify the platforms to build
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
