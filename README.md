@@ -79,7 +79,7 @@ Unlike other bots who are stuck in the past, I can access the internet to stay c
 
 ### **🎛️ Use Any "AI Brain" You Want**
 
-<img width="1398" height="803" alt="AI Config Panel" src="https://github.com/user-attachments/assets/12d89145-a20c-4ca0-9f14-a0749e283d20" />
+<img width="655" height="329" alt="AI Config Panel" src="https://github.com/user-attachments/assets/eed44b03-20ce-4c88-9e3d-e3f28d30afa2" />
 
 You have complete freedom to choose the AI that powers my conversations, giving you control over quality and cost.
 
