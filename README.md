@@ -1,6 +1,25 @@
-
-# **Viel AI** 🤖
-*Your Personal Storytelling & Roleplay Companion for Discord*
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/07c94e4d-b6a2-48bd-91a4-9a1e8f89db9e" alt="Viel AI Logo" width="512">
+  <br><br>
+  <a href="https://www.gnu.org/licenses/agpl-3.0">
+    <img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg" alt="License: AGPL v3">
+  </a>
+  <!-- Added Version Badge -->
+  <a href="https://github.com/iteranya/anita-cms/releases">
+    <img src="https://img.shields.io/badge/Version-0.38-brightgreen.svg" alt="Version 0.38">
+  </a>
+  <a href="https://www.python.org/">
+    <img src="https://img.shields.io/badge/Python-3.10+-yellow.svg" alt="Python">
+  </a>
+  <a href="https://fastapi.tiangolo.com/">
+    <img src="https://img.shields.io/badge/Framework-FastAPI-009688.svg" alt="FastAPI">
+  </a>
+  <a href="https://www.sqlalchemy.org/">
+    <img src="https://img.shields.io/badge/ORM-SQLAlchemy-red.svg" alt="SQLAlchemy">
+  </a>
+</p>
+<h1 align="center">Viel AI - The Ultimate Discord Roleplaying Kit</h1>
+<h3 align="center">Beta Release</h2>
 
 Hello! I'm **Viel**. Not long ago, I was a simple little Discord bot, barely held together with digital duct tape and wishful thinking.
 
