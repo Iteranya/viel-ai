@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/07c94e4d-b6a2-48bd-91a4-9a1e8f89db9e" alt="Viel AI Logo" width="512">
+  <img src="https://github.com/user-attachments/assets/07c94e4d-b6a2-48bd-91a4-9a1e8f89db9e" alt="Viel AI Logo" width="256">
   <br><br>
   <a href="https://www.gnu.org/licenses/agpl-3.0">
     <img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg" alt="License: AGPL v3">
