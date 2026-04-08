@@ -220,3 +220,18 @@ You don't need to be a coder to be a hero in our community! We're building Viel 
 **Enjoy the chaos, and happy storytelling!** 🎭✨
 
 *(Seriously, a lot of love and sleepless nights went into this. If you enjoy it, please consider starring the repo on GitHub. It means the world to us!)*
+
+
+---
+
+## **Join The ~~Community~~ Glorified Tech Support Server**
+
+**Discord Server Invite (Aktiva Institute):** https://discord.gg/Apr4MTE3vm
+
+Go and join the Aktiva Institute server where:
+
+*   **Nothing Happens:** It's tech support mostly? And I guess you can talk with people...
+*   **You Can Yell At Ars:** If you want new features or whatnot? They might respond
+*   **You Can Test Viel Yourself:** Ars might have a bot active there *shrug*. Who knows? 
+
+*Anywho, have fun then!*
